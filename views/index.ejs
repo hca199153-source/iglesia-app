@@ -3,210 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Iglesia</title>
-  <!-- Bootstrap 5 CSS -->
+  <title>Registro de Iglesia - Samaritan's Purse</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <style>
-    /* Fondo Degradado Rojo/Borgoña Elegante */
     body {
-      background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 50%, #18181b 100%);
+      background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #450a0a 100%);
       min-height: 100vh;
-      color: #f8fafc;
+      color: #ffffff;
       padding: 30px 0;
     }
-
-    /* Tarjeta estilo Glassmorphism */
     .card-custom {
-      background: rgba(30, 10, 10, 0.75);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    }
-
-    /* Estilo para los campos del formulario */
-    .form-control {
-      background-color: rgba(0, 0, 0, 0.4);
+      background: rgba(127, 29, 29, 0.85);
+      backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      border-radius: 8px;
+      border-radius: 16px;
+      color: #ffffff;
     }
-
+    .form-control {
+      background-color: rgba(255, 255, 255, 0.95);
+      border: 1px solid #dc2626;
+      color: #111827;
+      font-weight: 500;
+    }
     .form-control:focus {
-      background-color: rgba(0, 0, 0, 0.6);
-      color: #fff;
+      background-color: #ffffff;
+      color: #000000;
       border-color: #ef4444;
-      box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.3);
+      box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.4);
     }
-
-    /* Botón personalizado */
-    .btn-red {
-      background: linear-gradient(45deg, #dc2626, #b91c1c);
-      border: none;
-      color: #fff;
-      transition: all 0.3s ease;
-    }
-
-    .btn-red:hover {
-      background: linear-gradient(45deg, #ef4444, #dc2626);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
-      color: #fff;
-    }
-
-    /* Animación de entrada suave */
-    .animate-fade-in {
-      animation: fadeInUp 0.8s ease-out forwards;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Carrusel bordes redondeados */
-    .carousel-inner img {
-      border-radius: 12px;
-      max-height: 380px;
+    .carousel-item img {
+      height: 280px;
       object-fit: cover;
+      border-radius: 12px;
+    }
+    .logo-header {
+      max-height: 80px;
+      width: auto;
+    }
+    label {
+      color: #fef2f2;
+      font-weight: 600;
+    }
+    .text-light-custom {
+      color: #fca5a5 !important;
     }
   </style>
 </head>
 <body>
 
-  <div class="container my-auto animate-fade-in">
+  <div class="container my-auto">
     <div class="row justify-content-center">
-      <div class="col-lg-9">
+      <div class="col-lg-8">
         
-        <div class="card card-custom p-4 p-md-5">
-          
-          <!-- LOGO Y TÍTULO -->
-          <div class="text-center mb-4">
-            <!-- Si tienes la imagen del logo en tu carpeta public/img/logo.png o URL -->
-            <img src="/img/logo.png" alt="Logo" class="img-fluid mb-3" style="max-height: 100px;" onerror="this.style.display='none'">
-            <h2 class="fw-bold text-light">Formulario de Registro</h2>
-            <p class="text-light-50 small">Complete la información solicitada a continuación</p>
-          </div>
+        <!-- Logo y Encabezado -->
+        <div class="text-center mb-4">
+          <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="logo-header mb-3 img-fluid" onerror="this.style.display='none'">
+          <h2 class="fw-bold text-white">Formulario de Registro</h2>
+          <p class="text-light-custom small">Por favor complete la información requerida a continuación</p>
+        </div>
 
-          <!-- CARRUSEL DE FOTOS -->
-          <div id="carruselFotos" class="carousel slide carousel-fade mb-5 shadow rounded-3" data-bs-ride="carousel">
-            <div class="carousel-indicators">
-              <button type="button" data-bs-target="#carruselFotos" data-bs-slide-to="0" class="active"></button>
-              <button type="button" data-bs-target="#carruselFotos" data-bs-slide-to="1"></button>
-              <button type="button" data-bs-target="#carruselFotos" data-bs-slide-to="2"></button>
-            </div>
-            <div class="carousel-inner">
-              <div class="carousel-item active" data-bs-interval="4000">
-                <img src="/img/foto1.jpg" class="d-block w-100" alt="Foto 1" onerror="this.src='https://picsum.photos/800/400?random=1'">
-              </div>
-              <div class="carousel-item" data-bs-interval="4000">
-                <img src="/img/foto2.jpg" class="d-block w-100" alt="Foto 2" onerror="this.src='https://picsum.photos/800/400?random=2'">
-              </div>
-              <div class="carousel-item" data-bs-interval="4000">
-                <img src="/img/foto3.jpg" class="d-block w-100" alt="Foto 3" onerror="this.src='https://picsum.photos/800/400?random=3'">
-              </div>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#carruselFotos" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon"></span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carruselFotos" data-bs-slide="next">
-              <span class="carousel-control-next-icon"></span>
-            </button>
+        <!-- Carrusel de Fotos -->
+        <div id="carouselFotos" class="carousel slide mb-4 shadow-lg rounded-3 overflow-hidden" data-bs-ride="carousel">
+          <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselFotos" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#carouselFotos" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#carouselFotos" data-bs-slide-to="2"></button>
           </div>
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <img src="/images/foto1.jpg" class="d-block w-100" alt="Evento 1" onerror="this.src='https://picsum.photos/800/300?random=1'">
+            </div>
+            <div class="carousel-item">
+              <img src="/images/foto2.jpg" class="d-block w-100" alt="Evento 2" onerror="this.src='https://picsum.photos/800/300?random=2'">
+            </div>
+            <div class="carousel-item">
+              <img src="/images/foto3.jpg" class="d-block w-100" alt="Evento 3" onerror="this.src='https://picsum.photos/800/300?random=3'">
+            </div>
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselFotos" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselFotos" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+        </div>
 
-          <!-- MENSAJES DE ALERTA -->
+        <!-- Tarjeta del Formulario -->
+        <div class="card card-custom shadow-lg p-4 p-md-5">
+
           <% if (mensajeExito) { %>
-            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
               <i class="bi bi-check-circle-fill me-2"></i><%= mensajeExito %>
               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
           <% } %>
 
           <% if (mensajeError) { %>
-            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show text-dark" role="alert">
               <i class="bi bi-exclamation-triangle-fill me-2"></i><%= mensajeError %>
               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
           <% } %>
 
-          <!-- FORMULARIO -->
           <form action="/guardar" method="POST">
-            
             <!-- Sección Pastor -->
-            <div class="mb-4">
-              <h5 class="text-danger-emphasis fw-bold border-bottom border-danger pb-2 mb-3">
-                <i class="bi bi-person-badge me-2"></i>Datos del Pastor
-              </h5>
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">Nombre del Pastor *</label>
-                  <input type="text" name="nombre_pastor" class="form-control" required placeholder="Ej: Juan Pérez">
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Teléfono *</label>
-                  <input type="tel" name="telefono_pastor" class="form-control" required placeholder="10 dígitos">
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Correo Electrónico</label>
-                  <input type="email" name="correo_pastor" class="form-control" placeholder="Opcional">
-                </div>
+            <h5 class="text-white border-bottom border-light pb-2 mb-3 fw-bold">
+              <i class="bi bi-person-badge me-2 text-warning"></i>Datos del Pastor
+            </h5>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Nombre del Pastor *</label>
+                <input type="text" name="nombre_pastor" class="form-control" required placeholder="Ej: Juan Pérez">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Teléfono *</label>
+                <input type="tel" name="telefono_pastor" class="form-control" required placeholder="10 dígitos">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" name="correo_pastor" class="form-control" placeholder="opcional">
               </div>
             </div>
 
             <!-- Sección Iglesia -->
-            <div class="mb-4">
-              <h5 class="text-danger-emphasis fw-bold border-bottom border-danger pb-2 mb-3">
-                <i class="bi bi-building me-2"></i>Datos de la Iglesia
-              </h5>
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">Nombre de la Iglesia *</label>
-                  <input type="text" name="nombre_iglesia" class="form-control" required placeholder="Ej: Iglesia Central">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Dirección</label>
-                  <input type="text" name="direccion_iglesia" class="form-control" placeholder="Calle, Número, Ciudad">
-                </div>
-                <div class="col-md-2">
-                  <label class="form-label">Maestros *</label>
-                  <input type="number" name="num_maestros" class="form-control" min="0" required placeholder="Cant.">
-                </div>
+            <h5 class="text-white border-bottom border-light pb-2 mb-3 fw-bold">
+              <i class="bi bi-building me-2 text-warning"></i>Datos de la Iglesia
+            </h5>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Nombre de la Iglesia *</label>
+                <input type="text" name="nombre_iglesia" class="form-control" required placeholder="Ej: Iglesia Central">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Dirección</label>
+                <input type="text" name="direccion_iglesia" class="form-control" placeholder="Calle, Número, Ciudad">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Maestros *</label>
+                <input type="number" name="num_maestros" class="form-control" min="0" required placeholder="Cant.">
               </div>
             </div>
 
             <!-- Sección Líder -->
-            <div class="mb-4">
-              <h5 class="text-danger-emphasis fw-bold border-bottom border-danger pb-2 mb-3">
-                <i class="bi bi-person-check me-2"></i>Líder Capacitado
-              </h5>
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">Nombre del Líder *</label>
-                  <input type="text" name="nombre_lider" class="form-control" required placeholder="Ej: María Gómez">
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Teléfono *</label>
-                  <input type="tel" name="telefono_lider" class="form-control" required placeholder="10 dígitos">
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Correo Electrónico</label>
-                  <input type="email" name="correo_lider" class="form-control" placeholder="Opcional">
-                </div>
+            <h5 class="text-white border-bottom border-light pb-2 mb-3 fw-bold">
+              <i class="bi bi-person-check me-2 text-warning"></i>Líder Capacitado
+            </h5>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Nombre del Líder *</label>
+                <input type="text" name="nombre_lider" class="form-control" required placeholder="Ej: María Gómez">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Teléfono *</label>
+                <input type="tel" name="telefono_lider" class="form-control" required placeholder="10 dígitos">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" name="correo_lider" class="form-control" placeholder="opcional">
               </div>
             </div>
 
-            <button type="submit" class="btn btn-red w-100 py-3 fw-bold fs-5 shadow rounded-3 mt-3">
+            <button type="submit" class="btn btn-warning text-dark w-100 py-3 fw-bold fs-5 shadow">
               <i class="bi bi-send-fill me-2"></i>Enviar Registro
             </button>
-
           </form>
 
         </div>
@@ -214,7 +174,6 @@
     </div>
   </div>
 
-  <!-- Bootstrap 5 JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
