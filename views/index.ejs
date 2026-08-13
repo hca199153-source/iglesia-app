@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro de Iglesia - Samaritan's Purse</title>
   
-  <!-- Favicon para mostrar el logo en la pestaña del navegador -->
   <link rel="icon" type="image/png" href="/images/logo.png">
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <style>
@@ -99,7 +97,6 @@
         <!-- TARJETA DEL FORMULARIO -->
         <div class="card card-custom shadow-lg p-4 p-md-5">
           
-          <!-- LOGO Y TÍTULO -->
           <div class="text-center mb-4">
             <div class="mb-3">
               <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm">
@@ -154,7 +151,8 @@
               </div>
               <div class="col-md-4">
                 <label class="form-label">Dirección</label>
-                <input type="text" name="direccion_iglesia" class="form-control" placeholder="Calle, Número, Ciudad">
+                <!-- AQUÍ SE CAMBIÓ name="direccion_iglesia" A name="direccion" -->
+                <input type="text" name="direccion" class="form-control" placeholder="Calle, Número, Ciudad">
               </div>
               <div class="col-md-2">
                 <label class="form-label">Maestros *</label>
