@@ -17,12 +17,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 1. RUTA PRINCIPAL (Formulario)
+// 1. RUTA PRINCIPAL (Formulario para los pastores)
 app.get('/', (req, res) => {
   res.render('index', { mensajeExito: null, mensajeError: null });
 });
 
-// 2. GUARDAR REGISTRO
+// 2. GUARDAR REGISTRO DEL FORMULARIO
 app.post('/guardar', async (req, res) => {
   try {
     const { error } = await supabase.from('registros').insert([req.body]);
@@ -34,7 +34,7 @@ app.post('/guardar', async (req, res) => {
   }
 });
 
-// 3. PANEL DE ADMINISTRACIÓN
+// 3. PANEL DE ADMINISTRACIÓN (Ver lista de iglesias)
 app.get('/admin', async (req, res) => {
   try {
     const { data: registros, error } = await supabase
@@ -50,46 +50,7 @@ app.get('/admin', async (req, res) => {
   }
 });
 
-// 4. MOSTRAR FORMULARIO DE EDICIÓN (Resuelve Cannot GET /editar/:id)
-app.get('/editar/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { data: registro, error } = await supabase
-      .from('registros')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error || !registro) {
-      console.error("Error al obtener registro para editar:", error);
-      return res.redirect('/admin');
-    }
-
-    res.render('editar', { registro });
-  } catch (error) {
-    console.error("Error en servidor al editar:", error);
-    res.redirect('/admin');
-  }
-});
-
-// 5. PROCESAR EDICIÓN
-app.post('/editar/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { error } = await supabase
-      .from('registros')
-      .update(req.body)
-      .eq('id', id);
-
-    if (error) console.error("Error al actualizar:", error);
-    res.redirect('/admin');
-  } catch (error) {
-    console.error("Error en servidor al procesar edición:", error);
-    res.redirect('/admin');
-  }
-});
-
-// 6. ELIMINAR REGISTRO (Resuelve Cannot POST /eliminar/:id)
+// 4. ELIMINAR REGISTRO
 app.post('/eliminar/:id', async (req, res) => {
   try {
     const { id } = req.params;
