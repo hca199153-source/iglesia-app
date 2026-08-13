@@ -1,16 +1,15 @@
 const express = require('express');
 const path = require('path');
-const { Pool } = require('pg');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 
-// Configuración de la base de datos PostgreSQL
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+// Configuración de Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Configuración de plantillas EJS y Middleware
+// Configuración de plantillas EJS y archivos estáticos
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -23,17 +22,11 @@ app.get('/', (req, res) => {
   res.render('index', { mensajeExito: null, mensajeError: null });
 });
 
-// 2. GUARDAR REGISTRO
+// 2. GUARDAR REGISTRO DEL FORMULARIO
 app.post('/guardar', async (req, res) => {
   try {
-    const { nombre_iglesia, nombre_pastor, telefono_pastor, nombre_lider, telefono_lider, num_maestros } = req.body;
-    
-    await pool.query(
-      `INSERT INTO registros (nombre_iglesia, nombre_pastor, telefono_pastor, nombre_lider, telefono_lider, num_maestros) 
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [nombre_iglesia, nombre_pastor, telefono_pastor, nombre_lider, telefono_lider, num_maestros]
-    );
-
+    const { error } = await supabase.from('registros').insert([req.body]);
+    if (error) throw error;
     res.render('index', { mensajeExito: '¡Registro guardado con éxito!', mensajeError: null });
   } catch (error) {
     console.error("Error al guardar:", error);
@@ -44,22 +37,32 @@ app.post('/guardar', async (req, res) => {
 // 3. PANEL DE ADMINISTRACIÓN
 app.get('/admin', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM registros ORDER BY id ASC');
-    res.render('admin', { registros: result.rows });
+    const { data: registros, error } = await supabase
+      .from('registros')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    res.render('admin', { registros });
   } catch (error) {
     console.error("Error al cargar admin:", error);
     res.render('admin', { registros: [] });
   }
 });
 
-// 4. ELIMINAR REGISTRO (Resuelve el Cannot POST /eliminar/:id)
+// 4. ELIMINAR REGISTRO
 app.post('/eliminar/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await pool.query('DELETE FROM registros WHERE id = $1', [id]);
+    const { error } = await supabase
+      .from('registros')
+      .delete()
+      .eq('id', id);
+
+    if (error) console.error("Error Supabase al eliminar:", error);
     res.redirect('/admin');
   } catch (err) {
-    console.error("Error al eliminar registro:", err);
+    console.error("Error servidor al eliminar:", err);
     res.redirect('/admin');
   }
 });
