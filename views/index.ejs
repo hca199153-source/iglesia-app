@@ -8,45 +8,56 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <style>
     body {
-      background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #450a0a 100%);
+      background: linear-gradient(135deg, #4a0000 0%, #1a0000 100%);
       min-height: 100vh;
       color: #ffffff;
       padding: 30px 0;
     }
     .card-custom {
-      background: rgba(127, 29, 29, 0.85);
+      background: rgba(180, 20, 20, 0.85);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 16px;
       color: #ffffff;
     }
+    .form-label {
+      color: #ffffff;
+      font-weight: 600;
+    }
     .form-control {
       background-color: rgba(255, 255, 255, 0.95);
-      border: 1px solid #dc2626;
-      color: #111827;
+      border: 1px solid #dc3545;
+      color: #000000;
       font-weight: 500;
     }
     .form-control:focus {
       background-color: #ffffff;
       color: #000000;
-      border-color: #ef4444;
-      box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.4);
+      border-color: #ff8080;
+      box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.3);
+    }
+    .form-control::placeholder {
+      color: #6c757d;
     }
     .carousel-item img {
       height: 280px;
       object-fit: cover;
       border-radius: 12px;
     }
-    .logo-header {
-      max-height: 80px;
-      width: auto;
+    .btn-submit {
+      background-color: #ffffff;
+      color: #b41414;
+      border: none;
+      transition: all 0.3s ease;
     }
-    label {
-      color: #fef2f2;
-      font-weight: 600;
+    .btn-submit:hover {
+      background-color: #f8d7da;
+      color: #800000;
+      transform: translateY(-2px);
     }
-    .text-light-custom {
-      color: #fca5a5 !important;
+    .section-header {
+      color: #ffffff;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
     }
   </style>
 </head>
@@ -56,60 +67,63 @@
     <div class="row justify-content-center">
       <div class="col-lg-8">
         
-        <!-- Logo y Encabezado -->
-        <div class="text-center mb-4">
-          <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="logo-header mb-3 img-fluid" onerror="this.style.display='none'">
-          <h2 class="fw-bold text-white">Formulario de Registro</h2>
-          <p class="text-light-custom small">Por favor complete la información requerida a continuación</p>
-        </div>
-
-        <!-- Carrusel de Fotos -->
-        <div id="carouselFotos" class="carousel slide mb-4 shadow-lg rounded-3 overflow-hidden" data-bs-ride="carousel">
+        <!-- CARRUSEL DE IMÁGENES DE CABECERA -->
+        <div id="carouselIglesia" class="carousel slide mb-4 shadow-lg rounded-3 overflow-hidden" data-bs-ride="carousel">
           <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselFotos" data-bs-slide-to="0" class="active"></button>
-            <button type="button" data-bs-target="#carouselFotos" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#carouselFotos" data-bs-slide-to="2"></button>
+            <button type="button" data-bs-target="#carouselIglesia" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#carouselIglesia" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#carouselIglesia" data-bs-slide-to="2"></button>
           </div>
           <div class="carousel-inner">
             <div class="carousel-item active">
-              <img src="/images/foto1.jpg" class="d-block w-100" alt="Evento 1" onerror="this.src='https://picsum.photos/800/300?random=1'">
+              <img src="https://images.unsplash.com/photo-1548625361-188b9a117b9c?auto=format&fit=crop&w=1200&q=80" class="d-block w-100" alt="Iglesia 1">
             </div>
             <div class="carousel-item">
-              <img src="/images/foto2.jpg" class="d-block w-100" alt="Evento 2" onerror="this.src='https://picsum.photos/800/300?random=2'">
+              <img src="https://images.unsplash.com/photo-1510519138161-58441d82595d?auto=format&fit=crop&w=1200&q=80" class="d-block w-100" alt="Iglesia 2">
             </div>
             <div class="carousel-item">
-              <img src="/images/foto3.jpg" class="d-block w-100" alt="Evento 3" onerror="this.src='https://picsum.photos/800/300?random=3'">
+              <img src="https://images.unsplash.com/photo-1438032005730-c779502df39b?auto=format&fit=crop&w=1200&q=80" class="d-block w-100" alt="Iglesia 3">
             </div>
           </div>
-          <button class="carousel-control-prev" type="button" data-bs-target="#carouselFotos" data-bs-slide="prev">
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselIglesia" data-bs-slide="prev">
             <span class="carousel-control-prev-icon"></span>
           </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#carouselFotos" data-bs-slide="next">
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselIglesia" data-bs-slide="next">
             <span class="carousel-control-next-icon"></span>
           </button>
         </div>
 
-        <!-- Tarjeta del Formulario -->
+        <!-- TARJETA DEL FORMULARIO -->
         <div class="card card-custom shadow-lg p-4 p-md-5">
+          
+          <!-- LOGO Y TÍTULO -->
+          <div class="text-center mb-4">
+            <div class="mb-3">
+              <i class="bi bi-heart-fill text-white display-3"></i>
+            </div>
+            <h2 class="fw-bold text-white mb-1">Formulario de Registro</h2>
+            <p class="text-white-50 small">Por favor complete la información requerida a continuación</p>
+          </div>
 
           <% if (mensajeExito) { %>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-dismissible fade show fw-bold text-dark" role="alert">
               <i class="bi bi-check-circle-fill me-2"></i><%= mensajeExito %>
               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
           <% } %>
 
           <% if (mensajeError) { %>
-            <div class="alert alert-danger alert-dismissible fade show text-dark" role="alert">
+            <div class="alert alert-warning alert-dismissible fade show fw-bold text-dark" role="alert">
               <i class="bi bi-exclamation-triangle-fill me-2"></i><%= mensajeError %>
               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
           <% } %>
 
           <form action="/guardar" method="POST">
+            
             <!-- Sección Pastor -->
-            <h5 class="text-white border-bottom border-light pb-2 mb-3 fw-bold">
-              <i class="bi bi-person-badge me-2 text-warning"></i>Datos del Pastor
+            <h5 class="section-header pb-2 mb-3 fw-bold">
+              <i class="bi bi-person-badge me-2"></i>Datos del Pastor
             </h5>
             <div class="row g-3 mb-4">
               <div class="col-md-6">
@@ -127,8 +141,8 @@
             </div>
 
             <!-- Sección Iglesia -->
-            <h5 class="text-white border-bottom border-light pb-2 mb-3 fw-bold">
-              <i class="bi bi-building me-2 text-warning"></i>Datos de la Iglesia
+            <h5 class="section-header pb-2 mb-3 fw-bold">
+              <i class="bi bi-building me-2"></i>Datos de la Iglesia
             </h5>
             <div class="row g-3 mb-4">
               <div class="col-md-6">
@@ -146,8 +160,8 @@
             </div>
 
             <!-- Sección Líder -->
-            <h5 class="text-white border-bottom border-light pb-2 mb-3 fw-bold">
-              <i class="bi bi-person-check me-2 text-warning"></i>Líder Capacitado
+            <h5 class="section-header pb-2 mb-3 fw-bold">
+              <i class="bi bi-person-check me-2"></i>Líder Capacitado
             </h5>
             <div class="row g-3 mb-4">
               <div class="col-md-6">
@@ -164,7 +178,7 @@
               </div>
             </div>
 
-            <button type="submit" class="btn btn-warning text-dark w-100 py-3 fw-bold fs-5 shadow">
+            <button type="submit" class="btn btn-submit w-100 py-3 fw-bold fs-5 shadow">
               <i class="bi bi-send-fill me-2"></i>Enviar Registro
             </button>
           </form>
