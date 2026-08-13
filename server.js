@@ -106,11 +106,11 @@ app.post('/admin-login', (req, res) => {
 // Panel de Administración (Protegido)
 app.get('/admin', protegerAdmin, async (req, res) => {
   try {
-    const resultado = await pool.query('SELECT * FROM registros_iglesia ORDER BY creado_en DESC');
+    const resultado = await pool.query('SELECT * FROM registros_iglesia');
     res.render('admin', { registros: resultado.rows });
   } catch (error) {
     console.error('Error al obtener registros:', error);
-    res.send('Error al cargar el panel de administración');
+    res.status(500).send(`Error al cargar el panel de administración: ${error.message}`);
   }
 });
 
