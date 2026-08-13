@@ -1,21 +1,16 @@
 const express = require('express');
 const path = require('path');
-const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
 
 const app = express();
 
-// Configuración de Supabase
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// Conexión a PostgreSQL en Supabase usando DATABASE_URL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-let supabase = null;
-if (supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey);
-} else {
-  console.warn("⚠️ ADVERTENCIA: SUPABASE_URL o SUPABASE_KEY no están definidas en las variables de entorno de Render.");
-}
-
-// Configuración de plantillas EJS y archivos estáticos
+// Configuración de EJS y middlewares
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -31,14 +26,40 @@ app.get('/', (req, res) => {
 // 2. GUARDAR REGISTRO DEL FORMULARIO
 app.post('/guardar', async (req, res) => {
   try {
-    if (!supabase) {
-      throw new Error("Cliente de Supabase no inicializado. Revisa las variables de entorno en Render.");
-    }
-    const { error } = await supabase.from('registros').insert([req.body]);
-    if (error) throw error;
+    // Se obtienen los datos enviados desde el formulario HTML
+    const {
+      nombre_pastor,
+      telefono_pastor,
+      correo_pastor,
+      nombre_iglesia,
+      direccion,
+      num_maestros,
+      nombre_lider,
+      telefono_lider,
+      correo_lider
+    } = req.body;
+
+    // Inserción en la tabla de la base de datos
+    await pool.query(
+      `INSERT INTO registros 
+       (nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, num_maestros, nombre_lider, telefono_lider, correo_lider) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        nombre_pastor || null,
+        telefono_pastor || null,
+        correo_pastor || null,
+        nombre_iglesia || null,
+        direccion || null,
+        num_maestros || 0,
+        nombre_lider || null,
+        telefono_lider || null,
+        correo_lider || null
+      ]
+    );
+
     res.render('index', { mensajeExito: '¡Registro guardado con éxito!', mensajeError: null });
   } catch (error) {
-    console.error("Error al guardar:", error.message || error);
+    console.error("Error al guardar en BD:", error);
     res.render('index', { mensajeExito: null, mensajeError: 'Error al guardar los datos.' });
   }
 });
@@ -46,38 +67,22 @@ app.post('/guardar', async (req, res) => {
 // 3. PANEL DE ADMINISTRACIÓN
 app.get('/admin', async (req, res) => {
   try {
-    if (!supabase) {
-      return res.render('admin', { registros: [] });
-    }
-    const { data: registros, error } = await supabase
-      .from('registros')
-      .select('*')
-      .order('id', { ascending: true });
-
-    if (error) throw error;
-    res.render('admin', { registros: registros || [] });
+    const result = await pool.query('SELECT * FROM registros ORDER BY id ASC');
+    res.render('admin', { registros: result.rows });
   } catch (error) {
-    console.error("Error al cargar admin:", error.message || error);
+    console.error("Error al cargar admin:", error);
     res.render('admin', { registros: [] });
   }
 });
 
-// 4. ELIMINAR REGISTRO
+// 4. ELIMINAR REGISTRO (Soluciona Cannot POST /eliminar/:id)
 app.post('/eliminar/:id', async (req, res) => {
   try {
-    if (!supabase) {
-      return res.redirect('/admin');
-    }
     const { id } = req.params;
-    const { error } = await supabase
-      .from('registros')
-      .delete()
-      .eq('id', id);
-
-    if (error) console.error("Error Supabase al eliminar:", error);
+    await pool.query('DELETE FROM registros WHERE id = $1', [id]);
     res.redirect('/admin');
   } catch (err) {
-    console.error("Error servidor al eliminar:", err.message || err);
+    console.error("Error al eliminar registro:", err);
     res.redirect('/admin');
   }
 });
@@ -85,5 +90,5 @@ app.post('/eliminar/:id', async (req, res) => {
 // Puerto de ejecución
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo correctamente en el puerto ${PORT}`);
+  console.log(`Servidor iniciado correctamente en puerto ${PORT}`);
 });
