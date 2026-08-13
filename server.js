@@ -54,7 +54,7 @@ app.post('/guardar', async (req, res) => {
     res.render('index', { mensajeExito: '¡Registro guardado con éxito!', mensajeError: null });
   } catch (error) {
     console.error("Error SQL al guardar:", error);
-    res.render('index', { mensajeExito: null, mensajeError: 'Error al guardar los datos.' });
+    res.render('index', { mensajeExito: null, mensajeError: `Error en BD: ${error.message}` });
   }
 });
 
