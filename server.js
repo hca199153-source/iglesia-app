@@ -1,15 +1,16 @@
 const express = require('express');
 const path = require('path');
-const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
 
 const app = express();
 
-// Configuración de Supabase
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Configuración de la base de datos PostgreSQL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-// Configuración de plantillas EJS y archivos estáticos
+// Configuración de plantillas EJS y Middleware
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -17,16 +18,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 1. RUTA PRINCIPAL (Formulario para los pastores)
+// 1. RUTA PRINCIPAL (Formulario)
 app.get('/', (req, res) => {
   res.render('index', { mensajeExito: null, mensajeError: null });
 });
 
-// 2. GUARDAR REGISTRO DEL FORMULARIO
+// 2. GUARDAR REGISTRO
 app.post('/guardar', async (req, res) => {
   try {
-    const { error } = await supabase.from('registros').insert([req.body]);
-    if (error) throw error;
+    const { nombre_iglesia, nombre_pastor, telefono_pastor, nombre_lider, telefono_lider, num_maestros } = req.body;
+    
+    await pool.query(
+      `INSERT INTO registros (nombre_iglesia, nombre_pastor, telefono_pastor, nombre_lider, telefono_lider, num_maestros) 
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [nombre_iglesia, nombre_pastor, telefono_pastor, nombre_lider, telefono_lider, num_maestros]
+    );
+
     res.render('index', { mensajeExito: '¡Registro guardado con éxito!', mensajeError: null });
   } catch (error) {
     console.error("Error al guardar:", error);
@@ -37,13 +44,8 @@ app.post('/guardar', async (req, res) => {
 // 3. PANEL DE ADMINISTRACIÓN
 app.get('/admin', async (req, res) => {
   try {
-    const { data: registros, error } = await supabase
-      .from('registros')
-      .select('*')
-      .order('id', { ascending: true });
-
-    if (error) throw error;
-    res.render('admin', { registros });
+    const result = await pool.query('SELECT * FROM registros ORDER BY id ASC');
+    res.render('admin', { registros: result.rows });
   } catch (error) {
     console.error("Error al cargar admin:", error);
     res.render('admin', { registros: [] });
@@ -54,23 +56,15 @@ app.get('/admin', async (req, res) => {
 app.post('/eliminar/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { error } = await supabase
-      .from('registros')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error("Error al eliminar de Supabase:", error);
-    }
-    
+    await pool.query('DELETE FROM registros WHERE id = $1', [id]);
     res.redirect('/admin');
   } catch (err) {
-    console.error("Error en el servidor al eliminar:", err);
+    console.error("Error al eliminar registro:", err);
     res.redirect('/admin');
   }
 });
 
-// Puerto de ejecución (adaptado para Render y entorno local)
+// Puerto de ejecución
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Servidor seguro corriendo en el puerto ${PORT}`);
