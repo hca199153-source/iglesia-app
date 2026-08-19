@@ -23,16 +23,15 @@
     }
     .card-terms {
       background-color: #ffffff;
-      border-radius: 16px;
+      border-radius: 20px;
       color: #1a1a1a;
-      border: 3px solid #198754;
+      border: 4px solid #198754;
     }
     .terms-box {
-      background-color: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 10px;
-      padding: 15px;
-      max-height: 450px;
+      background-color: #f4f6f8;
+      border-radius: 14px;
+      padding: 20px;
+      max-height: 520px;
       overflow-y: auto;
     }
     .form-label {
@@ -78,17 +77,9 @@
       max-height: 90px;
       object-fit: contain;
     }
-    .term-title {
-      color: #155724;
-      font-weight: 700;
-      border-bottom: 2px solid #198754;
-      padding-bottom: 4px;
-      margin-bottom: 12px;
-    }
-    .badge-target {
-      background-color: #dc3545;
-      color: white;
-      font-size: 0.9rem;
+    .timer-badge {
+      font-size: 1.8rem;
+      letter-spacing: 2px;
     }
   </style>
 </head>
@@ -96,7 +87,7 @@
 
   <div class="container my-auto">
     <div class="row justify-content-center">
-      <div class="col-lg-8">
+      <div class="col-lg-9">
         
         <!-- CARRUSEL DE IMÁGENES LOCALES -->
         <div id="carouselIglesia" class="carousel slide mb-4 shadow-lg rounded-3 overflow-hidden" data-bs-ride="carousel">
@@ -123,70 +114,92 @@
         <!-- ========================================== -->
         <!-- SECCIÓN 1: TÉRMINOS, CONDICIONES Y COMPROMISOS -->
         <!-- ========================================== -->
-        <div id="seccionTerminos" class="card card-terms shadow-lg p-4 p-md-5 mb-4">
+        <div id="seccionTerminos" class="card card-terms shadow-lg p-3 p-md-4 mb-4">
           <div class="text-center mb-3">
             <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm mb-2">
-            <h3 class="fw-bold text-success">Modelo de Crecimiento y Multiplicación</h3>
-            <p class="text-muted small">Por favor lee cuidadosamente los lineamientos del ministerio antes de continuar con el registro.</p>
+            <h3 class="fw-bold text-success mb-1">Modelo de Crecimiento y Multiplicación</h3>
+            <span class="badge bg-warning text-dark px-3 py-2 fs-6 shadow-sm">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i> Por favor lea cuidadosamente los lineamientos
+            </span>
           </div>
 
-          <div class="terms-box shadow-inner mb-4">
+          <div class="terms-box shadow-sm mb-4">
             
-            <!-- PUNTO 4 -->
-            <div class="mb-4">
-              <h5 class="term-title"><i class="bi bi-person-workspace me-2"></i>4. Responsabilidad del Maestro</h5>
-              <p class="fw-semibold text-dark mb-2">Cada maestro debe acompañar aproximadamente 26 niños durante todo el proceso:</p>
-              <ul class="list-unstyled ps-3">
-                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Inscribir a los niños</li>
-                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Dar seguimiento semanal</li>
-                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Cuidar su crecimiento espiritual</li>
-                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Llevarlos a la graduación</li>
-                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Orar por cada niño y su familia</li>
-              </ul>
-            </div>
-
-            <!-- PUNTO 5 -->
-            <div class="mb-4">
-              <h5 class="term-title"><i class="bi bi-clipboard-check me-2"></i>5. Requisitos para el Compañero de Ministerio (CM)</h5>
-              <ul class="list-unstyled ps-3">
-                <li><i class="bi bi-check2-square text-primary me-2"></i>Contar con el número mínimo de maestros.</li>
-                <li><i class="bi bi-check2-square text-primary me-2"></i>Tener un plan para el discipulado.</li>
-                <li><i class="bi bi-check2-square text-primary me-2"></i>Organizar los eventos evangelísticos.</li>
-                <li><i class="bi bi-check2-square text-primary me-2"></i>Comprometerse con el seguimiento hasta la graduación.</li>
-                <li><i class="bi bi-check2-square text-primary me-2"></i>Reportar resultados y testimonios.</li>
-              </ul>
-              <div class="alert alert-success py-2 mt-2 small fw-bold">
-                <i class="bi bi-info-circle-fill me-1"></i> El CM es clave para que cada cajita se convierta en un niño discipulado y graduado.
+            <!-- TARJETA PUNTO 4 -->
+            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-left: 6px solid #fd7e14 !important;">
+              <div class="card-body bg-light">
+                <div class="d-flex align-items-center mb-2">
+                  <div class="bg-warning text-dark p-2 rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                    <i class="bi bi-person-workspace fs-4"></i>
+                  </div>
+                  <h5 class="fw-bold text-dark mb-0">4. Responsabilidad del Maestro</h5>
+                </div>
+                <p class="small text-muted mb-2">Cada maestro debe acompañar aproximadamente <strong>26 niños</strong> durante todo el proceso:</p>
+                <div class="row g-2">
+                  <div class="col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-person-plus-fill text-success me-1"></i> Inscribir a los niños</span></div>
+                  <div class="col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-calendar-check-fill text-primary me-1"></i> Seguimiento semanal</span></div>
+                  <div class="col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-heart-pulse-fill text-danger me-1"></i> Crecimiento espiritual</span></div>
+                  <div class="col-sm-6 col-md-6"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-mortarboard-fill text-warning me-1"></i> Llevarlos a la graduación</span></div>
+                  <div class="col-sm-6 col-md-6"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-hands me-1 text-info"></i> Orar por el niño y su familia</span></div>
+                </div>
               </div>
             </div>
 
-            <!-- PUNTO 6 -->
-            <div class="mb-4">
-              <h5 class="term-title"><i class="bi bi-people-fill me-2"></i>6. Elementos que debe tener un Discipulador</h5>
-              <div class="row g-2">
-                <div class="col-md-6"><i class="bi bi-heart-fill text-danger me-2"></i>Comprometido con Cristo</div>
-                <div class="col-md-6"><i class="bi bi-book-fill text-info me-2"></i>Conocimiento básico de la Biblia</div>
-                <div class="col-md-6"><i class="bi bi-hand-thumbs-up-fill text-warning me-2"></i>Hombre o mujer de oración</div>
-                <div class="col-md-6"><i class="bi bi-clock-fill text-secondary me-2"></i>Disponible para acompañar a los niños</div>
-                <div class="col-md-6"><i class="bi bi-calendar-check-fill text-success me-2"></i>Constante en las reuniones</div>
-                <div class="col-md-6"><i class="bi bi-star-fill text-warning me-2"></i>Buen ejemplo cristiano</div>
+            <!-- TARJETA PUNTO 5 -->
+            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-left: 6px solid #0d6efd !important;">
+              <div class="card-body bg-light">
+                <div class="d-flex align-items-center mb-2">
+                  <div class="bg-primary text-white p-2 rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                    <i class="bi bi-clipboard-check fs-4"></i>
+                  </div>
+                  <h5 class="fw-bold text-dark mb-0">5. Requisitos para el Compañero de Ministerio (CM)</h5>
+                </div>
+                <ul class="list-group list-group-flush small mb-2">
+                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Contar con el número mínimo de maestros.</li>
+                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Tener un plan claro para el discipulado.</li>
+                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Organizar los eventos evangelísticos.</li>
+                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Comprometerse con el seguimiento hasta la graduación.</li>
+                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Reportar resultados y testimonios.</li>
+                </ul>
+                <div class="p-2 bg-primary bg-opacity-10 border border-primary rounded text-primary small fw-bold">
+                  <i class="bi bi-info-circle-fill me-1"></i> El CM es clave para que cada cajita se convierta en un niño discipulado y graduado.
+                </div>
               </div>
-              <p class="mt-2 text-muted small italic">Comprometido a completar el proceso hasta la graduación.</p>
             </div>
 
-            <hr>
+            <!-- TARJETA PUNTO 6 -->
+            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-left: 6px solid #198754 !important;">
+              <div class="card-body bg-light">
+                <div class="d-flex align-items-center mb-2">
+                  <div class="bg-success text-white p-2 rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                    <i class="bi bi-people-fill fs-4"></i>
+                  </div>
+                  <h5 class="fw-bold text-dark mb-0">6. Elementos que debe tener un Discipulador</h5>
+                </div>
+                <div class="row g-2 small">
+                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-heart-fill text-danger me-2"></i>Comprometido con Cristo</div></div>
+                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-book-fill text-primary me-2"></i>Conocimiento básico de la Biblia</div></div>
+                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-fire text-warning me-2"></i>Hombre o mujer de oración</div></div>
+                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-clock-fill text-secondary me-2"></i>Disponible para acompañar a los niños</div></div>
+                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-calendar2-week-fill text-success me-2"></i>Constante en las reuniones</div></div>
+                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-star-fill text-warning me-2"></i>Buen ejemplo cristiano</div></div>
+                </div>
+              </div>
+            </div>
 
             <!-- NUESTRO COMPROMISO Y OBJETIVO FINAL -->
-            <div class="row g-3 text-center mt-2">
+            <div class="row g-3 text-center">
               <div class="col-md-6">
-                <div class="p-3 border rounded bg-light">
-                  <h6 class="fw-bold text-danger"><i class="bi bi-bullseye me-1"></i> NUESTRO COMPROMISO</h6>
+                <div class="p-3 bg-danger text-white rounded-3 shadow-sm h-100">
+                  <i class="bi bi-bullseye fs-1 mb-1 d-block"></i>
+                  <h6 class="fw-bold text-uppercase mb-1">Nuestro Compromiso</h6>
                   <p class="small mb-0">No se trata de cuánto porcentaje logramos, sino de cuántos niños <strong>inscribimos y cuidamos</strong> para graduarse.</p>
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="p-3 border rounded bg-light">
-                  <h6 class="fw-bold text-success"><i class="bi bi-trophy-fill me-1"></i> OBJETIVO FINAL</h6>
+                <div class="p-3 bg-success text-white rounded-3 shadow-sm h-100">
+                  <i class="bi bi-trophy-fill fs-1 mb-1 d-block"></i>
+                  <h6 class="fw-bold text-uppercase mb-1">Objetivo Final</h6>
                   <p class="small mb-0">Vidas transformadas que sirven y multiplican el Evangelio.</p>
                 </div>
               </div>
@@ -194,11 +207,24 @@
 
           </div>
 
-          <!-- BOTÓN CON TEMPORIZADOR -->
+          <!-- ZONA DINÁMICA: SOLO EL RELOJ PRIMERO, LUEGO EL BOTÓN -->
           <div class="text-center">
-            <button id="btnAceptarTerminos" class="btn btn-secondary btn-lg fw-bold px-4 py-3 shadow w-100" disabled onclick="aceptarTerminos()">
-              <i class="bi bi-clock-history me-2"></i>Aceptar Términos y Continuar (<span id="contadorReloj">25</span>s)
+            
+            <!-- CAJA DEL RELOJ (Visible durante el conteo) -->
+            <div id="contenedorReloj" class="p-3 bg-light border border-secondary rounded-3 shadow-sm d-inline-block w-100">
+              <div class="text-muted small fw-bold mb-1">
+                <i class="bi bi-hourglass-split me-1 text-warning"></i> Tiempo de lectura obligatorio
+              </div>
+              <span id="contadorReloj" class="badge bg-dark text-warning timer-badge px-4 py-2 rounded-pill shadow">
+                25s
+              </span>
+            </div>
+
+            <!-- BOTÓN DE ACEPTAR (Oculto al inicio) -->
+            <button id="btnAceptarTerminos" class="btn btn-success btn-lg fw-bold px-4 py-3 shadow w-100" style="display: none;" onclick="aceptarTerminos()">
+              <i class="bi bi-check-circle-fill me-2"></i>Aceptar Términos y Continuar
             </button>
+
           </div>
         </div>
 
@@ -300,34 +326,37 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- SCRIPT PARA EL RELOJ Y DESBLOQUEO DEL FORMULARIO -->
+  <!-- SCRIPT CONTROLADOR DEL TEMPORIZADOR Y BOTÓN -->
   <script>
-    let tiempoRestante = 25; // Segundos de espera requeridos
-    const btnAceptar = document.getElementById('btnAceptarTerminos');
+    let tiempoRestante = 25;
+    const contenedorReloj = document.getElementById('contenedorReloj');
     const contadorSpan = document.getElementById('contadorReloj');
+    const btnAceptar = document.getElementById('btnAceptarTerminos');
 
     const temporizador = setInterval(() => {
       tiempoRestante--;
       if (contadorSpan) {
-        contadorSpan.textContent = tiempoRestante;
+        contadorSpan.textContent = tiempoRestante + 's';
       }
 
       if (tiempoRestante <= 0) {
         clearInterval(temporizador);
-        btnAceptar.disabled = false;
-        btnAceptar.classList.remove('btn-secondary');
-        btnAceptar.classList.add('btn-success');
-        btnAceptar.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Aceptar Términos y Continuar';
+        
+        // Ocultar la caja del reloj
+        contenedorReloj.style.display = 'none';
+        
+        // Mostrar el botón verde de Aceptar
+        btnAceptar.style.display = 'block';
       }
     }, 1000);
 
     function aceptarTerminos() {
       const seccionForm = document.getElementById('seccionFormulario');
       
-      // Mostrar el formulario
+      // Mostrar la tarjeta del formulario
       seccionForm.style.display = 'block';
       
-      // Desplazarse suavemente al formulario
+      // Desplazamiento suave directamente hacia el formulario
       seccionForm.scrollIntoView({ behavior: 'smooth' });
     }
   </script>
