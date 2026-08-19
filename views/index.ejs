@@ -21,6 +21,20 @@
       border-radius: 16px;
       color: #ffffff;
     }
+    .card-terms {
+      background-color: #ffffff;
+      border-radius: 16px;
+      color: #1a1a1a;
+      border: 3px solid #198754;
+    }
+    .terms-box {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      padding: 15px;
+      max-height: 450px;
+      overflow-y: auto;
+    }
     .form-label {
       color: #ffffff !important;
       font-weight: 600;
@@ -64,6 +78,18 @@
       max-height: 90px;
       object-fit: contain;
     }
+    .term-title {
+      color: #155724;
+      font-weight: 700;
+      border-bottom: 2px solid #198754;
+      padding-bottom: 4px;
+      margin-bottom: 12px;
+    }
+    .badge-target {
+      background-color: #dc3545;
+      color: white;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -94,8 +120,92 @@
           </button>
         </div>
 
-        <!-- TARJETA DEL FORMULARIO -->
-        <div class="card card-custom shadow-lg p-4 p-md-5">
+        <!-- ========================================== -->
+        <!-- SECCIÓN 1: TÉRMINOS, CONDICIONES Y COMPROMISOS -->
+        <!-- ========================================== -->
+        <div id="seccionTerminos" class="card card-terms shadow-lg p-4 p-md-5 mb-4">
+          <div class="text-center mb-3">
+            <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm mb-2">
+            <h3 class="fw-bold text-success">Modelo de Crecimiento y Multiplicación</h3>
+            <p class="text-muted small">Por favor lee cuidadosamente los lineamientos del ministerio antes de continuar con el registro.</p>
+          </div>
+
+          <div class="terms-box shadow-inner mb-4">
+            
+            <!-- PUNTO 4 -->
+            <div class="mb-4">
+              <h5 class="term-title"><i class="bi bi-person-workspace me-2"></i>4. Responsabilidad del Maestro</h5>
+              <p class="fw-semibold text-dark mb-2">Cada maestro debe acompañar aproximadamente 26 niños durante todo el proceso:</p>
+              <ul class="list-unstyled ps-3">
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Inscribir a los niños</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Dar seguimiento semanal</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Cuidar su crecimiento espiritual</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Llevarlos a la graduación</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Orar por cada niño y su familia</li>
+              </ul>
+            </div>
+
+            <!-- PUNTO 5 -->
+            <div class="mb-4">
+              <h5 class="term-title"><i class="bi bi-clipboard-check me-2"></i>5. Requisitos para el Compañero de Ministerio (CM)</h5>
+              <ul class="list-unstyled ps-3">
+                <li><i class="bi bi-check2-square text-primary me-2"></i>Contar con el número mínimo de maestros.</li>
+                <li><i class="bi bi-check2-square text-primary me-2"></i>Tener un plan para el discipulado.</li>
+                <li><i class="bi bi-check2-square text-primary me-2"></i>Organizar los eventos evangelísticos.</li>
+                <li><i class="bi bi-check2-square text-primary me-2"></i>Comprometerse con el seguimiento hasta la graduación.</li>
+                <li><i class="bi bi-check2-square text-primary me-2"></i>Reportar resultados y testimonios.</li>
+              </ul>
+              <div class="alert alert-success py-2 mt-2 small fw-bold">
+                <i class="bi bi-info-circle-fill me-1"></i> El CM es clave para que cada cajita se convierta en un niño discipulado y graduado.
+              </div>
+            </div>
+
+            <!-- PUNTO 6 -->
+            <div class="mb-4">
+              <h5 class="term-title"><i class="bi bi-people-fill me-2"></i>6. Elementos que debe tener un Discipulador</h5>
+              <div class="row g-2">
+                <div class="col-md-6"><i class="bi bi-heart-fill text-danger me-2"></i>Comprometido con Cristo</div>
+                <div class="col-md-6"><i class="bi bi-book-fill text-info me-2"></i>Conocimiento básico de la Biblia</div>
+                <div class="col-md-6"><i class="bi bi-hand-thumbs-up-fill text-warning me-2"></i>Hombre o mujer de oración</div>
+                <div class="col-md-6"><i class="bi bi-clock-fill text-secondary me-2"></i>Disponible para acompañar a los niños</div>
+                <div class="col-md-6"><i class="bi bi-calendar-check-fill text-success me-2"></i>Constante en las reuniones</div>
+                <div class="col-md-6"><i class="bi bi-star-fill text-warning me-2"></i>Buen ejemplo cristiano</div>
+              </div>
+              <p class="mt-2 text-muted small italic">Comprometido a completar el proceso hasta la graduación.</p>
+            </div>
+
+            <hr>
+
+            <!-- NUESTRO COMPROMISO Y OBJETIVO FINAL -->
+            <div class="row g-3 text-center mt-2">
+              <div class="col-md-6">
+                <div class="p-3 border rounded bg-light">
+                  <h6 class="fw-bold text-danger"><i class="bi bi-bullseye me-1"></i> NUESTRO COMPROMISO</h6>
+                  <p class="small mb-0">No se trata de cuánto porcentaje logramos, sino de cuántos niños <strong>inscribimos y cuidamos</strong> para graduarse.</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 border rounded bg-light">
+                  <h6 class="fw-bold text-success"><i class="bi bi-trophy-fill me-1"></i> OBJETIVO FINAL</h6>
+                  <p class="small mb-0">Vidas transformadas que sirven y multiplican el Evangelio.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- BOTÓN CON TEMPORIZADOR -->
+          <div class="text-center">
+            <button id="btnAceptarTerminos" class="btn btn-secondary btn-lg fw-bold px-4 py-3 shadow w-100" disabled onclick="aceptarTerminos()">
+              <i class="bi bi-clock-history me-2"></i>Aceptar Términos y Continuar (<span id="contadorReloj">25</span>s)
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 2: TARJETA DEL FORMULARIO (CAPTURA) -->
+        <!-- ========================================== -->
+        <div id="seccionFormulario" class="card card-custom shadow-lg p-4 p-md-5" style="display: none;">
           
           <div class="text-center mb-4">
             <div class="mb-3">
@@ -151,7 +261,6 @@
               </div>
               <div class="col-md-4">
                 <label class="form-label">Dirección</label>
-                <!-- AQUÍ SE CAMBIÓ name="direccion_iglesia" A name="direccion" -->
                 <input type="text" name="direccion" class="form-control" placeholder="Calle, Número, Ciudad">
               </div>
               <div class="col-md-2">
@@ -190,5 +299,38 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- SCRIPT PARA EL RELOJ Y DESBLOQUEO DEL FORMULARIO -->
+  <script>
+    let tiempoRestante = 25; // Segundos de espera requeridos
+    const btnAceptar = document.getElementById('btnAceptarTerminos');
+    const contadorSpan = document.getElementById('contadorReloj');
+
+    const temporizador = setInterval(() => {
+      tiempoRestante--;
+      if (contadorSpan) {
+        contadorSpan.textContent = tiempoRestante;
+      }
+
+      if (tiempoRestante <= 0) {
+        clearInterval(temporizador);
+        btnAceptar.disabled = false;
+        btnAceptar.classList.remove('btn-secondary');
+        btnAceptar.classList.add('btn-success');
+        btnAceptar.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Aceptar Términos y Continuar';
+      }
+    }, 1000);
+
+    function aceptarTerminos() {
+      const seccionForm = document.getElementById('seccionFormulario');
+      
+      // Mostrar el formulario
+      seccionForm.style.display = 'block';
+      
+      // Desplazarse suavemente al formulario
+      seccionForm.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+
 </body>
 </html>
