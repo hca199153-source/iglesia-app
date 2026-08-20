@@ -3,160 +3,264 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Cajas</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <title>Registro - Evento Especial</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  
   <style>
+    :root {
+      --primary-color: #0a163b;
+      --accent-color: #d4af37;
+      --bg-dark: #050b1e;
+    }
+
     body {
-      background-color: #0a163b;
-      color: #ffffff;
+      background-color: var(--bg-dark);
+      color: #e2e8f0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
     }
+
+    .header-banner {
+      background: linear-gradient(135deg, #0a163b 0%, #1a2b5c 100%);
+      border-bottom: 2px solid var(--accent-color);
+      padding: 2.5rem 1rem;
+      text-align: center;
+    }
+
     .card-custom {
-      background-color: #12224d;
-      border: 1px solid #1d336d;
+      background-color: #0d1b40;
+      border: 1px solid rgba(212, 175, 55, 0.2);
       border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
-    .maestro-card {
-      background-color: #182c61;
-      border-left: 4px solid #ffc107;
-      padding: 12px;
-      margin-bottom: 10px;
-      border-radius: 6px;
+
+    .terms-box {
+      background-color: #071026;
+      border: 1px solid #1e2d5a;
+      border-radius: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding: 1.25rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
     }
+
+    .terms-box::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .terms-box::-webkit-scrollbar-thumb {
+      background: var(--accent-color);
+      border-radius: 4px;
+    }
+
     .btn-gold {
-      background-color: #d4af37;
-      color: #0a163b;
-      font-weight: bold;
+      background: linear-gradient(45deg, #d4af37, #f3e5ab);
+      color: #000;
+      font-weight: 600;
       border: none;
+      transition: all 0.3s ease;
     }
+
     .btn-gold:hover {
-      background-color: #f3cf55;
-      color: #0a163b;
+      background: linear-gradient(45deg, #f3e5ab, #d4af37);
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+      color: #000;
+    }
+
+    .form-control, .form-select {
+      background-color: #071026;
+      border: 1px solid #1e2d5a;
+      color: #fff;
+    }
+
+    .form-control:focus, .form-select:focus {
+      background-color: #091533;
+      border-color: var(--accent-color);
+      color: #fff;
+      box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+    }
+
+    .form-control::placeholder {
+      color: #64748b;
+    }
+
+    .section-title {
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      color: var(--accent-color);
+    }
+
+    .maestro-card {
+      background-color: #091533;
+      border-left: 3px solid var(--accent-color);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border-radius: 0 6px 6px 0;
+    }
+
+    #seccionFormulario {
+      display: none;
     }
   </style>
 </head>
-<body class="py-4">
+<body>
 
-  <div class="container" style="max-width: 800px;">
-    
-    <!-- Sección de Términos y Condiciones -->
-    <div class="card card-custom p-4 mb-4 shadow">
-      <h2 class="text-warning mb-3"><i class="bi bi-file-earmark-text"></i> Términos y Condiciones</h2>
-      <p class="text-light">
-        Por favor lea detenidamente las instrucciones y compromisos requeridos antes de solicitar las cajas para su iglesia. 
-        Al dar clic en aceptar, confirma el compromiso de distribución y capacitación de los maestros asignados.
-      </p>
-      
-      <div class="d-flex align-items-center mt-3">
-        <div id="contenedorReloj" class="badge bg-secondary p-2 fs-6">
-          Espere <span id="contadorReloj" class="fw-bold text-warning">25s</span> para continuar...
+  <!-- Banner Superior -->
+  <header class="header-banner mb-4">
+    <div class="container">
+      <h1 class="display-5 fw-bold text-white mb-2">Formulario de Registro</h1>
+      <p class="lead text-warning mb-0">Gestión de Asistencia y Distribución de Materiales</p>
+    </div>
+  </header>
+
+  <main class="container pb-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10">
+
+        <!-- Sección Términos y Condiciones -->
+        <div class="card card-custom p-4 mb-4">
+          <h3 class="h4 section-title"><i class="bi bi-shield-check me-2"></i>Términos y Condiciones</h3>
+          <p class="small text-muted mb-3">Por favor, lea detenidamente las políticas antes de proceder con el registro.</p>
+          
+          <div class="terms-box mb-3">
+            <h5 class="text-white h6">1. Registro de Participantes</h5>
+            <p>Al completarlo, el usuario acepta dar información verídica y verificable sobre la iglesia y los representantes encargados.</p>
+            
+            <h5 class="text-white h6">2. Asignación de Materiales</h5>
+            <p>Las cajas solicitadas están sujetas a disponibilidad y a la confirmación de datos por parte de los organizadores del evento.</p>
+            
+            <h5 class="text-white h6">3. Uso de Datos Personales</h5>
+            <p>Los datos ingresados serán utilizados exclusivamente para fines coordinativos y de logística interna para el evento.</p>
+
+            <h5 class="text-white h6">4. Compromiso de Asistencia</h5>
+            <p>Se requiere que el líder y los maestros registrados se presenten en los horarios indicados durante las jornadas de entrega.</p>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div id="contenedorReloj" class="text-warning small fw-bold">
+              <i class="bi bi-hourglass-split me-1"></i> Por favor lea los términos (<span id="contadorReloj">25s</span>)
+            </div>
+            <button id="btnAceptarTerminos" class="btn btn-gold px-4 py-2" style="display: none;" onclick="aceptarTerminos()">
+              <i class="bi bi-check-circle-fill me-2"></i>Acepto los Términos y Continuar
+            </button>
+          </div>
         </div>
-        <button id="btnAceptarTerminos" onclick="aceptarTerminos()" class="btn btn-gold ms-auto" style="display: none;">
-          <i class="bi bi-check-circle-fill"></i> Acepto los Términos
-        </button>
+
+        <!-- Formulario de Registro Principal -->
+        <div id="seccionFormulario" class="card card-custom p-4">
+
+          <!-- Alertas de Éxito o Error -->
+          <% if (mensajeExito) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <i class="bi bi-check-circle-fill me-2"></i> <%= mensajeExito %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <% } %>
+
+          <% if (mensajeError) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i> <%= mensajeError %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <% } %>
+
+          <h3 class="h4 section-title"><i class="bi bi-journal-text me-2"></i>Datos del Registro</h3>
+
+          <form action="/guardar" method="POST">
+
+            <!-- Datos del Pastor e Iglesia -->
+            <div class="row g-3 mb-4">
+              <div class="col-12"><h5 class="h6 text-warning"><i class="bi bi-building me-1"></i> Información General</h5></div>
+              
+              <div class="col-12 col-md-6">
+                <label class="form-label small text-muted">Nombre del Pastor *</label>
+                <input type="text" name="nombre_pastor" class="form-control" required placeholder="Nombre completo">
+              </div>
+
+              <div class="col-12 col-md-3">
+                <label class="form-label small text-muted">Teléfono Pastor *</label>
+                <input type="tel" name="telefono_pastor" class="form-control" maxlength="10" pattern="[0-9]{10}" required placeholder="10 dígitos">
+              </div>
+
+              <div class="col-12 col-md-3">
+                <label class="form-label small text-muted">Correo Pastor</label>
+                <input type="email" name="correo_pastor" class="form-control" placeholder="ejemplo@correo.com">
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label small text-muted">Nombre de la Iglesia *</label>
+                <input type="text" name="nombre_iglesia" class="form-control" required placeholder="Nombre oficial de la iglesia">
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label small text-muted">Dirección de la Iglesia *</label>
+                <input type="text" name="direccion" class="form-control" required placeholder="Calle, Número, Colonia, Ciudad">
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label class="form-label small text-muted">Número de Cajas *</label>
+                <select name="num_cajas" id="selectCajas" class="form-select" onchange="actualizarMaestros()" required>
+                  <option value="" selected disabled>Seleccione una opción</option>
+                  <option value="50">50 Cajas (2 Maestros)</option>
+                  <option value="100">100 Cajas (3 Maestros)</option>
+                  <option value="150">150 Cajas (4 Maestros)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Datos del Líder -->
+            <div class="row g-3 mb-4">
+              <div class="col-12"><h5 class="h6 text-warning"><i class="bi bi-person-badge me-1"></i> Información del Líder Encargado</h5></div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label small text-muted">Nombre del Líder *</label>
+                <input type="text" name="nombre_lider" class="form-control" required placeholder="Nombre completo del líder">
+              </div>
+
+              <div class="col-12 col-md-3">
+                <label class="form-label small text-muted">Teléfono Líder *</label>
+                <input type="tel" name="telefono_lider" class="form-control" maxlength="10" pattern="[0-9]{10}" required placeholder="10 dígitos">
+              </div>
+
+              <div class="col-12 col-md-3">
+                <label class="form-label small text-muted">Correo Líder</label>
+                <input type="email" name="correo_lider" class="form-control" placeholder="ejemplo@correo.com">
+              </div>
+            </div>
+
+            <!-- Registro Dinámico de Maestros -->
+            <div id="contenedorMaestros" class="mb-4" style="display: none;">
+              <h5 class="h6 text-warning mb-3"><i class="bi bi-people me-1"></i> Datos de Maestros Requeridos</h5>
+              <div id="listaMaestrosCampos"></div>
+            </div>
+
+            <div class="text-end mt-4">
+              <button type="submit" class="btn btn-gold btn-lg px-5">
+                <i class="bi bi-send-fill me-2"></i>Enviar Registro
+              </button>
+            </div>
+
+          </form>
+        </div>
+
       </div>
     </div>
+  </main>
 
-    <!-- Sección del Formulario (Oculta al inicio) -->
-    <div id="seccionFormulario" style="display: none;">
-      
-      <!-- Mensajes de Alerta del Servidor -->
-      <% if (mensajeExito) { %>
-        <div class="alert alert-success alert-dismissible fade show shadow" role="alert">
-          <i class="bi bi-check-circle-fill me-2"></i> <%= mensajeExito %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      <% } %>
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-      <% if (mensajeError) { %>
-        <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i> <%= mensajeError %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      <% } %>
-
-      <form action="/guardar" method="POST" class="card card-custom p-4 shadow">
-        <h3 class="text-warning mb-4"><i class="bi bi-journal-check"></i> Formulario de Registro</h3>
-        
-        <!-- Datos Pastor -->
-        <h5 class="text-info border-bottom border-secondary pb-2">Datos del Pastor</h5>
-        <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label">Nombre del Pastor *</label>
-            <input type="text" name="nombre_pastor" class="form-control" required>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Teléfono *</label>
-            <input type="tel" name="telefono_pastor" class="form-control" maxlength="10" pattern="[0-9]{10}" required>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Correo</label>
-            <input type="email" name="correo_pastor" class="form-control">
-          </div>
-        </div>
-
-        <!-- Datos Iglesia -->
-        <h5 class="text-info border-bottom border-secondary pb-2 mt-3">Datos de la Iglesia</h5>
-        <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label">Nombre de la Iglesia *</label>
-            <input type="text" name="nombre_iglesia" class="form-control" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Dirección Completa *</label>
-            <input type="text" name="direccion" class="form-control" required>
-          </div>
-          <div class="col-md-12">
-            <label class="form-label">Cantidad de Cajas Requeridas *</label>
-            <select id="selectCajas" name="num_cajas" class="form-select" onchange="actualizarMaestros()" required>
-              <option value="" selected disabled>Selecciona una opción...</option>
-              <option value="50">50 Cajas (Requiere 2 Maestros)</option>
-              <option value="100">100 Cajas (Requiere 3 Maestros)</option>
-              <option value="150">150 Cajas (Requiere 4 Maestros)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Datos Líder -->
-        <h5 class="text-info border-bottom border-secondary pb-2 mt-3">Datos del Líder Responsable</h5>
-        <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label">Nombre del Líder *</label>
-            <input type="text" name="nombre_lider" class="form-control" required>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Teléfono *</label>
-            <input type="tel" name="telefono_lider" class="form-control" maxlength="10" pattern="[0-9]{10}" required>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Correo</label>
-            <input type="email" name="correo_lider" class="form-control">
-          </div>
-        </div>
-
-        <!-- Campos dinámicos para Maestros -->
-        <div id="contenedorMaestros" class="mt-3" style="display: none;">
-          <h5 class="text-info border-bottom border-secondary pb-2">Maestros Asignados</h5>
-          <div id="listaMaestrosCampos"></div>
-        </div>
-
-        <button type="submit" class="btn btn-gold btn-lg w-100 mt-4">
-          <i class="bi bi-send-fill"></i> Enviar Registro
-        </button>
-      </form>
-    </div>
-
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     let tiempoRestante = 25;
     const contenedorReloj = document.getElementById('contenedorReloj');
     const contadorSpan = document.getElementById('contadorReloj');
     const btnAceptar = document.getElementById('btnAceptarTerminos');
 
-    // Temporizador de 25 segundos
     const temporizador = setInterval(() => {
       tiempoRestante--;
       if (contadorSpan) {
@@ -176,7 +280,6 @@
       seccionForm.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Generador dinámico de campos de maestros según las cajas
     function actualizarMaestros() {
       const cajas = document.getElementById('selectCajas').value;
       const contenedor = document.getElementById('contenedorMaestros');
@@ -218,7 +321,7 @@
       }
     }
 
-    // Muestra y desplaza el formulario al recibir confirmación del backend
+    // Muestra el formulario si existe algún mensaje retornado por la URL
     document.addEventListener("DOMContentLoaded", () => {
       const hayExito = <%= mensajeExito ? 'true' : 'false' %>;
       const hayError = <%= mensajeError ? 'true' : 'false' %>;
