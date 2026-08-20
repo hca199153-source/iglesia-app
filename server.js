@@ -1,27 +1,28 @@
 const express = require('express');
-const path = require('path');
 const { Pool } = require('pg');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
+const port = process.env.PORT || 3000;
 
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Configuración de conexión a PostgreSQL / Supabase
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: {
+    rejectUnauthorized: false // Requerido para conexiones a Supabase desde Render u otros hosts
+  }
 });
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/', (req, res) => {
-  res.render('index', { mensajeExito: null, mensajeError: null });
-});
-
-app.post('/guardar', async (req, res) => {
+// Ruta POST para procesar el formulario
+app.post('/api/registrar', async (req, res) => {
   const client = await pool.connect();
+
   try {
     const {
       nombre_pastor,
@@ -29,110 +30,96 @@ app.post('/guardar', async (req, res) => {
       correo_pastor,
       nombre_iglesia,
       direccion,
-      num_cajas,
+      num_maestros,
       nombre_lider,
       telefono_lider,
       correo_lider,
-      maestro_nombre,
-      maestro_telefono,
-      maestro_correo
+      num_cajas,
+      maestros // Espera un arreglo de objetos: [{ nombre, telefono, correo }, ...]
     } = req.body;
 
+    // Iniciar Transacción SQL
     await client.query('BEGIN');
 
-    // 1. Guardar la iglesia en la tabla 'registros' y obtener su ID
-    const resRegistro = await client.query(
-      `INSERT INTO registros 
-       (nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, num_cajas, nombre_lider, telefono_lider, correo_lider) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING id`,
-      [
-        nombre_pastor || null,
-        telefono_pastor || null,
-        correo_pastor || null,
-        nombre_iglesia || null,
-        direccion || null,
-        parseInt(num_cajas, 10) || 50,
-        nombre_lider || null,
-        telefono_lider || null,
-        correo_lider || null
-      ]
-    );
+    // 1. Insertar en la tabla 'registros'
+    const insertRegistroQuery = `
+      INSERT INTO registros (
+        nombre_pastor,
+        telefono_pastor,
+        correo_pastor,
+        nombre_iglesia,
+        direccion,
+        num_maestros,
+        nombre_lider,
+        telefono_lider,
+        correo_lider,
+        num_cajas
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING id;
+    `;
 
-    const registroId = resRegistro.rows[0].id;
+    const registroValues = [
+      nombre_pastor || null,
+      telefono_pastor || null,
+      correo_pastor || null,
+      nombre_iglesia || null,
+      direccion || null,
+      num_maestros ? parseInt(num_maestros, 10) : 0,
+      nombre_lider || null,
+      telefono_lider || null,
+      correo_lider || null,
+      num_cajas ? parseInt(num_cajas, 10) : 0
+    ];
 
-    // 2. Normalizar datos de maestros (convierte a Array si llega solo un elemento o múltiples)
-    let nombres = Array.isArray(maestro_nombre) ? maestro_nombre : (maestro_nombre ? [maestro_nombre] : []);
-    let telefonos = Array.isArray(maestro_telefono) ? maestro_telefono : (maestro_telefono ? [maestro_telefono] : []);
-    let correos = Array.isArray(maestro_correo) ? maestro_correo : (maestro_correo ? [maestro_correo] : []);
+    const result = await client.query(insertRegistroQuery, registroValues);
+    const nuevoRegistroId = result.rows[0].id;
 
-    // 3. Guardar cada maestro vinculado al 'registro_id'
-    for (let i = 0; i < nombres.length; i++) {
-      if (nombres[i] && nombres[i].trim() !== '') {
-        await client.query(
-          `INSERT INTO maestros (registro_id, nombre, telefono, correo)
-           VALUES ($1, $2, $3, $4)`,
-          [
-            registroId,
-            nombres[i] || null,
-            telefonos[i] || null,
-            correos[i] || null
-          ]
-        );
+    // 2. Insertar en la tabla 'maestros' si existen datos en el arreglo
+    if (Array.isArray(maestros) && maestros.length > 0) {
+      const insertMaestroQuery = `
+        INSERT INTO maestros (registro_id, nombre, telefono, correo)
+        VALUES ($1, $2, $3, $4);
+      `;
+
+      for (const maestro of maestros) {
+        if (maestro.nombre) { // Solo inserta si al menos tiene nombre
+          await client.query(insertMaestroQuery, [
+            nuevoRegistroId,
+            maestro.nombre,
+            maestro.telefono || null,
+            maestro.correo || null
+          ]);
+        }
       }
     }
 
+    // Confirmar cambios
     await client.query('COMMIT');
-    res.render('index', { mensajeExito: '¡Registro y maestros guardados con éxito!', mensajeError: null });
+
+    res.status(200).json({
+      success: true,
+      message: 'Registro y maestros guardados correctamente.',
+      id: nuevoRegistroId
+    });
 
   } catch (error) {
+    // Si algo falla, revertir los cambios
     await client.query('ROLLBACK');
-    console.error("Error SQL al guardar:", error);
-    res.render('index', { mensajeExito: null, mensajeError: `Error en BD: ${error.message}` });
+    console.error('Error al guardar el registro:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al procesar el registro.',
+      error: error.message
+    });
+
   } finally {
     client.release();
   }
 });
 
-// RUTA ADMIN ACTUALIZADA CON LEFT JOIN PARA OBTENER LOS MAESTROS
-app.get('/admin', async (req, res) => {
-  try {
-    const query = `
-      SELECT r.*, 
-             COALESCE(
-               json_agg(
-                 json_build_object(
-                   'nombre', m.nombre, 
-                   'telefono', m.telefono, 
-                   'correo', m.correo
-                 )
-               ) FILTER (WHERE m.id IS NOT NULL), '[]'
-             ) as maestros
-      FROM registros r
-      LEFT JOIN maestros m ON r.id = m.registro_id
-      GROUP BY r.id
-      ORDER BY r.id ASC
-    `;
-    const result = await pool.query(query);
-    res.render('admin', { registros: result.rows });
-  } catch (error) {
-    console.error("Error al cargar admin:", error);
-    res.render('admin', { registros: [] });
-  }
-});
-
-app.post('/eliminar/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    await pool.query('DELETE FROM registros WHERE id = $1', [id]);
-    res.redirect('/admin');
-  } catch (err) {
-    console.error("Error al eliminar:", err);
-    res.redirect('/admin');
-  }
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`Servidor activo en el puerto ${PORT}`);
+// Inicializar el servidor
+app.listen(port, () => {
+  console.log(`Servidor corriendo en el puerto ${port}`);
 });
