@@ -43,6 +43,17 @@
     .btn-action:hover {
       transform: scale(1.05);
     }
+    .maestro-item {
+      font-size: 0.85rem;
+      border-bottom: 1px dashed #dee2e6;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+    }
+    .maestro-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
   </style>
 </head>
 <body>
@@ -56,11 +67,11 @@
           <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm me-3">
           <div>
             <h2 class="fw-bold mb-0 text-white">Panel de Administración</h2>
-            <p class="text-white-50 mb-0 small">Listado de Iglesias y Líderes Registrados</p>
+            <p class="text-white-50 mb-0 small">Listado de Iglesias, Líderes y Maestros Registrados</p>
           </div>
         </div>
         
-        <!-- BOTONES DE ACCIÓN: EXCEL, PDF Y NUEVO REGISTRO -->
+        <!-- BOTONES DE ACCIÓN -->
         <div class="d-flex flex-wrap gap-2">
           <button onclick="exportarExcel()" class="btn btn-success fw-bold shadow-sm btn-action">
             <i class="bi bi-file-earmark-excel-fill me-1"></i> Excel
@@ -76,17 +87,15 @@
 
       <div class="table-container shadow-sm p-3">
         <div class="table-responsive">
-          <!-- SE AGREGÓ EL ID "tablaRegistros" A LA TABLA -->
           <table id="tablaRegistros" class="table table-hover align-middle mb-0">
             <thead>
               <tr>
                 <th scope="col">#</th>
-                <th scope="col">Iglesia</th>
+                <th scope="col">Iglesia / Dirección</th>
                 <th scope="col">Pastor</th>
-                <th scope="col">Tel. Pastor</th>
                 <th scope="col">Líder</th>
-                <th scope="col">Tel. Líder</th>
-                <th scope="col" class="text-center">Maestros</th>
+                <th scope="col" class="text-center">Cajas</th>
+                <th scope="col">Maestros Asignados</th>
                 <th scope="col" class="text-center">Acciones</th>
               </tr>
             </thead>
@@ -95,12 +104,44 @@
                 <% registros.forEach((item, index) => { %>
                   <tr>
                     <td class="fw-bold"><%= index + 1 %></td>
-                    <td class="fw-bold text-success"><%= item.nombre_iglesia %></td>
-                    <td><%= item.nombre_pastor %></td>
-                    <td><a href="tel:<%= item.telefono_pastor %>" class="text-decoration-none text-dark"><i class="bi bi-telephone me-1"></i><%= item.telefono_pastor %></a></td>
-                    <td><%= item.nombre_lider %></td>
-                    <td><a href="tel:<%= item.telefono_lider %>" class="text-decoration-none text-dark"><i class="bi bi-telephone me-1"></i><%= item.telefono_lider %></a></td>
-                    <td class="text-center"><span class="badge bg-success fs-6"><%= item.num_maestros %></span></td>
+                    <td>
+                      <strong class="text-success"><%= item.nombre_iglesia %></strong>
+                      <% if (item.direccion) { %>
+                        <br><small class="text-muted"><i class="bi bi-geo-alt me-1"></i><%= item.direccion %></small>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div><strong><%= item.nombre_pastor %></strong></div>
+                      <% if (item.telefono_pastor) { %>
+                        <small><a href="tel:<%= item.telefono_pastor %>" class="text-decoration-none text-dark"><i class="bi bi-telephone me-1"></i><%= item.telefono_pastor %></a></small>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div><strong><%= item.nombre_lider %></strong></div>
+                      <% if (item.telefono_lider) { %>
+                        <small><a href="tel:<%= item.telefono_lider %>" class="text-decoration-none text-dark"><i class="bi bi-telephone me-1"></i><%= item.telefono_lider %></a></small>
+                      <% } %>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge bg-success fs-6"><%= item.num_cajas || 50 %></span>
+                    </td>
+                    <td>
+                      <% if (item.maestros && item.maestros.length > 0) { %>
+                        <div class="d-flex flex-column">
+                          <% item.maestros.forEach(function(m) { %>
+                            <div class="maestro-item">
+                              <i class="bi bi-person-fill text-success me-1"></i><strong><%= m.nombre %></strong><br>
+                              <small class="text-muted"><i class="bi bi-telephone me-1"></i><%= m.telefono %></small>
+                              <% if (m.correo) { %>
+                                <small class="text-muted me-1">|</small><small class="text-muted"><i class="bi bi-envelope me-1"></i><%= m.correo %></small>
+                              <% } %>
+                            </div>
+                          <% }); %>
+                        </div>
+                      <% } else { %>
+                        <span class="text-muted small">Sin maestros registrados</span>
+                      <% } %>
+                    </td>
                     <td class="text-center">
                       <form action="/eliminar/<%= item.id %>" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');" style="display:inline;">
                         <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle btn-action" title="Eliminar">
@@ -112,7 +153,7 @@
                 <% }); %>
               <% } else { %>
                 <tr>
-                  <td colspan="8" class="text-center py-4 text-muted fw-bold">
+                  <td colspan="7" class="text-center py-4 text-muted fw-bold">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                     No hay registros de iglesias almacenados hasta el momento.
                   </td>
@@ -138,13 +179,13 @@
       const tabla = document.getElementById('tablaRegistros');
       const wb = XLSX.utils.table_to_book(tabla, { sheet: "Registros" });
       
-      // Eliminar la última columna (Acciones) de la hoja procesada
+      // Eliminar la última columna (Acciones) de la hoja
       const ws = wb.Sheets["Registros"];
       const range = XLSX.utils.decode_range(ws['!ref']);
       for (let R = range.s.r; R <= range.e.r; ++R) {
-        delete ws[XLSX.utils.encode_cell({ r: R, c: 7 })];
+        delete ws[XLSX.utils.encode_cell({ r: R, c: 6 })];
       }
-      range.e.c = 6;
+      range.e.c = 5;
       ws['!ref'] = XLSX.utils.encode_range(range);
 
       XLSX.writeFile(wb, 'Registros_Iglesias.xlsx');
@@ -153,7 +194,7 @@
     // Exportar a PDF en formato horizontal (landscape)
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('l', 'mm', 'a4'); // 'l' = landscape / horizontal
+      const doc = new jsPDF('l', 'mm', 'a4');
 
       doc.setFontSize(16);
       doc.text("Reporte de Registros - Samaritan's Purse", 14, 15);
@@ -162,15 +203,14 @@
         html: '#tablaRegistros',
         startY: 22,
         theme: 'grid',
-        headStyles: { fillColor: [21, 87, 36] }, // Verde oscuro
+        headStyles: { fillColor: [21, 87, 36] },
         columns: [
           { header: '#', dataKey: 0 },
-          { header: 'Iglesia', dataKey: 1 },
+          { header: 'Iglesia / Dirección', dataKey: 1 },
           { header: 'Pastor', dataKey: 2 },
-          { header: 'Tel. Pastor', dataKey: 3 },
-          { header: 'Líder', dataKey: 4 },
-          { header: 'Tel. Líder', dataKey: 5 },
-          { header: 'Maestros', dataKey: 6 }
+          { header: 'Líder', dataKey: 3 },
+          { header: 'Cajas', dataKey: 4 },
+          { header: 'Maestros', dataKey: 5 }
         ]
       });
 
