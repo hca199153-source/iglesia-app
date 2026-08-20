@@ -94,9 +94,26 @@ app.post('/guardar', async (req, res) => {
   }
 });
 
+// RUTA ADMIN ACTUALIZADA CON LEFT JOIN PARA OBTENER LOS MAESTROS
 app.get('/admin', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM registros ORDER BY id ASC');
+    const query = `
+      SELECT r.*, 
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'nombre', m.nombre, 
+                   'telefono', m.telefono, 
+                   'correo', m.correo
+                 )
+               ) FILTER (WHERE m.id IS NOT NULL), '[]'
+             ) as maestros
+      FROM registros r
+      LEFT JOIN maestros m ON r.id = m.registro_id
+      GROUP BY r.id
+      ORDER BY r.id ASC
+    `;
+    const result = await pool.query(query);
     res.render('admin', { registros: result.rows });
   } catch (error) {
     console.error("Error al cargar admin:", error);
