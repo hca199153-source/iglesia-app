@@ -1,125 +1,120 @@
 const express = require('express');
 const { Pool } = require('pg');
-const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Configuración de conexión a PostgreSQL / Supabase
+// Configuración de la base de datos PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false // Requerido para conexiones a Supabase desde Render u otros hosts
-  }
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// Ruta POST para procesar el formulario
-app.post('/api/registrar', async (req, res) => {
+// Configuración de EJS y Archivos Estáticos
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// RUTA PRINCIPAL (Renderiza index.ejs)
+app.get('/', (req, res) => {
+  const mensajeExito = req.query.exito || '';
+  const mensajeError = req.query.error || '';
+
+  res.render('index', { 
+    mensajeExito: mensajeExito, 
+    mensajeError: mensajeError 
+  });
+});
+
+// RUTA POST: Guardar cliente y maestros
+app.post('/guardar', async (req, res) => {
   const client = await pool.connect();
 
   try {
     const {
-      nombre_pastor,
-      telefono_pastor,
-      correo_pastor,
-      nombre_iglesia,
-      direccion,
-      num_maestros,
-      nombre_lider,
-      telefono_lider,
-      correo_lider,
-      num_cajas,
-      maestros // Espera un arreglo de objetos: [{ nombre, telefono, correo }, ...]
+      nombre_completo,
+      telefono,
+      correo,
+      calle_numero,
+      colonia,
+      ciudad_estado,
+      cajas,
+      maestro_nombre,
+      maestro_telefono,
+      maestro_correo
     } = req.body;
 
-    // Iniciar Transacción SQL
     await client.query('BEGIN');
 
-    // 1. Insertar en la tabla 'registros'
-    const insertRegistroQuery = `
-      INSERT INTO registros (
-        nombre_pastor,
-        telefono_pastor,
-        correo_pastor,
-        nombre_iglesia,
-        direccion,
-        num_maestros,
-        nombre_lider,
-        telefono_lider,
-        correo_lider,
-        num_cajas
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    // 1. Insertar el cliente principal
+    const queryCliente = `
+      INSERT INTO clientes (nombre_completo, telefono, correo, calle_numero, colonia, ciudad_estado, cajas)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING id;
     `;
-
-    const registroValues = [
-      nombre_pastor || null,
-      telefono_pastor || null,
-      correo_pastor || null,
-      nombre_iglesia || null,
-      direccion || null,
-      num_maestros ? parseInt(num_maestros, 10) : 0,
-      nombre_lider || null,
-      telefono_lider || null,
-      correo_lider || null,
-      num_cajas ? parseInt(num_cajas, 10) : 0
+    const valuesCliente = [
+      nombre_completo,
+      telefono,
+      correo,
+      calle_numero,
+      colonia,
+      ciudad_estado,
+      cajas
     ];
 
-    const result = await client.query(insertRegistroQuery, registroValues);
-    const nuevoRegistroId = result.rows[0].id;
+    const resultCliente = await client.query(queryCliente, valuesCliente);
+    const clienteId = resultCliente.rows[0].id;
 
-    // 2. Insertar en la tabla 'maestros' si existen datos en el arreglo
-    if (Array.isArray(maestros) && maestros.length > 0) {
-      const insertMaestroQuery = `
-        INSERT INTO maestros (registro_id, nombre, telefono, correo)
+    // 2. Insertar los maestros (si existen)
+    if (maestro_nombre && Array.isArray(maestro_nombre)) {
+      const queryMaestro = `
+        INSERT INTO maestros (cliente_id, nombre_completo, telefono, correo)
         VALUES ($1, $2, $3, $4);
       `;
 
-      for (const maestro of maestros) {
-        if (maestro.nombre) { // Solo inserta si al menos tiene nombre
-          await client.query(insertMaestroQuery, [
-            nuevoRegistroId,
-            maestro.nombre,
-            maestro.telefono || null,
-            maestro.correo || null
+      for (let i = 0; i < maestro_nombre.length; i++) {
+        if (maestro_nombre[i] && maestro_nombre[i].trim() !== '') {
+          await client.query(queryMaestro, [
+            clienteId,
+            maestro_nombre[i],
+            maestro_telefono[i] || null,
+            maestro_correo[i] || null
           ]);
         }
       }
+    } else if (maestro_nombre && typeof maestro_nombre === 'string') {
+      // En caso de que se envíe un único maestro como string
+      const queryMaestro = `
+        INSERT INTO maestros (cliente_id, nombre_completo, telefono, correo)
+        VALUES ($1, $2, $3, $4);
+      `;
+      await client.query(queryMaestro, [
+        clienteId,
+        maestro_nombre,
+        maestro_telefono || null,
+        maestro_correo || null
+      ]);
     }
 
-    // Confirmar cambios
     await client.query('COMMIT');
 
-    res.status(200).json({
-      success: true,
-      message: 'Registro y maestros guardados correctamente.',
-      id: nuevoRegistroId
-    });
+    // Redirecciona agregando el parámetro de éxito para que index.ejs lo detecte
+    res.redirect('/?exito=' + encodeURIComponent('¡Registro guardado exitosamente!'));
 
   } catch (error) {
-    // Si algo falla, revertir los cambios
     await client.query('ROLLBACK');
-    console.error('Error al guardar el registro:', error);
-
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor al procesar el registro.',
-      error: error.message
-    });
-
+    console.error('Error al guardar registro:', error);
+    res.redirect('/?error=' + encodeURIComponent('Ocurrió un error al guardar los datos. Inténtalo de nuevo.'));
   } finally {
     client.release();
   }
 });
 
-// Inicializar el servidor
-app.listen(port, () => {
-  console.log(`Servidor corriendo en el puerto ${port}`);
+// Iniciar servidor
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
