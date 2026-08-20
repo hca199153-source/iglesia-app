@@ -1,51 +1,25 @@
-import express from 'express';
-import pg from 'pg';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require('express');
+const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-// Configuración de conexión a PostgreSQL usando Variables de Entorno
-const pool = new pg.Pool({
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: { rejectUnauthorized: false }
 });
 
-// Probar conexión a la base de datos
-pool.connect((err, client, release) => {
-  if (err) {
-    return console.error('Error adquiriendo cliente de base de datos:', err.stack);
-  }
-  console.log('Conexión exitosa a la base de datos PostgreSQL');
-  release();
-});
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configurar EJS como motor de plantillas
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// ----------------------------------------------------
-// RUTAS
-// ----------------------------------------------------
-
-// 1. RUTA PRINCIPAL (GET)
 app.get('/', (req, res) => {
-  // Capturar parámetros de la URL para mostrar alertas tras redirección
-  const mensajeExito = req.query.exito === '1' ? '¡Registro guardado con éxito!' : null;
-  const mensajeError = req.query.error ? decodeURIComponent(req.query.error) : null;
-  res.render('index', { mensajeExito, mensajeError });
+  res.render('index', { mensajeExito: null, mensajeError: null });
 });
 
-// 2. GUARDAR REGISTRO (POST)
 app.post('/guardar', async (req, res) => {
   const client = await pool.connect();
   try {
@@ -66,7 +40,7 @@ app.post('/guardar', async (req, res) => {
 
     await client.query('BEGIN');
 
-    // Insertar datos del registro principal
+    // 1. Guardar la iglesia en la tabla 'registros' y obtener su ID
     const resRegistro = await client.query(
       `INSERT INTO registros 
        (nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, num_cajas, nombre_lider, telefono_lider, correo_lider) 
@@ -87,12 +61,12 @@ app.post('/guardar', async (req, res) => {
 
     const registroId = resRegistro.rows[0].id;
 
-    // Normalizar arreglos de maestros
+    // 2. Normalizar datos de maestros (convierte a Array si llega solo un elemento o múltiples)
     let nombres = Array.isArray(maestro_nombre) ? maestro_nombre : (maestro_nombre ? [maestro_nombre] : []);
     let telefonos = Array.isArray(maestro_telefono) ? maestro_telefono : (maestro_telefono ? [maestro_telefono] : []);
     let correos = Array.isArray(maestro_correo) ? maestro_correo : (maestro_correo ? [maestro_correo] : []);
 
-    // Insertar registros en la tabla maestros
+    // 3. Guardar cada maestro vinculado al 'registro_id'
     for (let i = 0; i < nombres.length; i++) {
       if (nombres[i] && nombres[i].trim() !== '') {
         await client.query(
@@ -109,19 +83,56 @@ app.post('/guardar', async (req, res) => {
     }
 
     await client.query('COMMIT');
-    // Redirección PRG para evitar duplicados al recargar con F5
-    res.redirect('/?exito=1');
+    res.render('index', { mensajeExito: '¡Registro y maestros guardados con éxito!', mensajeError: null });
 
   } catch (error) {
     await client.query('ROLLBACK');
     console.error("Error SQL al guardar:", error);
-    res.redirect(`/?error=${encodeURIComponent(error.message)}`);
+    res.render('index', { mensajeExito: null, mensajeError: `Error en BD: ${error.message}` });
   } finally {
     client.release();
   }
 });
 
-// Iniciar Servidor
-app.listen(port, () => {
-  console.log(`Servidor ejecutándose en http://localhost:${port}`);
+// RUTA ADMIN ACTUALIZADA CON LEFT JOIN PARA OBTENER LOS MAESTROS
+app.get('/admin', async (req, res) => {
+  try {
+    const query = `
+      SELECT r.*, 
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'nombre', m.nombre, 
+                   'telefono', m.telefono, 
+                   'correo', m.correo
+                 )
+               ) FILTER (WHERE m.id IS NOT NULL), '[]'
+             ) as maestros
+      FROM registros r
+      LEFT JOIN maestros m ON r.id = m.registro_id
+      GROUP BY r.id
+      ORDER BY r.id ASC
+    `;
+    const result = await pool.query(query);
+    res.render('admin', { registros: result.rows });
+  } catch (error) {
+    console.error("Error al cargar admin:", error);
+    res.render('admin', { registros: [] });
+  }
+});
+
+app.post('/eliminar/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM registros WHERE id = $1', [id]);
+    res.redirect('/admin');
+  } catch (err) {
+    console.error("Error al eliminar:", err);
+    res.redirect('/admin');
+  }
+});
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`Servidor activo en el puerto ${PORT}`);
 });
