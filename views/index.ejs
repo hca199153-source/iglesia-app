@@ -353,6 +353,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <!-- CONTROL DE TIEMPO, FORMULARIO Y REGISTRO DE MAESTROS -->
   <script>
     let tiempoRestante = 25;
@@ -360,11 +362,16 @@
     const contadorSpan = document.getElementById('contadorReloj');
     const btnAceptar = document.getElementById('btnAceptarTerminos');
 
-    // Muestra automáticamente el formulario y el mensaje si ya se envió la solicitud
+    // Muestra automáticamente el formulario y hace scroll si hay mensaje de éxito o error
     window.addEventListener('DOMContentLoaded', () => {
-      const tieneExito = "<%= mensajeExito %>";
-      const tieneError = "<%= mensajeError %>";
-      if (tieneExito !== "" || tieneError !== "") {
+      const mensajeExito = <%- JSON.stringify(mensajeExito || '') %>;
+      const mensajeError = <%- JSON.stringify(mensajeError || '') %>;
+
+      if (mensajeExito !== '' || mensajeError !== '') {
+        // Detener el temporizador inmediatamente si ya fue enviado
+        if (typeof temporizador !== 'undefined') clearInterval(temporizador);
+        
+        // Mostrar directamente el formulario sin esperar el reloj
         aceptarTerminos();
       }
     });
@@ -383,6 +390,9 @@
     }, 1000);
 
     function aceptarTerminos() {
+      if (contenedorReloj) contenedorReloj.style.display = 'none';
+      if (btnAceptar) btnAceptar.style.display = 'none';
+      
       const seccionForm = document.getElementById('seccionFormulario');
       if (seccionForm) {
         seccionForm.style.display = 'block';
