@@ -13,7 +13,7 @@
       background: linear-gradient(135deg, #1b381e 0%, #0a170c 100%);
       min-height: 100vh;
       color: #ffffff;
-      padding: 30px 0;
+      padding: 15px 0;
     }
     .card-custom {
       background-color: #1e7e34;
@@ -30,33 +30,39 @@
     .terms-box {
       background-color: #f4f6f8;
       border-radius: 14px;
-      padding: 20px;
-      max-height: 520px;
+      padding: 15px;
+      max-height: 480px;
       overflow-y: auto;
     }
     .form-label {
       color: #ffffff !important;
       font-weight: 600;
+      font-size: 0.9rem;
     }
-    .form-control {
+    .form-control, .form-select {
       background-color: rgba(255, 255, 255, 0.95) !important;
       border: 1px solid #155724;
       color: #000000 !important;
       font-weight: 500;
+      font-size: 0.95rem;
     }
-    .form-control:focus {
+    .form-control:focus, .form-select:focus {
       background-color: #ffffff !important;
       color: #000000 !important;
       border-color: #28a745;
-      box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4);
+      box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.4);
     }
     .form-control::placeholder {
       color: #6c757d;
     }
     .carousel-item img {
-      height: 320px;
+      height: 240px;
       object-fit: cover;
       border-radius: 12px;
+    }
+    @media (min-width: 768px) {
+      body { padding: 30px 0; }
+      .carousel-item img { height: 320px; }
     }
     .btn-submit {
       background-color: #ffffff;
@@ -72,14 +78,21 @@
     .section-header {
       color: #ffffff;
       border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+      font-size: 1.1rem;
     }
     .app-logo {
-      max-height: 90px;
+      max-height: 75px;
       object-fit: contain;
     }
     .timer-badge {
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       letter-spacing: 2px;
+    }
+    .maestro-card {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px dashed rgba(255, 255, 255, 0.4);
+      border-radius: 10px;
+      padding: 12px;
     }
   </style>
 </head>
@@ -87,10 +100,10 @@
 
   <div class="container my-auto">
     <div class="row justify-content-center">
-      <div class="col-lg-9">
+      <div class="col-12 col-lg-9">
         
-        <!-- CARRUSEL DE IMÁGENES LOCALES -->
-        <div id="carouselIglesia" class="carousel slide mb-4 shadow-lg rounded-3 overflow-hidden" data-bs-ride="carousel">
+        <!-- CARRUSEL DE IMÁGENES -->
+        <div id="carouselIglesia" class="carousel slide mb-3 mb-md-4 shadow-lg rounded-3 overflow-hidden" data-bs-ride="carousel">
           <div class="carousel-indicators">
             <button type="button" data-bs-target="#carouselIglesia" data-bs-slide-to="0" class="active"></button>
             <button type="button" data-bs-target="#carouselIglesia" data-bs-slide-to="1"></button>
@@ -111,55 +124,53 @@
           </button>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 1: TÉRMINOS, CONDICIONES Y COMPROMISOS -->
-        <!-- ========================================== -->
+        <!-- SECCIÓN 1: TÉRMINOS Y CONDICIONES -->
         <div id="seccionTerminos" class="card card-terms shadow-lg p-3 p-md-4 mb-4">
           <div class="text-center mb-3">
             <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm mb-2">
-            <h3 class="fw-bold text-success mb-1">Modelo de Crecimiento y Multiplicación</h3>
+            <h4 class="fw-bold text-success mb-1">Modelo de Crecimiento y Multiplicación</h4>
             <span class="badge bg-warning text-dark px-3 py-2 fs-6 shadow-sm">
               <i class="bi bi-exclamation-triangle-fill me-1"></i> Por favor lea cuidadosamente los lineamientos
             </span>
           </div>
 
-          <div class="terms-box shadow-sm mb-4">
+          <div class="terms-box shadow-sm mb-3">
             
-            <!-- TARJETA PUNTO 4 -->
-            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-left: 6px solid #fd7e14 !important;">
-              <div class="card-body bg-light">
+            <!-- PUNTO 4 -->
+            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-left: 5px solid #fd7e14 !important;">
+              <div class="card-body bg-light p-3">
                 <div class="d-flex align-items-center mb-2">
-                  <div class="bg-warning text-dark p-2 rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                    <i class="bi bi-person-workspace fs-4"></i>
+                  <div class="bg-warning text-dark p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                    <i class="bi bi-person-workspace fs-5"></i>
                   </div>
-                  <h5 class="fw-bold text-dark mb-0">4. Responsabilidad del Maestro</h5>
+                  <h6 class="fw-bold text-dark mb-0">4. Responsabilidad del Maestro</h6>
                 </div>
                 <p class="small text-muted mb-2">Cada maestro debe acompañar aproximadamente <strong>26 niños</strong> durante todo el proceso:</p>
                 <div class="row g-2">
-                  <div class="col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-person-plus-fill text-success me-1"></i> Inscribir a los niños</span></div>
-                  <div class="col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-calendar-check-fill text-primary me-1"></i> Seguimiento semanal</span></div>
-                  <div class="col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-heart-pulse-fill text-danger me-1"></i> Crecimiento espiritual</span></div>
-                  <div class="col-sm-6 col-md-6"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-mortarboard-fill text-warning me-1"></i> Llevarlos a la graduación</span></div>
-                  <div class="col-sm-6 col-md-6"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-hands me-1 text-info"></i> Orar por el niño y su familia</span></div>
+                  <div class="col-12 col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-person-plus-fill text-success me-1"></i> Inscribir a los niños</span></div>
+                  <div class="col-12 col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-calendar-check-fill text-primary me-1"></i> Seguimiento semanal</span></div>
+                  <div class="col-12 col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-heart-pulse-fill text-danger me-1"></i> Crecimiento espiritual</span></div>
+                  <div class="col-12 col-sm-6 col-md-6"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-mortarboard-fill text-warning me-1"></i> Llevarlos a la graduación</span></div>
+                  <div class="col-12 col-sm-6 col-md-6"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-hands me-1 text-info"></i> Orar por el niño y su familia</span></div>
                 </div>
               </div>
             </div>
 
-            <!-- TARJETA PUNTO 5 -->
-            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-left: 6px solid #0d6efd !important;">
-              <div class="card-body bg-light">
+            <!-- PUNTO 5 -->
+            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-left: 5px solid #0d6efd !important;">
+              <div class="card-body bg-light p-3">
                 <div class="d-flex align-items-center mb-2">
-                  <div class="bg-primary text-white p-2 rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                    <i class="bi bi-clipboard-check fs-4"></i>
+                  <div class="bg-primary text-white p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                    <i class="bi bi-clipboard-check fs-5"></i>
                   </div>
-                  <h5 class="fw-bold text-dark mb-0">5. Requisitos para el Compañero de Ministerio (CM)</h5>
+                  <h6 class="fw-bold text-dark mb-0">5. Requisitos para el Compañero de Ministerio (CM)</h6>
                 </div>
                 <ul class="list-group list-group-flush small mb-2">
-                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Contar con el número mínimo de maestros.</li>
-                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Tener un plan claro para el discipulado.</li>
-                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Organizar los eventos evangelísticos.</li>
-                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Comprometerse con el seguimiento hasta la graduación.</li>
-                  <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-primary me-2"></i>Reportar resultados y testimonios.</li>
+                  <li class="list-group-item bg-transparent p-1"><i class="bi bi-check-circle-fill text-primary me-2"></i>Contar con el número mínimo de maestros.</li>
+                  <li class="list-group-item bg-transparent p-1"><i class="bi bi-check-circle-fill text-primary me-2"></i>Tener un plan claro para el discipulado.</li>
+                  <li class="list-group-item bg-transparent p-1"><i class="bi bi-check-circle-fill text-primary me-2"></i>Organizar los eventos evangelísticos.</li>
+                  <li class="list-group-item bg-transparent p-1"><i class="bi bi-check-circle-fill text-primary me-2"></i>Comprometerse con el seguimiento hasta la graduación.</li>
+                  <li class="list-group-item bg-transparent p-1"><i class="bi bi-check-circle-fill text-primary me-2"></i>Reportar resultados y testimonios.</li>
                 </ul>
                 <div class="p-2 bg-primary bg-opacity-10 border border-primary rounded text-primary small fw-bold">
                   <i class="bi bi-info-circle-fill me-1"></i> El CM es clave para que cada cajita se convierta en un niño discipulado y graduado.
@@ -167,38 +178,38 @@
               </div>
             </div>
 
-            <!-- TARJETA PUNTO 6 -->
-            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-left: 6px solid #198754 !important;">
-              <div class="card-body bg-light">
+            <!-- PUNTO 6 -->
+            <div class="card border-0 shadow-sm mb-3 overflow-hidden" style="border-left: 5px solid #198754 !important;">
+              <div class="card-body bg-light p-3">
                 <div class="d-flex align-items-center mb-2">
-                  <div class="bg-success text-white p-2 rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                    <i class="bi bi-people-fill fs-4"></i>
+                  <div class="bg-success text-white p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                    <i class="bi bi-people-fill fs-5"></i>
                   </div>
-                  <h5 class="fw-bold text-dark mb-0">6. Elementos que debe tener un Discipulador</h5>
+                  <h6 class="fw-bold text-dark mb-0">6. Elementos que debe tener un Discipulador</h6>
                 </div>
                 <div class="row g-2 small">
-                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-heart-fill text-danger me-2"></i>Comprometido con Cristo</div></div>
-                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-book-fill text-primary me-2"></i>Conocimiento básico de la Biblia</div></div>
-                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-fire text-warning me-2"></i>Hombre o mujer de oración</div></div>
-                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-clock-fill text-secondary me-2"></i>Disponible para acompañar a los niños</div></div>
-                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-calendar2-week-fill text-success me-2"></i>Constante en las reuniones</div></div>
-                  <div class="col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-star-fill text-warning me-2"></i>Buen ejemplo cristiano</div></div>
+                  <div class="col-12 col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-heart-fill text-danger me-2"></i>Comprometido con Cristo</div></div>
+                  <div class="col-12 col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-book-fill text-primary me-2"></i>Conocimiento básico de la Biblia</div></div>
+                  <div class="col-12 col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-fire text-warning me-2"></i>Hombre o mujer de oración</div></div>
+                  <div class="col-12 col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-clock-fill text-secondary me-2"></i>Disponible para acompañar a los niños</div></div>
+                  <div class="col-12 col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-calendar2-week-fill text-success me-2"></i>Constante en las reuniones</div></div>
+                  <div class="col-12 col-md-6"><div class="p-2 bg-white rounded border"><i class="bi bi-star-fill text-warning me-2"></i>Buen ejemplo cristiano</div></div>
                 </div>
               </div>
             </div>
 
-            <!-- NUESTRO COMPROMISO Y OBJETIVO FINAL -->
-            <div class="row g-3 text-center">
-              <div class="col-md-6">
+            <!-- COMPROMISO Y OBJETIVO -->
+            <div class="row g-2 text-center">
+              <div class="col-12 col-md-6">
                 <div class="p-3 bg-danger text-white rounded-3 shadow-sm h-100">
-                  <i class="bi bi-bullseye fs-1 mb-1 d-block"></i>
+                  <i class="bi bi-bullseye fs-2 mb-1 d-block"></i>
                   <h6 class="fw-bold text-uppercase mb-1">Nuestro Compromiso</h6>
                   <p class="small mb-0">No se trata de cuánto porcentaje logramos, sino de cuántos niños <strong>inscribimos y cuidamos</strong> para graduarse.</p>
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-12 col-md-6">
                 <div class="p-3 bg-success text-white rounded-3 shadow-sm h-100">
-                  <i class="bi bi-trophy-fill fs-1 mb-1 d-block"></i>
+                  <i class="bi bi-trophy-fill fs-2 mb-1 d-block"></i>
                   <h6 class="fw-bold text-uppercase mb-1">Objetivo Final</h6>
                   <p class="small mb-0">Vidas transformadas que sirven y multiplican el Evangelio.</p>
                 </div>
@@ -207,10 +218,8 @@
 
           </div>
 
-          <!-- ZONA DINÁMICA: SOLO EL RELOJ PRIMERO, LUEGO EL BOTÓN -->
+          <!-- RELOJ Y BOTÓN DE ACEPTAR -->
           <div class="text-center">
-            
-            <!-- CAJA DEL RELOJ (Visible durante el conteo) -->
             <div id="contenedorReloj" class="p-3 bg-light border border-secondary rounded-3 shadow-sm d-inline-block w-100">
               <div class="text-muted small fw-bold mb-1">
                 <i class="bi bi-hourglass-split me-1 text-warning"></i> Tiempo de lectura obligatorio
@@ -220,24 +229,20 @@
               </span>
             </div>
 
-            <!-- BOTÓN DE ACEPTAR (Oculto al inicio) -->
             <button id="btnAceptarTerminos" class="btn btn-success btn-lg fw-bold px-4 py-3 shadow w-100" style="display: none;" onclick="aceptarTerminos()">
               <i class="bi bi-check-circle-fill me-2"></i>Aceptar Términos y Continuar
             </button>
-
           </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 2: TARJETA DEL FORMULARIO (CAPTURA) -->
-        <!-- ========================================== -->
-        <div id="seccionFormulario" class="card card-custom shadow-lg p-4 p-md-5" style="display: none;">
+        <!-- SECCIÓN 2: FORMULARIO DE CAPTURA -->
+        <div id="seccionFormulario" class="card card-custom shadow-lg p-3 p-md-5" style="display: none;">
           
           <div class="text-center mb-4">
             <div class="mb-3">
               <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm">
             </div>
-            <h2 class="fw-bold text-white mb-1">Formulario de Registro</h2>
+            <h3 class="fw-bold text-white mb-1">Formulario de Registro</h3>
             <p class="text-white-50 small">Por favor complete la información requerida a continuación</p>
           </div>
 
@@ -257,60 +262,82 @@
 
           <form action="/guardar" method="POST">
             
-            <!-- Sección Pastor -->
+            <!-- Datos del Pastor -->
             <h5 class="section-header pb-2 mb-3 fw-bold">
               <i class="bi bi-person-badge me-2"></i>Datos del Pastor
             </h5>
             <div class="row g-3 mb-4">
-              <div class="col-md-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Nombre del Pastor *</label>
                 <input type="text" name="nombre_pastor" class="form-control" required placeholder="Ej: Juan Pérez">
               </div>
-              <div class="col-md-3">
+              <div class="col-12 col-sm-6 col-md-3">
                 <label class="form-label">Teléfono *</label>
-                <input type="tel" name="telefono_pastor" class="form-control" required placeholder="10 dígitos">
+                <input type="tel" name="telefono_pastor" class="form-control" maxlength="10" pattern="[0-9]{10}" required placeholder="10 dígitos">
               </div>
-              <div class="col-md-3">
+              <div class="col-12 col-sm-6 col-md-3">
                 <label class="form-label">Correo Electrónico</label>
                 <input type="email" name="correo_pastor" class="form-control" placeholder="opcional">
               </div>
             </div>
 
-            <!-- Sección Iglesia -->
+            <!-- Datos de la Iglesia -->
             <h5 class="section-header pb-2 mb-3 fw-bold">
               <i class="bi bi-building me-2"></i>Datos de la Iglesia
             </h5>
             <div class="row g-3 mb-4">
-              <div class="col-md-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Nombre de la Iglesia *</label>
                 <input type="text" name="nombre_iglesia" class="form-control" required placeholder="Ej: Iglesia Central">
               </div>
-              <div class="col-md-4">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Dirección</label>
                 <input type="text" name="direccion" class="form-control" placeholder="Calle, Número, Ciudad">
               </div>
-              <div class="col-md-2">
-                <label class="form-label">Maestros *</label>
-                <input type="number" name="num_maestros" class="form-control" min="0" required placeholder="Cant.">
-              </div>
             </div>
 
-            <!-- Sección Líder -->
+            <!-- Datos del Líder -->
             <h5 class="section-header pb-2 mb-3 fw-bold">
-              <i class="bi bi-person-check me-2"></i>Líder
+              <i class="bi bi-person-check me-2"></i>Datos del Líder
             </h5>
             <div class="row g-3 mb-4">
-              <div class="col-md-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Nombre del Líder *</label>
                 <input type="text" name="nombre_lider" class="form-control" required placeholder="Ej: María Gómez">
               </div>
-              <div class="col-md-3">
+              <div class="col-12 col-sm-6 col-md-3">
                 <label class="form-label">Teléfono *</label>
-                <input type="tel" name="telefono_lider" class="form-control" required placeholder="10 dígitos">
+                <input type="tel" name="telefono_lider" class="form-control" maxlength="10" pattern="[0-9]{10}" required placeholder="10 dígitos">
               </div>
-              <div class="col-md-3">
+              <div class="col-12 col-sm-6 col-md-3">
                 <label class="form-label">Correo Electrónico</label>
                 <input type="email" name="correo_lider" class="form-control" placeholder="opcional">
+              </div>
+            </div>
+
+            <!-- Cantidad de Cajas -->
+            <h5 class="section-header pb-2 mb-3 fw-bold">
+              <i class="bi bi-box-seam me-2"></i>Asignación de Cajas y Maestros
+            </h5>
+            <div class="row g-3 mb-4">
+              <div class="col-12">
+                <label class="form-label">Selecciona la cantidad de cajitas solicitadas *</label>
+                <select name="num_cajas" id="selectCajas" class="form-select" required onchange="actualizarMaestros()">
+                  <option value="" disabled selected>-- Selecciona una opción --</option>
+                  <option value="50">50 Cajas (Requiere 2 Maestros)</option>
+                  <option value="100">100 Cajas (Requiere 3 Maestros)</option>
+                  <option value="150">150 Cajas (Requiere 4 Maestros)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Contenedor Dinámico para Maestros -->
+            <div id="contenedorMaestros" class="mb-4" style="display: none;">
+              <h6 class="text-warning fw-bold mb-3">
+                <i class="bi bi-people-fill me-2"></i>Registro de Maestros Requeridos
+              </h6>
+              <div id="listaMaestrosCampos" class="d-flex flex-column gap-3">
+                <!-- Se llena dinámicamente con JavaScript -->
               </div>
             </div>
 
@@ -326,7 +353,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- SCRIPT CONTROLADOR DEL TEMPORIZADOR Y BOTÓN -->
+  <!-- CONTROL DE TIEMPO, FORMULARIO Y REGISTRO DE MAESTROS -->
   <script>
     let tiempoRestante = 25;
     const contenedorReloj = document.getElementById('contenedorReloj');
@@ -341,23 +368,57 @@
 
       if (tiempoRestante <= 0) {
         clearInterval(temporizador);
-        
-        // Ocultar la caja del reloj
         contenedorReloj.style.display = 'none';
-        
-        // Mostrar el botón verde de Aceptar
         btnAceptar.style.display = 'block';
       }
     }, 1000);
 
     function aceptarTerminos() {
       const seccionForm = document.getElementById('seccionFormulario');
-      
-      // Mostrar la tarjeta del formulario
       seccionForm.style.display = 'block';
-      
-      // Desplazamiento suave directamente hacia el formulario
       seccionForm.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Generador dinámico de campos para maestros
+    function actualizarMaestros() {
+      const cajas = document.getElementById('selectCajas').value;
+      const contenedor = document.getElementById('contenedorMaestros');
+      const lista = document.getElementById('listaMaestrosCampos');
+      
+      let numMaestros = 0;
+      if (cajas === "50") numMaestros = 2;
+      else if (cajas === "100") numMaestros = 3;
+      else if (cajas === "150") numMaestros = 4;
+
+      lista.innerHTML = '';
+
+      if (numMaestros > 0) {
+        contenedor.style.display = 'block';
+
+        for (let i = 1; i <= numMaestros; i++) {
+          const maestroHTML = `
+            <div class="maestro-card shadow-sm">
+              <div class="fw-bold text-white mb-2 small">
+                <i class="bi bi-person-badge-fill me-1 text-warning"></i> Maestro ${i}
+              </div>
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <input type="text" name="maestro_nombre[]" class="form-control form-control-sm" required placeholder="Nombre Completo *">
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                  <input type="tel" name="maestro_telefono[]" class="form-control form-control-sm" maxlength="10" pattern="[0-9]{10}" required placeholder="Teléfono (10 dígitos) *">
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                  <input type="email" name="maestro_correo[]" class="form-control form-control-sm" placeholder="Correo (opcional)">
+                </div>
+              </div>
+            </div>
+          `;
+          lista.innerHTML += maestroHTML;
+        }
+      } else {
+        contenedor.style.display = 'none';
+      }
     }
   </script>
 
