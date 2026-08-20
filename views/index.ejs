@@ -360,6 +360,15 @@
     const contadorSpan = document.getElementById('contadorReloj');
     const btnAceptar = document.getElementById('btnAceptarTerminos');
 
+    // Muestra automáticamente el formulario y el mensaje si ya se envió la solicitud
+    window.addEventListener('DOMContentLoaded', () => {
+      const tieneExito = "<%= mensajeExito %>";
+      const tieneError = "<%= mensajeError %>";
+      if (tieneExito !== "" || tieneError !== "") {
+        aceptarTerminos();
+      }
+    });
+
     const temporizador = setInterval(() => {
       tiempoRestante--;
       if (contadorSpan) {
@@ -368,15 +377,17 @@
 
       if (tiempoRestante <= 0) {
         clearInterval(temporizador);
-        contenedorReloj.style.display = 'none';
-        btnAceptar.style.display = 'block';
+        if (contenedorReloj) contenedorReloj.style.display = 'none';
+        if (btnAceptar) btnAceptar.style.display = 'block';
       }
     }, 1000);
 
     function aceptarTerminos() {
       const seccionForm = document.getElementById('seccionFormulario');
-      seccionForm.style.display = 'block';
-      seccionForm.scrollIntoView({ behavior: 'smooth' });
+      if (seccionForm) {
+        seccionForm.style.display = 'block';
+        seccionForm.scrollIntoView({ behavior: 'smooth' });
+      }
     }
 
     // Generador dinámico de campos para maestros
