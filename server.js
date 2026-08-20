@@ -1,8 +1,7 @@
 import express from 'express';
+import pg from 'pg';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pkg from 'pg';
-const { Pool } = pkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,39 +9,43 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración de PostgreSQL
-const pool = new Pool({
+// Configuración de conexión a PostgreSQL usando Variables de Entorno
+const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// Probar conexión a la Base de Datos
+// Probar conexión a la base de datos
 pool.connect((err, client, release) => {
   if (err) {
-    console.error('Error de conexión a PostgreSQL:', err.stack);
-  } else {
-    console.log('Conexión exitosa a la Base de Datos PostgreSQL');
-    release();
+    return console.error('Error adquiriendo cliente de base de datos:', err.stack);
   }
+  console.log('Conexión exitosa a la base de datos PostgreSQL');
+  release();
 });
 
-// Configuración del motor de plantillas EJS
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// Middlewares para procesar datos
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// RUTA PRINCIPAL: Muestra el formulario
+// Configurar EJS como motor de plantillas
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// ----------------------------------------------------
+// RUTAS
+// ----------------------------------------------------
+
+// 1. RUTA PRINCIPAL (GET)
 app.get('/', (req, res) => {
+  // Capturar parámetros de la URL para mostrar alertas tras redirección
   const mensajeExito = req.query.exito === '1' ? '¡Registro guardado con éxito!' : null;
   const mensajeError = req.query.error ? decodeURIComponent(req.query.error) : null;
   res.render('index', { mensajeExito, mensajeError });
 });
 
-// RUTA POST: Procesar y guardar el formulario con redirección (PRG)
+// 2. GUARDAR REGISTRO (POST)
 app.post('/guardar', async (req, res) => {
   const client = await pool.connect();
   try {
@@ -63,7 +66,7 @@ app.post('/guardar', async (req, res) => {
 
     await client.query('BEGIN');
 
-    // Insertar en la tabla registros
+    // Insertar datos del registro principal
     const resRegistro = await client.query(
       `INSERT INTO registros 
        (nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, num_cajas, nombre_lider, telefono_lider, correo_lider) 
@@ -89,7 +92,7 @@ app.post('/guardar', async (req, res) => {
     let telefonos = Array.isArray(maestro_telefono) ? maestro_telefono : (maestro_telefono ? [maestro_telefono] : []);
     let correos = Array.isArray(maestro_correo) ? maestro_correo : (maestro_correo ? [maestro_correo] : []);
 
-    // Insertar en la tabla maestros
+    // Insertar registros en la tabla maestros
     for (let i = 0; i < nombres.length; i++) {
       if (nombres[i] && nombres[i].trim() !== '') {
         await client.query(
@@ -106,8 +109,7 @@ app.post('/guardar', async (req, res) => {
     }
 
     await client.query('COMMIT');
-    
-    // Redirección para evitar duplicidad al presionar F5/Recargar
+    // Redirección PRG para evitar duplicados al recargar con F5
     res.redirect('/?exito=1');
 
   } catch (error) {
