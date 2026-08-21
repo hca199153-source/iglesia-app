@@ -1,43 +1,111 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acceso Admin - Samaritan's Purse</title>
-  <link rel="icon" type="image/png" href="/images/logo.png">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(135deg, #1b381e 0%, #0a170c 100%);
-      min-height: 100vh;
-      color: #ffffff;
-    }
-    .card-custom {
-      background-color: #1e7e34;
-      border: 2px solid #28a745;
-      border-radius: 16px;
-      color: #ffffff;
-    }
-  </style>
-</head>
-<body class="d-flex align-items-center justify-content-center">
-  <div class="card card-custom p-4 shadow-lg" style="max-width: 400px; width: 100%;">
-    <div class="text-center mb-3">
-      <img src="/images/logo.png" alt="Logo" class="bg-white p-2 rounded shadow-sm mb-2" style="max-height: 70px;">
-      <h4 class="fw-bold">Acceso a Administración</h4>
-    </div>
-    
-    <% if (error) { %>
-      <div class="alert alert-danger py-2 small fw-bold text-center"><%= error %></div>
-    <% } %>
+import express from 'express';
+import { createClient } from '@supabase/supabase-js';
+import session from 'express-session';
+import dotenv from 'dotenv';
 
-    <form action="/admin-login" method="POST">
-      <div class="mb-3">
-        <label class="form-label text-white fw-semibold">Contraseña de acceso</label>
-        <input type="password" name="password" class="form-control" placeholder="Ingrese contraseña" required>
-      </div>
-      <button type="submit" class="btn btn-light text-success fw-bold w-100 shadow-sm py-2">Ingresar</button>
-    </form>
-  </div>
-</body>
-</html>
+dotenv.config();
+
+const app = express();
+
+// Configuración de plantillas y datos POST
+app.set('view engine', 'ejs');
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('public'));
+
+// Configuración de Sesiones
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'secreto_samaritan',
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Cliente Supabase
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+
+// Middleware de Autenticación Admin
+const requiereAuth = (req, res, next) => {
+  if (req.session && req.session.esAdmin) {
+    return next();
+  }
+  res.redirect('/admin-login');
+};
+
+// 1. RUTA LOGIN ADMIN (GET)
+app.get('/admin-login', (req, res) => {
+  res.render('admin-login', { error: null });
+});
+
+// 2. PROCESAR LOGIN ADMIN (POST)
+app.post('/admin-login', (req, res) => {
+  const { password } = req.body;
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+
+  if (password === ADMIN_PASSWORD) {
+    req.session.esAdmin = true;
+    return res.redirect('/admin');
+  }
+
+  res.render('admin-login', { error: 'Contraseña incorrecta' });
+});
+
+// 3. DASHBOARD ADMIN (GET) - Carga completa con Red de Oración
+app.get('/admin', requiereAuth, async (req, res) => {
+  try {
+    const { data: registros, error } = await supabase
+      .from('registros')
+      .select(`
+        *,
+        maestros (*),
+        guerreros_oracion (*),
+        guerreritos_oracion (*),
+        tutores (*)
+      `)
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+
+    res.render('admin', { registros: registros || [] });
+  } catch (error) {
+    console.error("Error al cargar registros en /admin:", error);
+    res.render('admin', { registros: [] });
+  }
+});
+
+// 4. ELIMINAR REGISTRO (DELETE) - Elimina dependencias manualmente antes del registro principal
+app.delete('/eliminar/:id', requiereAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // A) Eliminar explícitamente registros relacionados en tablas hijas
+    await supabase.from('maestros').delete().eq('registro_id', id);
+    await supabase.from('guerreros_oracion').delete().eq('registro_id', id);
+    await supabase.from('guerreritos_oracion').delete().eq('registro_id', id);
+    await supabase.from('tutores').delete().eq('registro_id', id);
+
+    // B) Eliminar el registro padre
+    const { error } = await supabase
+      .from('registros')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error de Supabase al eliminar registro principal:", error);
+      return res.status(400).json({ success: false, message: error.message });
+    }
+
+    return res.status(200).json({ success: true, message: 'Registro eliminado exitosamente' });
+  } catch (err) {
+    console.error("Error del servidor al eliminar:", err);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+});
+
+// Puerto de Ejecución
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`Servidor activo en el puerto ${PORT}`);
+});
