@@ -149,7 +149,7 @@
               <th>Líder de Proyecto</th>
               <th class="text-center">Cajitas</th>
               <th>Maestros Asignados</th>
-              <th class="text-center no-print">Fecha</th>
+              <th class="text-center no-print">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -190,8 +190,13 @@
                       <span class="text-muted small">Sin maestros registrados</span>
                     <% } %>
                   </td>
-                  <td class="text-center small text-muted no-print">
-                    <%= item.fecha_registro ? new Date(item.fecha_registro).toLocaleDateString('es-MX') : 'N/A' %>
+                  <!-- COLUMNA DE ACCIONES / ELIMINAR -->
+                  <td class="text-center no-print">
+                    <form action="/eliminar/<%= item.id %>" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este registro?');" style="display:inline;">
+                      <button type="submit" class="btn btn-outline-danger btn-sm shadow-sm" title="Eliminar Registro">
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
+                    </form>
                   </td>
                 </tr>
               <% }) %>
