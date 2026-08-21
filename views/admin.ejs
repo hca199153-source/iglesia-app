@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración - Samaritan's Purse</title>
+  <title>Panel Admin Dashboard - Samaritan's Purse</title>
   
   <link rel="icon" type="image/png" href="/images/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
-  <!-- Librerías para Exportación -->
+  <!-- Librerías: Chart.js, XLSX y jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -23,23 +24,27 @@
     .navbar-custom {
       background-color: #155724;
     }
-    .card-header-custom {
-      background-color: #1e7e34;
-      color: white;
+    .kpi-card {
+      border: none;
+      border-radius: 12px;
+      transition: transform 0.2s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-3px);
     }
     .table-responsive {
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
-    .badge-cajas {
-      font-size: 0.9rem;
-      padding: 6px 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
     .oracion-box {
-      background-color: #fff9e6;
-      border-left: 3px solid #ffc107;
+      background-color: #fffdf0;
+      border-left: 4px solid #ffc107;
       font-size: 0.82rem;
+    }
+    .badge-cajas {
+      font-size: 0.95rem;
+      padding: 6px 14px;
     }
   </style>
 </head>
@@ -52,31 +57,142 @@
         <img src="/images/logo.png" alt="Logo" width="35" height="35" class="bg-white rounded p-1">
         <span>Panel Admin | Samaritan's Purse</span>
       </a>
-      <div class="d-flex gap-2">
-        <a href="/" class="btn btn-outline-light btn-sm"><i class="bi bi-house-door-fill me-1"></i> Ir al Registro</a>
-      </div>
+      <a href="/" class="btn btn-outline-light btn-sm"><i class="bi bi-house-door-fill me-1"></i> Ir al Formulario</a>
     </div>
   </nav>
 
   <div class="container-fluid px-4 mb-5">
 
-    <!-- CABECERA Y BOTONES DE EXPORTACIÓN -->
+    <!-- CABECERA Y ACCIONES DE EXPORTACIÓN -->
     <div class="row align-items-center mb-4">
       <div class="col-12 col-md-6 mb-2 mb-md-0">
-        <h3 class="fw-bold text-success mb-0"><i class="bi bi-journal-text me-2"></i>Registros de Iglesias</h3>
-        <p class="text-muted small mb-0">Gestión de datos de pastores, líderes, cajas y equipos de apoyo/oración.</p>
+        <h3 class="fw-bold text-success mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard de Control</h3>
+        <p class="text-muted small mb-0">Gestión global de iglesias, estadísticas e integrantes de apoyo de oración.</p>
       </div>
       <div class="col-12 col-md-6 text-md-end d-flex gap-2 justify-content-md-end">
         <button onclick="exportarExcel()" class="btn btn-outline-success fw-bold shadow-sm">
-          <i class="bi bi-file-earmark-excel-fill me-1"></i> Exportar Excel
+          <i class="bi bi-file-earmark-excel-fill me-1"></i> Excel
         </button>
         <button onclick="exportarPDF()" class="btn btn-outline-danger fw-bold shadow-sm">
-          <i class="bi bi-file-earmark-pdf-fill me-1"></i> Exportar PDF
+          <i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF
         </button>
       </div>
     </div>
 
-    <!-- TABLA DE REGISTROS -->
+    <!-- TARJETAS METRICAS (KPI) -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card kpi-card bg-primary text-white shadow-sm p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-uppercase small mb-1 fw-semibold opacity-75">Iglesias Registradas</h6>
+              <h2 class="fw-bold mb-0" id="kpiIglesias"><%= typeof registros !== 'undefined' ? registros.length : 0 %></h2>
+            </div>
+            <i class="bi bi-building fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card kpi-card bg-success text-white shadow-sm p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-uppercase small mb-1 fw-semibold opacity-75">Total Cajitas</h6>
+              <h2 class="fw-bold mb-0" id="kpiCajas">
+                <% 
+                  let totalCajas = 0;
+                  if (typeof registros !== 'undefined') {
+                    registros.forEach(r => totalCajas += Number(r.num_cajas || 0));
+                  }
+                %>
+                <%= totalCajas %>
+              </h2>
+            </div>
+            <i class="bi bi-box-seam fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card kpi-card bg-warning text-dark shadow-sm p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-uppercase small mb-1 fw-semibold opacity-75">Maestros Asignados</h6>
+              <h2 class="fw-bold mb-0">
+                <% 
+                  let totalMaestros = 0;
+                  if (typeof registros !== 'undefined') {
+                    registros.forEach(r => totalMaestros += (r.maestros ? r.maestros.length : 0));
+                  }
+                %>
+                <%= totalMaestros %>
+              </h2>
+            </div>
+            <i class="bi bi-people-fill fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card kpi-card bg-info text-white shadow-sm p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-uppercase small mb-1 fw-semibold opacity-75">Red de Oración</h6>
+              <h2 class="fw-bold mb-0">
+                <% 
+                  let totalOracion = 0;
+                  if (typeof registros !== 'undefined') {
+                    registros.forEach(r => {
+                      totalOracion += (r.guerreros_oracion ? r.guerreros_oracion.length : 0);
+                      totalOracion += (r.guerreritos_oracion ? r.guerreritos_oracion.length : 0);
+                      totalOracion += (r.tutores ? r.tutores.length : 0);
+                    });
+                  }
+                %>
+                <%= totalOracion %>
+              </h2>
+            </div>
+            <i class="bi bi-heart-pulse-fill fs-1 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN DE GRÁFICAS DASHBOARD -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow-sm p-3 h-100">
+          <h6 class="fw-bold text-dark mb-3"><i class="bi bi-bar-chart-fill text-success me-2"></i>Distribución de Cajitas por Iglesia</h6>
+          <div style="position: relative; height:260px;">
+            <canvas id="chartCajas"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm p-3 h-100">
+          <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Composición Red de Oración</h6>
+          <div style="position: relative; height:260px;">
+            <canvas id="chartOracion"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUSCADOR INDIVIDUAL -->
+    <div class="card border-0 shadow-sm p-3 mb-4">
+      <div class="row align-items-center">
+        <div class="col-12 col-md-8 mb-2 mb-md-0">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" id="inputBuscador" class="form-control border-start-0" placeholder="Buscar por Iglesia, Pastor, Líder o Teléfono..." onkeyup="filtrarTabla()">
+          </div>
+        </div>
+        <div class="col-12 col-md-4 text-md-end">
+          <span class="badge bg-light text-dark border px-3 py-2 fw-normal" id="contadorResultados">
+            Mostrando todos los registros
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA DE REGISTROS CON ACCIONES -->
     <div class="card border-0 shadow-sm">
       <div class="card-body p-0">
         <div class="table-responsive">
@@ -87,26 +203,27 @@
                 <th>Iglesia y Dirección</th>
                 <th>Pastor</th>
                 <th>Líder</th>
-                <th style="width: 90px;">Cajas</th>
-                <th>Maestros Requeridos</th>
+                <th style="width: 80px;">Cajas</th>
+                <th>Maestros Asignados</th>
                 <th>Equipo de Oración</th>
+                <th style="width: 70px;">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <% if (typeof registros !== 'undefined' && registros.length > 0) { %>
                 <% registros.forEach((r, index) => { %>
-                  <tr>
+                  <tr id="fila-<%= r.id %>">
                     <td class="text-center fw-bold text-muted"><%= index + 1 %></td>
                     
                     <!-- Iglesia y Dirección -->
                     <td>
-                      <div class="fw-bold text-dark"><%= r.nombre_iglesia %></div>
+                      <div class="fw-bold text-dark col-busqueda"><%= r.nombre_iglesia %></div>
                       <small class="text-muted d-block"><i class="bi bi-geo-alt-fill me-1"></i><%= r.direccion || 'Sin dirección' %></small>
                     </td>
 
                     <!-- Pastor -->
                     <td>
-                      <div class="fw-bold"><%= r.nombre_pastor %></div>
+                      <div class="fw-bold col-busqueda"><%= r.nombre_pastor %></div>
                       <small class="text-muted d-block"><i class="bi bi-telephone-fill me-1"></i><%= r.telefono_pastor %></small>
                       <% if(r.correo_pastor) { %>
                         <small class="text-muted d-block"><i class="bi bi-envelope-fill me-1"></i><%= r.correo_pastor %></small>
@@ -115,7 +232,7 @@
 
                     <!-- Líder -->
                     <td>
-                      <div class="fw-bold"><%= r.nombre_lider %></div>
+                      <div class="fw-bold col-busqueda"><%= r.nombre_lider %></div>
                       <small class="text-muted d-block"><i class="bi bi-telephone-fill me-1"></i><%= r.telefono_lider %></small>
                       <% if(r.correo_lider) { %>
                         <small class="text-muted d-block"><i class="bi bi-envelope-fill me-1"></i><%= r.correo_lider %></small>
@@ -139,46 +256,64 @@
                           <% }) %>
                         </ul>
                       <% } else { %>
-                        <span class="text-muted small">Sin maestros registrados</span>
+                        <span class="text-muted small">Sin maestros</span>
                       <% } %>
                     </td>
 
-                    <!-- Equipo de Oración -->
+                    <!-- Equipo de Oración DESGLOSADO Y COMPLETO -->
                     <td>
-                      <div class="oracion-box p-2 rounded">
-                        <!-- Guerreros -->
-                        <% if(r.guerreros_oracion && r.guerreros_oracion.length > 0) { %>
-                          <div class="fw-bold text-dark border-bottom pb-1 mb-1">
-                            <i class="bi bi-people-fill me-1 text-warning"></i>Guerreros (<%= r.guerreros_oracion.length %>)
-                          </div>
-                        <% } %>
-                        
-                        <!-- Guerreritos -->
-                        <% if(r.guerreritos_oracion && r.guerreritos_oracion.length > 0) { %>
-                          <div class="fw-bold text-dark border-bottom pb-1 mb-1">
-                            <i class="bi bi-emoji-smile-fill me-1 text-warning"></i>Guerreritos (<%= r.guerreritos_oracion.length %>)
-                          </div>
-                        <% } %>
+                      <% 
+                        const numGuerreros = r.guerreros_oracion ? r.guerreros_oracion.length : 0;
+                        const numGuerreritos = r.guerreritos_oracion ? r.guerreritos_oracion.length : 0;
+                        const numTutores = r.tutores ? r.tutores.length : 0;
+                        const tieneOracion = (numGuerreros + numGuerreritos + numTutores) > 0;
+                      %>
 
-                        <!-- Tutores -->
-                        <% if(r.tutores && r.tutores.length > 0) { %>
-                          <div class="fw-bold text-dark">
-                            <i class="bi bi-shield-check me-1 text-warning"></i>Tutores (<%= r.tutores.length %>)
-                          </div>
-                        <% } %>
+                      <% if (tieneOracion) { %>
+                        <div class="oracion-box p-2 rounded">
+                          <% if(numGuerreros > 0) { %>
+                            <div class="d-flex align-items-center mb-1">
+                              <i class="bi bi-people-fill text-warning me-1"></i>
+                              <strong class="me-1">Guerreros:</strong> <%= numGuerreros %>
+                            </div>
+                          <% } %>
 
-                        <% if((!r.guerreros_oracion || r.guerreros_oracion.length === 0) && (!r.guerreritos_oracion || r.guerreritos_oracion.length === 0)) { %>
-                          <span class="text-muted">Sin datos de oración</span>
-                        <% } %>
-                      </div>
+                          <% if(numGuerreritos > 0) { %>
+                            <div class="d-flex align-items-center mb-1">
+                              <i class="bi bi-emoji-smile-fill text-warning me-1"></i>
+                              <strong class="me-1">Guerreritos:</strong> <%= numGuerreritos %>
+                            </div>
+                          <% } %>
+
+                          <% if(numTutores > 0) { %>
+                            <div class="d-flex align-items-center">
+                              <i class="bi bi-shield-check text-warning me-1"></i>
+                              <strong class="me-1">Tutores:</strong> <%= numTutores %>
+                            </div>
+                          <% } %>
+
+                          <button class="btn btn-link btn-sm p-0 mt-1 fw-bold text-decoration-none text-success" onclick='verDetalleOracion(<%- JSON.stringify(r) %>)'>
+                            <i class="bi bi-eye-fill me-1"></i>Ver Integrantes
+                          </button>
+                        </div>
+                      <% } else { %>
+                        <span class="badge bg-light text-muted border p-2 fw-normal d-block text-center">Sin datos de oración</span>
+                      <% } %>
+                    </td>
+
+                    <!-- ZONA DE ACCIONES / ELIMINAR -->
+                    <td class="text-center">
+                      <button class="btn btn-outline-danger btn-sm rounded-circle" title="Eliminar Registro" onclick="confirmarEliminar('<%= r.id %>', '<%= r.nombre_iglesia %>')">
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
                     </td>
 
                   </tr>
                 <% }) %>
               <% } else { %>
                 <tr>
-                  <td colspan="7" class="text-center py-4 text-muted">
-                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay registros guardados actualmente.
+                  <td colspan="8" class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>No hay registros guardados actualmente.
                   </td>
                 </tr>
               <% } %>
@@ -190,10 +325,154 @@
 
   </div>
 
+  <!-- MODAL PARA VER DETALLE COMPLETO DE ORACIÓN -->
+  <div class="modal fade" id="modalDetalleOracion" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-heart-pulse-fill me-2"></i>Equipo de Apoyo de Oración</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="bodyModalOracion">
+          <!-- Se llena dinámicamente con JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- FUNCIONES DE EXPORTACIÓN -->
+  <!-- LÓGICA DASHBOARD, BÚSQUEDA Y EXPORTACIONES -->
   <script>
+    // Data para gráficos desde Backend
+    const registrosData = <%- JSON.stringify(typeof registros !== 'undefined' ? registros : []) %>;
+
+    // 1. INICIALIZAR GRÁFICAS
+    document.addEventListener('DOMContentLoaded', () => {
+      // Gráfica de Cajas por Iglesia
+      const labelsIglesias = registrosData.map(r => r.nombre_iglesia);
+      const dataCajas = registrosData.map(r => Number(r.num_cajas || 0));
+
+      const ctxCajas = document.getElementById('chartCajas').getContext('2d');
+      new Chart(ctxCajas, {
+        type: 'bar',
+        data: {
+          labels: labelsIglesias,
+          datasets: [{
+            label: 'Cajitas Solicitadas',
+            data: dataCajas,
+            backgroundColor: '#198754',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      // Gráfica de Red de Oración
+      let totalG = 0, totalGitos = 0, totalTut = 0;
+      registrosData.forEach(r => {
+        totalG += (r.guerreros_oracion ? r.guerreros_oracion.length : 0);
+        totalGitos += (r.guerreritos_oracion ? r.guerreritos_oracion.length : 0);
+        totalTut += (r.tutores ? r.tutores.length : 0);
+      });
+
+      const ctxOracion = document.getElementById('chartOracion').getContext('2d');
+      new Chart(ctxOracion, {
+        type: 'doughnut',
+        data: {
+          labels: ['Guerreros', 'Guerreritos', 'Tutores'],
+          datasets: [{
+            data: [totalG, totalGitos, totalTut],
+            backgroundColor: ['#ffc107', '#0dcaf0', '#20c997']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    });
+
+    // 2. BUSCADOR EN TIEMPO REAL
+    function filtrarTabla() {
+      const query = document.getElementById('inputBuscador').value.toLowerCase();
+      const filas = document.querySelectorAll('#tablaRegistros tbody tr');
+      let visibes = 0;
+
+      filas.forEach(fila => {
+        const textoFila = fila.innerText.toLowerCase();
+        if (textoFila.includes(query)) {
+          fila.style.display = '';
+          visibes++;
+        } else {
+          fila.style.display = 'none';
+        }
+      });
+
+      document.getElementById('contadorResultados').innerText = `Mostrando ${visibes} de ${filas.length} registros`;
+    }
+
+    // 3. DETALLE DE EQUIPO DE ORACIÓN (MODAL)
+    function verDetalleOracion(registro) {
+      const container = document.getElementById('bodyModalOracion');
+      let html = `<h6 class="fw-bold text-success mb-3">${registro.nombre_iglesia}</h6>`;
+
+      // Guerreros
+      html += `<h6 class="fw-bold text-dark border-bottom pb-1"><i class="bi bi-people-fill text-warning me-2"></i>Guerreros de Oración (${registro.guerreros_oracion ? registro.guerreros_oracion.length : 0})</h6><ul class="list-group mb-3">`;
+      if(registro.guerreros_oracion && registro.guerreros_oracion.length > 0) {
+        registro.guerreros_oracion.forEach(g => {
+          html += `<li class="list-group-item d-flex justify-content-between"><span>${g.nombre}</span><span class="text-muted">${g.telefono || 'Sin tel'}</span></li>`;
+        });
+      } else { html += `<li class="list-group-item text-muted small">Sin registros</li>`; }
+      html += `</ul>`;
+
+      // Guerreritos
+      html += `<h6 class="fw-bold text-dark border-bottom pb-1"><i class="bi bi-emoji-smile-fill text-info me-2"></i>Guerreritos de Oración (${registro.guerreritos_oracion ? registro.guerreritos_oracion.length : 0})</h6><ul class="list-group mb-3">`;
+      if(registro.guerreritos_oracion && registro.guerreritos_oracion.length > 0) {
+        registro.guerreritos_oracion.forEach(g => {
+          html += `<li class="list-group-item">${g.nombre}</li>`;
+        });
+      } else { html += `<li class="list-group-item text-muted small">Sin registros</li>`; }
+      html += `</ul>`;
+
+      // Tutores
+      html += `<h6 class="fw-bold text-dark border-bottom pb-1"><i class="bi bi-shield-check text-success me-2"></i>Tutores (${registro.tutores ? registro.tutores.length : 0})</h6><ul class="list-group">`;
+      if(registro.tutores && registro.tutores.length > 0) {
+        registro.tutores.forEach(t => {
+          html += `<li class="list-group-item d-flex justify-content-between"><span>${t.nombre}</span><span class="text-muted">${t.telefono || 'Sin tel'}</span></li>`;
+        });
+      } else { html += `<li class="list-group-item text-muted small">Sin registros</li>`; }
+      html += `</ul>`;
+
+      container.innerHTML = html;
+      new bootstrap.Modal(document.getElementById('modalDetalleOracion')).show();
+    }
+
+    // 4. ELIMINAR REGISTRO
+    async function confirmarEliminar(id, nombre) {
+      if (confirm(`¿Estás seguro de que deseas eliminar el registro de "${nombre}"? Esta acción no se puede deshacer.`)) {
+        try {
+          const response = await fetch(`/eliminar/${id}`, { method: 'DELETE' });
+          if (response.ok) {
+            const fila = document.getElementById(`fila-${id}`);
+            if (fila) fila.remove();
+            alert('Registro eliminado correctamente');
+            location.reload();
+          } else {
+            alert('Error al eliminar el registro');
+          }
+        } catch (error) {
+          console.error(error);
+          alert('Error de conexión al eliminar');
+        }
+      }
+    }
+
+    // 5. EXPORTAR A EXCEL
     function exportarExcel() {
       const filas = document.querySelectorAll('#tablaRegistros tbody tr');
       const datosExcel = [];
@@ -214,22 +493,13 @@
       });
 
       const ws = XLSX.utils.json_to_sheet(datosExcel);
-      
-      ws['!cols'] = [
-        { wch: 6 },  // No.
-        { wch: 35 }, // Iglesia
-        { wch: 25 }, // Pastor
-        { wch: 25 }, // Líder
-        { wch: 10 }, // Cajas
-        { wch: 35 }, // Maestros
-        { wch: 35 }  // Equipo Oración
-      ];
-
+      ws['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 25 }, { wch: 25 }, { wch: 10 }, { wch: 35 }, { wch: 35 }];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Registros");
       XLSX.writeFile(wb, 'Registros_Iglesias.xlsx');
     }
 
+    // 6. EXPORTAR A PDF
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('l', 'mm', 'a4');
@@ -259,24 +529,14 @@
         body: filasData,
         startY: 22,
         theme: 'grid',
-        headStyles: { 
-          fillColor: [21, 87, 36], 
-          halign: 'center', 
-          valign: 'middle',
-          fontSize: 8 
-        },
-        styles: { 
-          fontSize: 7.5, 
-          cellPadding: 2.5, 
-          valign: 'middle',
-          overflow: 'linebreak'
-        },
+        headStyles: { fillColor: [21, 87, 36], halign: 'center', valign: 'middle', fontSize: 8 },
+        styles: { fontSize: 7.5, cellPadding: 2.5, valign: 'middle', overflow: 'linebreak' },
         columnStyles: {
           0: { halign: 'center', cellWidth: 8 },
-          1: { halign: 'left', cellWidth: 50 },
-          2: { halign: 'left', cellWidth: 42 },
-          3: { halign: 'left', cellWidth: 42 },
-          4: { halign: 'center', cellWidth: 15 },
+          1: { halign: 'left', cellWidth: 48 },
+          2: { halign: 'left', cellWidth: 40 },
+          3: { halign: 'left', cellWidth: 40 },
+          4: { halign: 'center', cellWidth: 14 },
           5: { halign: 'left', cellWidth: 55 },
           6: { halign: 'left' }
         }
