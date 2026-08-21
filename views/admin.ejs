@@ -8,8 +8,6 @@
   <link rel="icon" type="image/png" href="/images/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-  
-  <!-- Chart.js para las gráficas -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -17,7 +15,10 @@
       background: linear-gradient(135deg, #1b381e 0%, #0a170c 100%);
       min-height: 100vh;
       color: #ffffff;
-      padding: 30px 0;
+      padding: 15px 0;
+    }
+    @media (min-width: 768px) {
+      body { padding: 30px 0; }
     }
     .card-custom {
       background-color: #1e7e34;
@@ -26,13 +27,12 @@
       color: #ffffff;
     }
     .app-logo {
-      max-height: 70px;
+      max-height: 60px;
       object-fit: contain;
     }
     .table-container {
       background-color: #ffffff;
       border-radius: 12px;
-      overflow: hidden;
       color: #000000;
     }
     .table thead {
@@ -48,7 +48,6 @@
     .maestro-item:last-child {
       border-bottom: none;
       margin-bottom: 0;
-      padding-bottom: 0;
     }
     .chart-box {
       background-color: #ffffff;
@@ -56,50 +55,56 @@
       padding: 15px;
       color: #333;
     }
+    .mobile-card {
+      background-color: #ffffff;
+      color: #1a1a1a;
+      border-radius: 12px;
+      border-left: 5px solid #198754;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container-fluid px-md-5">
-    <div class="card card-custom shadow-lg p-4 p-md-5 mb-4">
+  <div class="container-fluid px-2 px-md-5">
+    <div class="card card-custom shadow-lg p-3 p-md-5 mb-4">
       
       <!-- ENCABEZADO -->
-      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 pb-3 border-bottom border-light-subtle">
-        <div class="d-flex align-items-center mb-3 mb-md-0">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 pb-3 border-bottom border-light-subtle gap-3">
+        <div class="d-flex align-items-center text-center text-md-start">
           <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm me-3">
           <div>
-            <h2 class="fw-bold mb-0 text-white">Panel de Administración</h2>
-            <p class="text-white-50 mb-0 small">Dashboard, Estadísticas y Registros</p>
+            <h3 class="fw-bold mb-0 text-white">Panel de Administración</h3>
+            <p class="text-white-50 mb-0 small">Control de Registros y Estadísticas</p>
           </div>
         </div>
         
-        <div class="d-flex flex-wrap gap-2">
-          <button onclick="exportarExcel()" class="btn btn-success fw-bold shadow-sm">
+        <div class="d-flex flex-wrap justify-content-center gap-2 w-100 w-md-auto">
+          <button onclick="exportarExcel()" class="btn btn-success fw-bold shadow-sm flex-fill flex-md-grow-0">
             <i class="bi bi-file-earmark-excel-fill me-1"></i> Excel
           </button>
-          <button onclick="exportarPDF()" class="btn btn-danger fw-bold shadow-sm">
+          <button onclick="exportarPDF()" class="btn btn-danger fw-bold shadow-sm flex-fill flex-md-grow-0">
             <i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF
           </button>
-          <a href="/logout" class="btn btn-outline-light fw-bold shadow-sm">
+          <a href="/logout" class="btn btn-outline-light fw-bold shadow-sm flex-fill flex-md-grow-0">
             <i class="bi bi-box-arrow-right me-1"></i> Salir
           </a>
         </div>
       </div>
 
-      <!-- ZONA DE DASHBOARD Y GRÁFICAS -->
+      <!-- DASHBOARD Y GRÁFICAS -->
       <div class="row g-3 mb-4">
         <div class="col-12 col-md-4">
           <div class="chart-box shadow-sm h-100">
-            <h6 class="fw-bold text-success text-center mb-3">Distribución por Cajas (Pastel)</h6>
-            <div style="max-height: 220px;" class="d-flex justify-content-center">
+            <h6 class="fw-bold text-success text-center mb-3">Distribución por Cajas</h6>
+            <div style="height: 200px;" class="d-flex justify-content-center align-items-center">
               <canvas id="graficaPie"></canvas>
             </div>
           </div>
         </div>
         <div class="col-12 col-md-8">
           <div class="chart-box shadow-sm h-100">
-            <h6 class="fw-bold text-success text-center mb-3">Solicitudes de Cajas (Barras)</h6>
-            <div style="max-height: 220px;" class="d-flex justify-content-center">
+            <h6 class="fw-bold text-success text-center mb-3">Solicitudes de Cajas</h6>
+            <div style="height: 200px;" class="d-flex justify-content-center align-items-center">
               <canvas id="graficaBarras"></canvas>
             </div>
           </div>
@@ -111,13 +116,72 @@
         <div class="col-12 col-md-6 ms-auto">
           <div class="input-group shadow-sm">
             <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-success"></i></span>
-            <input type="text" id="inputBuscador" class="form-control border-start-0" placeholder="Buscar por iglesia, pastor, líder o teléfono..." onkeyup="filtrarTabla()">
+            <input type="text" id="inputBuscador" class="form-control border-start-0" placeholder="Buscar iglesia, pastor, líder o teléfono..." onkeyup="filtrarContenido()">
           </div>
         </div>
       </div>
 
-      <!-- TABLA DE REGISTROS -->
-      <div class="table-container shadow-sm p-3">
+      <!-- 1. VISTA MÓVIL (TARJETAS) -->
+      <div class="d-md-none d-flex flex-column gap-3" id="contenedorMovil">
+        <% if (registros && registros.length > 0) { %>
+          <% registros.forEach((item, index) => { %>
+            <div class="mobile-card p-3 shadow-sm item-busqueda">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-dark">#<%= index + 1 %></span>
+                <span class="badge bg-success fs-6 badge-cajas" data-cajas="<%= item.num_cajas %>"><%= item.num_cajas %> Cajas</span>
+              </div>
+              
+              <h5 class="fw-bold text-success mb-1"><%= item.nombre_iglesia %></h5>
+              <% if (item.direccion) { %>
+                <p class="small text-muted mb-2"><i class="bi bi-geo-alt-fill me-1"></i><%= item.direccion %></p>
+              <% } %>
+              
+              <hr class="my-2">
+              <div class="row g-2 small mb-2">
+                <div class="col-6">
+                  <strong>Pastor:</strong><br>
+                  <%= item.nombre_pastor %><br>
+                  <span class="text-muted"><%= item.telefono_pastor %></span>
+                </div>
+                <div class="col-6">
+                  <strong>Líder:</strong><br>
+                  <%= item.nombre_lider %><br>
+                  <span class="text-muted"><%= item.telefono_lider %></span>
+                </div>
+              </div>
+
+              <div class="bg-light p-2 rounded border mb-2">
+                <strong class="small d-block mb-1 text-dark"><i class="bi bi-people-fill text-success me-1"></i>Maestros Asignados:</strong>
+                <% if (item.maestros && item.maestros.length > 0) { %>
+                  <% item.maestros.forEach(function(m) { %>
+                    <div class="maestro-item text-dark">
+                      <span class="fw-bold"><%= m.nombre %></span> - <%= m.telefono %>
+                      <% if (m.correo) { %>
+                        <br><small class="text-muted"><%= m.correo %></small>
+                      <% } %>
+                    </div>
+                  <% }); %>
+                <% } else { %>
+                  <span class="text-muted small">Sin maestros registrados</span>
+                <% } %>
+              </div>
+
+              <div class="text-end">
+                <form action="/eliminar/<%= item.id %>" method="POST" onsubmit="return confirm('¿Deseas eliminar este registro?');" style="display:inline;">
+                  <button type="submit" class="btn btn-outline-danger btn-sm w-100 fw-bold">
+                    <i class="bi bi-trash-fill me-1"></i>Eliminar Registro
+                  </button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="text-center py-4 text-white">No hay registros cargados.</div>
+        <% } %>
+      </div>
+
+      <!-- 2. VISTA ESCRITORIO (TABLA) -->
+      <div class="table-container shadow-sm p-3 d-none d-md-block">
         <div class="table-responsive">
           <table id="tablaRegistros" class="table table-hover align-middle mb-0">
             <thead>
@@ -134,7 +198,7 @@
             <tbody>
               <% if (registros && registros.length > 0) { %>
                 <% registros.forEach((item, index) => { %>
-                  <tr>
+                  <tr class="item-busqueda">
                     <td class="fw-bold"><%= index + 1 %></td>
                     <td>
                       <strong class="text-success"><%= item.nombre_iglesia %></strong>
@@ -147,15 +211,21 @@
                       <% if (item.telefono_pastor) { %>
                         <small><i class="bi bi-telephone me-1"></i><%= item.telefono_pastor %></small>
                       <% } %>
+                      <% if (item.correo_pastor) { %>
+                        <br><small class="text-muted"><%= item.correo_pastor %></small>
+                      <% } %>
                     </td>
                     <td>
                       <div><strong><%= item.nombre_lider %></strong></div>
                       <% if (item.telefono_lider) { %>
                         <small><i class="bi bi-telephone me-1"></i><%= item.telefono_lider %></small>
                       <% } %>
+                      <% if (item.correo_lider) { %>
+                        <br><small class="text-muted"><%= item.correo_lider %></small>
+                      <% } %>
                     </td>
                     <td class="text-center">
-                      <span class="badge bg-success fs-6 badge-cajas" data-cajas="<%= item.num_cajas %>"><%= item.num_cajas %></span>
+                      <span class="badge bg-success fs-6 badge-cajas-tabla" data-cajas="<%= item.num_cajas %>"><%= item.num_cajas %></span>
                     </td>
                     <td>
                       <% if (item.maestros && item.maestros.length > 0) { %>
@@ -185,9 +255,7 @@
                 <% }); %>
               <% } else { %>
                 <tr>
-                  <td colspan="7" class="text-center py-4 text-muted fw-bold">
-                    No hay registros disponibles.
-                  </td>
+                  <td colspan="7" class="text-center py-4 text-muted fw-bold">No hay registros disponibles.</td>
                 </tr>
               <% } %>
             </tbody>
@@ -198,13 +266,11 @@
     </div>
   </div>
 
-  <!-- LIBRERÍAS DE EXPORTACIÓN -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
   <script>
-    // 1. CÁLCULO Y GENERACIÓN DE GRÁFICAS
     document.addEventListener('DOMContentLoaded', () => {
       const badges = document.querySelectorAll('.badge-cajas');
       let c50 = 0, c100 = 0, c150 = 0, otros = 0;
@@ -220,46 +286,35 @@
       const datos = [c50, c100, c150, otros];
       const etiquetas = ['50 Cajas', '100 Cajas', '150 Cajas', 'Otros'];
 
-      // Gráfica de Pastel
       new Chart(document.getElementById('graficaPie'), {
         type: 'pie',
         data: {
           labels: etiquetas,
-          datasets: [{
-            data: datos,
-            backgroundColor: ['#28a745', '#0d6efd', '#fd7e14', '#6c757d']
-          }]
+          datasets: [{ data: datos, backgroundColor: ['#28a745', '#0d6efd', '#fd7e14', '#6c757d'] }]
         },
         options: { responsive: true, maintainAspectRatio: false }
       });
 
-      // Gráfica de Barras
       new Chart(document.getElementById('graficaBarras'), {
         type: 'bar',
         data: {
           labels: etiquetas,
-          datasets: [{
-            label: 'Cantidad de Registros',
-            data: datos,
-            backgroundColor: ['#28a745', '#0d6efd', '#fd7e14', '#6c757d']
-          }]
+          datasets: [{ label: 'Registros', data: datos, backgroundColor: ['#28a745', '#0d6efd', '#fd7e14', '#6c757d'] }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
       });
     });
 
-    // 2. BUSCADOR EN TIEMPO REAL
-    function filtrarTabla() {
+    function filtrarContenido() {
       const texto = document.getElementById('inputBuscador').value.toLowerCase();
-      const filas = document.querySelectorAll('#tablaRegistros tbody tr');
+      const elementos = document.querySelectorAll('.item-busqueda');
 
-      filas.forEach(fila => {
-        const contenido = fila.innerText.toLowerCase();
-        fila.style.display = contenido.includes(texto) ? '' : 'none';
+      elementos.forEach(el => {
+        const contenido = el.innerText.toLowerCase();
+        el.style.setProperty('display', contenido.includes(texto) ? '' : 'none', 'important');
       });
     }
 
-    // 3. EXPORTACIÓN LIMPIA A EXCEL (Obtiene texto estructurado)
     function exportarExcel() {
       const filas = document.querySelectorAll('#tablaRegistros tbody tr');
       const datosExcel = [];
@@ -284,7 +339,6 @@
       XLSX.writeFile(wb, 'Registros_Iglesias.xlsx');
     }
 
-    // 4. EXPORTACIÓN LIMPIA A PDF
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('l', 'mm', 'a4');
