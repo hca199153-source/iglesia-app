@@ -33,6 +33,10 @@ const requiereAuth = (req, res, next) => {
 };
 
 // Rutas
+app.get('/', (req, res) => {
+  res.render('index');
+});
+
 app.get('/admin-login', (req, res) => {
   res.render('admin-login', { error: null });
 });
@@ -68,6 +72,99 @@ app.get('/admin', requiereAuth, async (req, res) => {
   } catch (error) {
     console.error("Error al cargar registros en /admin:", error);
     res.render('admin', { registros: [] });
+  }
+});
+
+// RUTA PARA GUARDAR EL FORMULARIO DE REGISTRO
+app.post('/guardar', async (req, res) => {
+  try {
+    const {
+      nombre_pastor, telefono_pastor, correo_pastor,
+      nombre_iglesia, direccion,
+      nombre_lider, telefono_lider, correo_lider,
+      num_cajas,
+      maestro_nombre, maestro_telefono, maestro_correo,
+      guerreros_oracion_nombre, guerreros_oracion_telefono,
+      guerreritos_oracion,
+      tutores_nombre, tutores_telefono
+    } = req.body;
+
+    // 1. Insertar Registro Principal
+    const { data: registro, error: errorReg } = await supabase
+      .from('registros')
+      .insert([{
+        nombre_pastor, telefono_pastor, correo_pastor,
+        nombre_iglesia, direccion,
+        nombre_lider, telefono_lider, correo_lider,
+        num_cajas: Number(num_cajas || 0)
+      }])
+      .select()
+      .single();
+
+    if (errorReg) throw errorReg;
+    const registro_id = registro.id;
+
+    // 2. Insertar Maestros
+    if (maestro_nombre && Array.isArray(maestro_nombre)) {
+      const maestrosData = maestro_nombre
+        .map((nombre, i) => ({
+          registro_id,
+          nombre,
+          telefono: maestro_telefono ? maestro_telefono[i] : '',
+          correo: maestro_correo ? maestro_correo[i] : ''
+        }))
+        .filter(m => m.nombre && m.nombre.trim() !== '');
+
+      if (maestrosData.length > 0) {
+        await supabase.from('maestros').insert(maestrosData);
+      }
+    }
+
+    // 3. Insertar Guerreros de Oración
+    if (guerreros_oracion_nombre && Array.isArray(guerreros_oracion_nombre)) {
+      const guerrerosData = guerreros_oracion_nombre
+        .map((nombre, i) => ({
+          registro_id,
+          nombre,
+          telefono: guerreros_oracion_telefono ? guerreros_oracion_telefono[i] : ''
+        }))
+        .filter(g => g.nombre && g.nombre.trim() !== '');
+
+      if (guerrerosData.length > 0) {
+        await supabase.from('guerreros_oracion').insert(guerrerosData);
+      }
+    }
+
+    // 4. Insertar Guerreritos de Oración
+    if (guerreritos_oracion && Array.isArray(guerreritos_oracion)) {
+      const guerreritosData = guerreritos_oracion
+        .filter(nombre => nombre && nombre.trim() !== '')
+        .map(nombre => ({ registro_id, nombre }));
+
+      if (guerreritosData.length > 0) {
+        await supabase.from('guerreritos_oracion').insert(guerreritosData);
+      }
+    }
+
+    // 5. Insertar Tutores
+    if (tutores_nombre && Array.isArray(tutores_nombre)) {
+      const tutoresData = tutores_nombre
+        .map((nombre, i) => ({
+          registro_id,
+          nombre,
+          telefono: tutores_telefono ? tutores_telefono[i] : ''
+        }))
+        .filter(t => t.nombre && t.nombre.trim() !== '');
+
+      if (tutoresData.length > 0) {
+        await supabase.from('tutores').insert(tutoresData);
+      }
+    }
+
+    res.redirect('/?exito=true');
+  } catch (err) {
+    console.error("Error al guardar registro:", err);
+    res.status(500).send("Error interno al procesar el registro.");
   }
 });
 
