@@ -18,13 +18,13 @@ app.use(session({
   saveUninitialized: false
 }));
 
-// Supabase Client
+// Cliente Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
 
-// Middleware Auth Admin
+// Middleware de Autenticación Admin
 const requiereAuth = (req, res, next) => {
   if (req.session && req.session.esAdmin) {
     return next();
@@ -32,27 +32,32 @@ const requiereAuth = (req, res, next) => {
   res.redirect('/admin-login');
 };
 
-// Rutas
+// --- RUTAS ---
+
+// Página Principal / Formulario
 app.get('/', (req, res) => {
   res.render('index');
 });
 
+// Vista de Login Admin
 app.get('/admin-login', (req, res) => {
-  res.render('admin-login', { error: null });
+  res.render('login', { error: null });
 });
 
+// Procesar Login Admin
 app.post('/admin-login', (req, res) => {
   const { password } = req.body;
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'adminsat123';
 
   if (password === ADMIN_PASSWORD) {
     req.session.esAdmin = true;
     return res.redirect('/admin');
   }
 
-  res.render('admin-login', { error: 'Contraseña incorrecta' });
+  res.render('login', { error: 'Contraseña incorrecta' });
 });
 
+// Panel de Administración (Protegido)
 app.get('/admin', requiereAuth, async (req, res) => {
   try {
     const { data: registros, error } = await supabase
@@ -75,7 +80,7 @@ app.get('/admin', requiereAuth, async (req, res) => {
   }
 });
 
-// RUTA PARA GUARDAR EL FORMULARIO DE REGISTRO
+// Procesar Envío de Formulario
 app.post('/guardar', async (req, res) => {
   try {
     const {
@@ -89,7 +94,7 @@ app.post('/guardar', async (req, res) => {
       tutores_nombre, tutores_telefono
     } = req.body;
 
-    // 1. Insertar Registro Principal
+    // 1. Registro Principal
     const { data: registro, error: errorReg } = await supabase
       .from('registros')
       .insert([{
@@ -105,13 +110,17 @@ app.post('/guardar', async (req, res) => {
     const registro_id = registro.id;
 
     // 2. Insertar Maestros
-    if (maestro_nombre && Array.isArray(maestro_nombre)) {
-      const maestrosData = maestro_nombre
+    if (maestro_nombre) {
+      const nombres = Array.isArray(maestro_nombre) ? maestro_nombre : [maestro_nombre];
+      const telefonos = Array.isArray(maestro_telefono) ? maestro_telefono : [maestro_telefono];
+      const correos = Array.isArray(maestro_correo) ? maestro_correo : [maestro_correo];
+
+      const maestrosData = nombres
         .map((nombre, i) => ({
           registro_id,
           nombre,
-          telefono: maestro_telefono ? maestro_telefono[i] : '',
-          correo: maestro_correo ? maestro_correo[i] : ''
+          telefono: telefonos[i] || '',
+          correo: correos[i] || ''
         }))
         .filter(m => m.nombre && m.nombre.trim() !== '');
 
@@ -121,12 +130,15 @@ app.post('/guardar', async (req, res) => {
     }
 
     // 3. Insertar Guerreros de Oración
-    if (guerreros_oracion_nombre && Array.isArray(guerreros_oracion_nombre)) {
-      const guerrerosData = guerreros_oracion_nombre
+    if (guerreros_oracion_nombre) {
+      const nombres = Array.isArray(guerreros_oracion_nombre) ? guerreros_oracion_nombre : [guerreros_oracion_nombre];
+      const telefonos = Array.isArray(guerreros_oracion_telefono) ? guerreros_oracion_telefono : [guerreros_oracion_telefono];
+
+      const guerrerosData = nombres
         .map((nombre, i) => ({
           registro_id,
           nombre,
-          telefono: guerreros_oracion_telefono ? guerreros_oracion_telefono[i] : ''
+          telefono: telefonos[i] || ''
         }))
         .filter(g => g.nombre && g.nombre.trim() !== '');
 
@@ -136,8 +148,10 @@ app.post('/guardar', async (req, res) => {
     }
 
     // 4. Insertar Guerreritos de Oración
-    if (guerreritos_oracion && Array.isArray(guerreritos_oracion)) {
-      const guerreritosData = guerreritos_oracion
+    if (guerreritos_oracion) {
+      const nombres = Array.isArray(guerreritos_oracion) ? guerreritos_oracion : [guerreritos_oracion];
+
+      const guerreritosData = nombres
         .filter(nombre => nombre && nombre.trim() !== '')
         .map(nombre => ({ registro_id, nombre }));
 
@@ -147,12 +161,15 @@ app.post('/guardar', async (req, res) => {
     }
 
     // 5. Insertar Tutores
-    if (tutores_nombre && Array.isArray(tutores_nombre)) {
-      const tutoresData = tutores_nombre
+    if (tutores_nombre) {
+      const nombres = Array.isArray(tutores_nombre) ? tutores_nombre : [tutores_nombre];
+      const telefonos = Array.isArray(tutores_telefono) ? tutores_telefono : [tutores_telefono];
+
+      const tutoresData = nombres
         .map((nombre, i) => ({
           registro_id,
           nombre,
-          telefono: tutores_telefono ? tutores_telefono[i] : ''
+          telefono: telefonos[i] || ''
         }))
         .filter(t => t.nombre && t.nombre.trim() !== '');
 
@@ -168,17 +185,18 @@ app.post('/guardar', async (req, res) => {
   }
 });
 
+// Eliminar Registro
 app.delete('/eliminar/:id', requiereAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Eliminar dependencias
+    // Eliminar tablas secundarias
     await supabase.from('maestros').delete().eq('registro_id', id);
     await supabase.from('guerreros_oracion').delete().eq('registro_id', id);
     await supabase.from('guerreritos_oracion').delete().eq('registro_id', id);
     await supabase.from('tutores').delete().eq('registro_id', id);
 
-    // Eliminar registro padre
+    // Eliminar registro principal
     const { error } = await supabase
       .from('registros')
       .delete()
