@@ -3,476 +3,318 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Admin Dashboard - Samaritan's Purse</title>
+  <title>Panel de Administración - Samaritan's Purse</title>
   
   <link rel="icon" type="image/png" href="/images/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-  
-  <!-- Librerías: Chart.js, XLSX y jsPDF -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     body {
-      background-color: #f4f6f9;
-      color: #333333;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1b381e 0%, #0a170c 100%);
+      min-height: 100vh;
+      color: #ffffff;
+      padding: 15px 0;
     }
-    .navbar-custom {
-      background-color: #155724;
+    @media (min-width: 768px) {
+      body { padding: 30px 0; }
     }
-    .kpi-card {
-      border: none;
+    .card-custom {
+      background-color: #1e7e34;
+      border: 2px solid #28a745;
+      border-radius: 16px;
+      color: #ffffff;
+    }
+    .app-logo {
+      max-height: 60px;
+      object-fit: contain;
+    }
+    .table-container {
+      background-color: #ffffff;
       border-radius: 12px;
-      transition: transform 0.2s ease;
+      color: #000000;
     }
-    .kpi-card:hover {
-      transform: translateY(-3px);
+    .table thead {
+      background-color: #155724;
+      color: #ffffff;
     }
-    .table-responsive {
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    .maestro-item {
+      font-size: 0.85rem;
+      border-bottom: 1px dashed #dee2e6;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
     }
-    .oracion-box {
-      background-color: #fffdf0;
-      border-left: 4px solid #ffc107;
-      font-size: 0.82rem;
+    .maestro-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
     }
-    .badge-cajas {
-      font-size: 0.95rem;
-      padding: 6px 14px;
+    .chart-box {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 15px;
+      color: #333;
+    }
+    .mobile-card {
+      background-color: #ffffff;
+      color: #1a1a1a;
+      border-radius: 12px;
+      border-left: 5px solid #198754;
     }
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm mb-4">
-    <div class="container-fluid px-4">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="#">
-        <img src="/images/logo.png" alt="Logo" width="35" height="35" class="bg-white rounded p-1">
-        <span>Panel Admin | Samaritan's Purse</span>
-      </a>
-      <a href="/" class="btn btn-outline-light btn-sm"><i class="bi bi-house-door-fill me-1"></i> Ir al Formulario</a>
-    </div>
-  </nav>
-
-  <div class="container-fluid px-4 mb-5">
-
-    <!-- CABECERA Y ACCIONES DE EXPORTACIÓN -->
-    <div class="row align-items-center mb-4">
-      <div class="col-12 col-md-6 mb-2 mb-md-0">
-        <h3 class="fw-bold text-success mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard de Control</h3>
-        <p class="text-muted small mb-0">Gestión global de iglesias, estadísticas e integrantes de apoyo de oración.</p>
+  <div class="container-fluid px-2 px-md-5">
+    <div class="card card-custom shadow-lg p-3 p-md-5 mb-4">
+      
+      <!-- ENCABEZADO -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 pb-3 border-bottom border-light-subtle gap-3">
+        <div class="d-flex align-items-center text-center text-md-start">
+          <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm me-3">
+          <div>
+            <h3 class="fw-bold mb-0 text-white">Panel de Administración</h3>
+            <p class="text-white-50 mb-0 small">Control de Registros y Estadísticas</p>
+          </div>
+        </div>
+        
+        <div class="d-flex flex-wrap justify-content-center gap-2 w-100 w-md-auto">
+          <button onclick="exportarExcel()" class="btn btn-success fw-bold shadow-sm flex-fill flex-md-grow-0">
+            <i class="bi bi-file-earmark-excel-fill me-1"></i> Excel
+          </button>
+          <button onclick="exportarPDF()" class="btn btn-danger fw-bold shadow-sm flex-fill flex-md-grow-0">
+            <i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF
+          </button>
+          <a href="/logout" class="btn btn-outline-light fw-bold shadow-sm flex-fill flex-md-grow-0">
+            <i class="bi bi-box-arrow-right me-1"></i> Salir
+          </a>
+        </div>
       </div>
-      <div class="col-12 col-md-6 text-md-end d-flex gap-2 justify-content-md-end">
-        <button onclick="exportarExcel()" class="btn btn-outline-success fw-bold shadow-sm">
-          <i class="bi bi-file-earmark-excel-fill me-1"></i> Excel
-        </button>
-        <button onclick="exportarPDF()" class="btn btn-outline-danger fw-bold shadow-sm">
-          <i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF
-        </button>
-      </div>
-    </div>
 
-    <!-- TARJETAS METRICAS (KPI) -->
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card kpi-card bg-primary text-white shadow-sm p-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="text-uppercase small mb-1 fw-semibold opacity-75">Iglesias Registradas</h6>
-              <h2 class="fw-bold mb-0" id="kpiIglesias"><%= typeof registros !== 'undefined' ? registros.length : 0 %></h2>
+      <!-- DASHBOARD Y GRÁFICAS -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+          <div class="chart-box shadow-sm h-100">
+            <h6 class="fw-bold text-success text-center mb-3">Distribución por Cajas</h6>
+            <div style="height: 200px;" class="d-flex justify-content-center align-items-center">
+              <canvas id="graficaPie"></canvas>
             </div>
-            <i class="bi bi-building fs-1 opacity-50"></i>
           </div>
         </div>
-      </div>
-      <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card kpi-card bg-success text-white shadow-sm p-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="text-uppercase small mb-1 fw-semibold opacity-75">Total Cajitas</h6>
-              <h2 class="fw-bold mb-0" id="kpiCajas">
-                <% 
-                  let totalCajas = 0;
-                  if (typeof registros !== 'undefined') {
-                    registros.forEach(r => totalCajas += Number(r.num_cajas || 0));
-                  }
-                %>
-                <%= totalCajas %>
-              </h2>
+        <div class="col-12 col-md-8">
+          <div class="chart-box shadow-sm h-100">
+            <h6 class="fw-bold text-success text-center mb-3">Solicitudes de Cajas</h6>
+            <div style="height: 200px;" class="d-flex justify-content-center align-items-center">
+              <canvas id="graficaBarras"></canvas>
             </div>
-            <i class="bi bi-box-seam fs-1 opacity-50"></i>
           </div>
         </div>
       </div>
-      <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card kpi-card bg-warning text-dark shadow-sm p-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="text-uppercase small mb-1 fw-semibold opacity-75">Maestros Asignados</h6>
-              <h2 class="fw-bold mb-0">
-                <% 
-                  let totalMaestros = 0;
-                  if (typeof registros !== 'undefined') {
-                    registros.forEach(r => totalMaestros += (r.maestros ? r.maestros.length : 0));
-                  }
-                %>
-                <%= totalMaestros %>
-              </h2>
+
+      <!-- BUSCADOR -->
+      <div class="row mb-3">
+        <div class="col-12 col-md-6 ms-auto">
+          <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-success"></i></span>
+            <input type="text" id="inputBuscador" class="form-control border-start-0" placeholder="Buscar iglesia, pastor, líder o teléfono..." onkeyup="filtrarContenido()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. VISTA MÓVIL (TARJETAS) -->
+      <div class="d-md-none d-flex flex-column gap-3" id="contenedorMovil">
+        <% if (registros && registros.length > 0) { %>
+          <% registros.forEach((item, index) => { %>
+            <div class="mobile-card p-3 shadow-sm item-busqueda">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-dark">#<%= index + 1 %></span>
+                <span class="badge bg-success fs-6 badge-cajas" data-cajas="<%= item.num_cajas %>"><%= item.num_cajas %> Cajas</span>
+              </div>
+              
+              <h5 class="fw-bold text-success mb-1"><%= item.nombre_iglesia %></h5>
+              <% if (item.direccion) { %>
+                <p class="small text-muted mb-2"><i class="bi bi-geo-alt-fill me-1"></i><%= item.direccion %></p>
+              <% } %>
+              
+              <hr class="my-2">
+              <div class="row g-2 small mb-2">
+                <div class="col-6">
+                  <strong>Pastor:</strong><br>
+                  <%= item.nombre_pastor %><br>
+                  <span class="text-muted"><%= item.telefono_pastor %></span>
+                </div>
+                <div class="col-6">
+                  <strong>Líder:</strong><br>
+                  <%= item.nombre_lider %><br>
+                  <span class="text-muted"><%= item.telefono_lider %></span>
+                </div>
+              </div>
+
+              <div class="bg-light p-2 rounded border mb-2">
+                <strong class="small d-block mb-1 text-dark"><i class="bi bi-people-fill text-success me-1"></i>Maestros Asignados:</strong>
+                <% if (item.maestros && item.maestros.length > 0) { %>
+                  <% item.maestros.forEach(function(m) { %>
+                    <div class="maestro-item text-dark">
+                      <span class="fw-bold"><%= m.nombre %></span> - <%= m.telefono %>
+                      <% if (m.correo) { %>
+                        <br><small class="text-muted"><%= m.correo %></small>
+                      <% } %>
+                    </div>
+                  <% }); %>
+                <% } else { %>
+                  <span class="text-muted small">Sin maestros registrados</span>
+                <% } %>
+              </div>
+
+              <div class="text-end">
+                <form action="/eliminar/<%= item.id %>" method="POST" onsubmit="return confirm('¿Deseas eliminar este registro?');" style="display:inline;">
+                  <button type="submit" class="btn btn-outline-danger btn-sm w-100 fw-bold">
+                    <i class="bi bi-trash-fill me-1"></i>Eliminar Registro
+                  </button>
+                </form>
+              </div>
             </div>
-            <i class="bi bi-people-fill fs-1 opacity-50"></i>
-          </div>
-        </div>
+          <% }); %>
+        <% } else { %>
+          <div class="text-center py-4 text-white">No hay registros cargados.</div>
+        <% } %>
       </div>
-      <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card kpi-card bg-info text-white shadow-sm p-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="text-uppercase small mb-1 fw-semibold opacity-75">Red de Oración</h6>
-              <h2 class="fw-bold mb-0">
-                <% 
-                  let totalOracion = 0;
-                  if (typeof registros !== 'undefined') {
-                    registros.forEach(r => {
-                      totalOracion += (r.guerreros_oracion ? r.guerreros_oracion.length : 0);
-                      totalOracion += (r.guerreritos_oracion ? r.guerreritos_oracion.length : 0);
-                      totalOracion += (r.tutores ? r.tutores.length : 0);
-                    });
-                  }
-                %>
-                <%= totalOracion %>
-              </h2>
-            </div>
-            <i class="bi bi-heart-pulse-fill fs-1 opacity-50"></i>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- SECCIÓN DE GRÁFICAS DASHBOARD -->
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-lg-8">
-        <div class="card border-0 shadow-sm p-3 h-100">
-          <h6 class="fw-bold text-dark mb-3"><i class="bi bi-bar-chart-fill text-success me-2"></i>Distribución de Cajitas por Iglesia</h6>
-          <div style="position: relative; height:260px;">
-            <canvas id="chartCajas"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-lg-4">
-        <div class="card border-0 shadow-sm p-3 h-100">
-          <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Composición Red de Oración</h6>
-          <div style="position: relative; height:260px;">
-            <canvas id="chartOracion"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BUSCADOR INDIVIDUAL -->
-    <div class="card border-0 shadow-sm p-3 mb-4">
-      <div class="row align-items-center">
-        <div class="col-12 col-md-8 mb-2 mb-md-0">
-          <div class="input-group">
-            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-            <input type="text" id="inputBuscador" class="form-control border-start-0" placeholder="Buscar por Iglesia, Pastor, Líder o Teléfono..." onkeyup="filtrarTabla()">
-          </div>
-        </div>
-        <div class="col-12 col-md-4 text-md-end">
-          <span class="badge bg-light text-dark border px-3 py-2 fw-normal" id="contadorResultados">
-            Mostrando todos los registros
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- TABLA DE REGISTROS CON ACCIONES -->
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-0">
+      <!-- 2. VISTA ESCRITORIO (TABLA) -->
+      <div class="table-container shadow-sm p-3 d-none d-md-block">
         <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0" id="tablaRegistros">
-            <thead class="table-dark text-center">
+          <table id="tablaRegistros" class="table table-hover align-middle mb-0">
+            <thead>
               <tr>
-                <th style="width: 40px;">#</th>
-                <th>Iglesia y Dirección</th>
-                <th>Pastor</th>
-                <th>Líder</th>
-                <th style="width: 80px;">Cajas</th>
-                <th>Maestros Asignados</th>
-                <th>Equipo de Oración</th>
-                <th style="width: 70px;">Acciones</th>
+                <th scope="col">#</th>
+                <th scope="col">Iglesia / Dirección</th>
+                <th scope="col">Pastor</th>
+                <th scope="col">Líder</th>
+                <th scope="col" class="text-center">Cajas</th>
+                <th scope="col">Maestros Asignados</th>
+                <th scope="col" class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <% if (typeof registros !== 'undefined' && registros.length > 0) { %>
-                <% registros.forEach((r, index) => { %>
-                  <tr id="fila-<%= r.id %>">
-                    <td class="text-center fw-bold text-muted"><%= index + 1 %></td>
-                    
-                    <!-- Iglesia y Dirección -->
+              <% if (registros && registros.length > 0) { %>
+                <% registros.forEach((item, index) => { %>
+                  <tr class="item-busqueda">
+                    <td class="fw-bold"><%= index + 1 %></td>
                     <td>
-                      <div class="fw-bold text-dark col-busqueda"><%= r.nombre_iglesia %></div>
-                      <small class="text-muted d-block"><i class="bi bi-geo-alt-fill me-1"></i><%= r.direccion || 'Sin dirección' %></small>
-                    </td>
-
-                    <!-- Pastor -->
-                    <td>
-                      <div class="fw-bold col-busqueda"><%= r.nombre_pastor %></div>
-                      <small class="text-muted d-block"><i class="bi bi-telephone-fill me-1"></i><%= r.telefono_pastor %></small>
-                      <% if(r.correo_pastor) { %>
-                        <small class="text-muted d-block"><i class="bi bi-envelope-fill me-1"></i><%= r.correo_pastor %></small>
+                      <strong class="text-success"><%= item.nombre_iglesia %></strong>
+                      <% if (item.direccion) { %>
+                        <br><small class="text-muted"><i class="bi bi-geo-alt me-1"></i><%= item.direccion %></small>
                       <% } %>
                     </td>
-
-                    <!-- Líder -->
                     <td>
-                      <div class="fw-bold col-busqueda"><%= r.nombre_lider %></div>
-                      <small class="text-muted d-block"><i class="bi bi-telephone-fill me-1"></i><%= r.telefono_lider %></small>
-                      <% if(r.correo_lider) { %>
-                        <small class="text-muted d-block"><i class="bi bi-envelope-fill me-1"></i><%= r.correo_lider %></small>
+                      <div><strong><%= item.nombre_pastor %></strong></div>
+                      <% if (item.telefono_pastor) { %>
+                        <small><i class="bi bi-telephone me-1"></i><%= item.telefono_pastor %></small>
+                      <% } %>
+                      <% if (item.correo_pastor) { %>
+                        <br><small class="text-muted"><%= item.correo_pastor %></small>
                       <% } %>
                     </td>
-
-                    <!-- Cajas -->
+                    <td>
+                      <div><strong><%= item.nombre_lider %></strong></div>
+                      <% if (item.telefono_lider) { %>
+                        <small><i class="bi bi-telephone me-1"></i><%= item.telefono_lider %></small>
+                      <% } %>
+                      <% if (item.correo_lider) { %>
+                        <br><small class="text-muted"><%= item.correo_lider %></small>
+                      <% } %>
+                    </td>
                     <td class="text-center">
-                      <span class="badge bg-success badge-cajas rounded-pill shadow-sm"><%= r.num_cajas %></span>
+                      <span class="badge bg-success fs-6 badge-cajas-tabla" data-cajas="<%= item.num_cajas %>"><%= item.num_cajas %></span>
                     </td>
-
-                    <!-- Maestros -->
                     <td>
-                      <% if(r.maestros && r.maestros.length > 0) { %>
-                        <ul class="list-unstyled mb-0 small">
-                          <% r.maestros.forEach(m => { %>
-                            <li class="mb-1">
-                              <i class="bi bi-person-fill text-success me-1"></i><strong><%= m.nombre %></strong> 
-                              <span class="text-muted">(<%= m.telefono %>)</span>
-                            </li>
-                          <% }) %>
-                        </ul>
+                      <% if (item.maestros && item.maestros.length > 0) { %>
+                        <div class="d-flex flex-column">
+                          <% item.maestros.forEach(function(m) { %>
+                            <div class="maestro-item">
+                              <i class="bi bi-person-fill text-success me-1"></i><strong><%= m.nombre %></strong><br>
+                              <small class="text-muted"><i class="bi bi-telephone me-1"></i><%= m.telefono %></small>
+                              <% if (m.correo) { %>
+                                <small class="text-muted"> | <%= m.correo %></small>
+                              <% } %>
+                            </div>
+                          <% }); %>
+                        </div>
                       <% } else { %>
                         <span class="text-muted small">Sin maestros</span>
                       <% } %>
                     </td>
-
-                    <!-- Equipo de Oración DESGLOSADO Y COMPLETO -->
-                    <td>
-                      <% 
-                        const numGuerreros = r.guerreros_oracion ? r.guerreros_oracion.length : 0;
-                        const numGuerreritos = r.guerreritos_oracion ? r.guerreritos_oracion.length : 0;
-                        const numTutores = r.tutores ? r.tutores.length : 0;
-                        const tieneOracion = (numGuerreros + numGuerreritos + numTutores) > 0;
-                      %>
-
-                      <% if (tieneOracion) { %>
-                        <div class="oracion-box p-2 rounded">
-                          <% if(numGuerreros > 0) { %>
-                            <div class="d-flex align-items-center mb-1">
-                              <i class="bi bi-people-fill text-warning me-1"></i>
-                              <strong class="me-1">Guerreros:</strong> <%= numGuerreros %>
-                            </div>
-                          <% } %>
-
-                          <% if(numGuerreritos > 0) { %>
-                            <div class="d-flex align-items-center mb-1">
-                              <i class="bi bi-emoji-smile-fill text-warning me-1"></i>
-                              <strong class="me-1">Guerreritos:</strong> <%= numGuerreritos %>
-                            </div>
-                          <% } %>
-
-                          <% if(numTutores > 0) { %>
-                            <div class="d-flex align-items-center">
-                              <i class="bi bi-shield-check text-warning me-1"></i>
-                              <strong class="me-1">Tutores:</strong> <%= numTutores %>
-                            </div>
-                          <% } %>
-
-                          <button class="btn btn-link btn-sm p-0 mt-1 fw-bold text-decoration-none text-success" onclick='verDetalleOracion(<%- JSON.stringify(r) %>)'>
-                            <i class="bi bi-eye-fill me-1"></i>Ver Integrantes
-                          </button>
-                        </div>
-                      <% } else { %>
-                        <span class="badge bg-light text-muted border p-2 fw-normal d-block text-center">Sin datos de oración</span>
-                      <% } %>
-                    </td>
-
-                    <!-- ZONA DE ACCIONES / ELIMINAR -->
                     <td class="text-center">
-                      <button class="btn btn-outline-danger btn-sm rounded-circle" title="Eliminar Registro" onclick="confirmarEliminar('<%= r.id %>', '<%= r.nombre_iglesia %>')">
-                        <i class="bi bi-trash-fill"></i>
-                      </button>
+                      <form action="/eliminar/<%= item.id %>" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');" style="display:inline;">
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" title="Eliminar">
+                          <i class="bi bi-trash-fill"></i>
+                        </button>
+                      </form>
                     </td>
-
                   </tr>
-                <% }) %>
+                <% }); %>
               <% } else { %>
                 <tr>
-                  <td colspan="8" class="text-center py-5 text-muted">
-                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>No hay registros guardados actualmente.
-                  </td>
+                  <td colspan="7" class="text-center py-4 text-muted fw-bold">No hay registros disponibles.</td>
                 </tr>
               <% } %>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
 
-  </div>
-
-  <!-- MODAL PARA VER DETALLE COMPLETO DE ORACIÓN -->
-  <div class="modal fade" id="modalDetalleOracion" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header bg-success text-white">
-          <h5 class="modal-title fw-bold"><i class="bi bi-heart-pulse-fill me-2"></i>Equipo de Apoyo de Oración</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body" id="bodyModalOracion">
-          <!-- Se llena dinámicamente con JS -->
-        </div>
-      </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- LÓGICA DASHBOARD, BÚSQUEDA Y EXPORTACIONES -->
   <script>
-    // Data para gráficos desde Backend
-    const registrosData = <%- JSON.stringify(typeof registros !== 'undefined' ? registros : []) %>;
-
-    // 1. INICIALIZAR GRÁFICAS
     document.addEventListener('DOMContentLoaded', () => {
-      // Gráfica de Cajas por Iglesia
-      const labelsIglesias = registrosData.map(r => r.nombre_iglesia);
-      const dataCajas = registrosData.map(r => Number(r.num_cajas || 0));
+      const badges = document.querySelectorAll('.badge-cajas');
+      let c50 = 0, c100 = 0, c150 = 0, otros = 0;
 
-      const ctxCajas = document.getElementById('chartCajas').getContext('2d');
-      new Chart(ctxCajas, {
+      badges.forEach(b => {
+        const cant = parseInt(b.getAttribute('data-cajas'), 10);
+        if (cant === 50) c50++;
+        else if (cant === 100) c100++;
+        else if (cant === 150) c150++;
+        else otros++;
+      });
+
+      const datos = [c50, c100, c150, otros];
+      const etiquetas = ['50 Cajas', '100 Cajas', '150 Cajas', 'Otros'];
+
+      new Chart(document.getElementById('graficaPie'), {
+        type: 'pie',
+        data: {
+          labels: etiquetas,
+          datasets: [{ data: datos, backgroundColor: ['#28a745', '#0d6efd', '#fd7e14', '#6c757d'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      new Chart(document.getElementById('graficaBarras'), {
         type: 'bar',
         data: {
-          labels: labelsIglesias,
-          datasets: [{
-            label: 'Cajitas Solicitadas',
-            data: dataCajas,
-            backgroundColor: '#198754',
-            borderRadius: 6
-          }]
+          labels: etiquetas,
+          datasets: [{ label: 'Registros', data: datos, backgroundColor: ['#28a745', '#0d6efd', '#fd7e14', '#6c757d'] }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
-        }
-      });
-
-      // Gráfica de Red de Oración
-      let totalG = 0, totalGitos = 0, totalTut = 0;
-      registrosData.forEach(r => {
-        totalG += (r.guerreros_oracion ? r.guerreros_oracion.length : 0);
-        totalGitos += (r.guerreritos_oracion ? r.guerreritos_oracion.length : 0);
-        totalTut += (r.tutores ? r.tutores.length : 0);
-      });
-
-      const ctxOracion = document.getElementById('chartOracion').getContext('2d');
-      new Chart(ctxOracion, {
-        type: 'doughnut',
-        data: {
-          labels: ['Guerreros', 'Guerreritos', 'Tutores'],
-          datasets: [{
-            data: [totalG, totalGitos, totalTut],
-            backgroundColor: ['#ffc107', '#0dcaf0', '#20c997']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
       });
     });
 
-    // 2. BUSCADOR EN TIEMPO REAL
-    function filtrarTabla() {
-      const query = document.getElementById('inputBuscador').value.toLowerCase();
-      const filas = document.querySelectorAll('#tablaRegistros tbody tr');
-      let visibes = 0;
+    function filtrarContenido() {
+      const texto = document.getElementById('inputBuscador').value.toLowerCase();
+      const elementos = document.querySelectorAll('.item-busqueda');
 
-      filas.forEach(fila => {
-        const textoFila = fila.innerText.toLowerCase();
-        if (textoFila.includes(query)) {
-          fila.style.display = '';
-          visibes++;
-        } else {
-          fila.style.display = 'none';
-        }
+      elementos.forEach(el => {
+        const contenido = el.innerText.toLowerCase();
+        el.style.setProperty('display', contenido.includes(texto) ? '' : 'none', 'important');
       });
-
-      document.getElementById('contadorResultados').innerText = `Mostrando ${visibes} de ${filas.length} registros`;
     }
 
-    // 3. DETALLE DE EQUIPO DE ORACIÓN (MODAL)
-    function verDetalleOracion(registro) {
-      const container = document.getElementById('bodyModalOracion');
-      let html = `<h6 class="fw-bold text-success mb-3">${registro.nombre_iglesia}</h6>`;
-
-      // Guerreros
-      html += `<h6 class="fw-bold text-dark border-bottom pb-1"><i class="bi bi-people-fill text-warning me-2"></i>Guerreros de Oración (${registro.guerreros_oracion ? registro.guerreros_oracion.length : 0})</h6><ul class="list-group mb-3">`;
-      if(registro.guerreros_oracion && registro.guerreros_oracion.length > 0) {
-        registro.guerreros_oracion.forEach(g => {
-          html += `<li class="list-group-item d-flex justify-content-between"><span>${g.nombre}</span><span class="text-muted">${g.telefono || 'Sin tel'}</span></li>`;
-        });
-      } else { html += `<li class="list-group-item text-muted small">Sin registros</li>`; }
-      html += `</ul>`;
-
-      // Guerreritos
-      html += `<h6 class="fw-bold text-dark border-bottom pb-1"><i class="bi bi-emoji-smile-fill text-info me-2"></i>Guerreritos de Oración (${registro.guerreritos_oracion ? registro.guerreritos_oracion.length : 0})</h6><ul class="list-group mb-3">`;
-      if(registro.guerreritos_oracion && registro.guerreritos_oracion.length > 0) {
-        registro.guerreritos_oracion.forEach(g => {
-          html += `<li class="list-group-item">${g.nombre}</li>`;
-        });
-      } else { html += `<li class="list-group-item text-muted small">Sin registros</li>`; }
-      html += `</ul>`;
-
-      // Tutores
-      html += `<h6 class="fw-bold text-dark border-bottom pb-1"><i class="bi bi-shield-check text-success me-2"></i>Tutores (${registro.tutores ? registro.tutores.length : 0})</h6><ul class="list-group">`;
-      if(registro.tutores && registro.tutores.length > 0) {
-        registro.tutores.forEach(t => {
-          html += `<li class="list-group-item d-flex justify-content-between"><span>${t.nombre}</span><span class="text-muted">${t.telefono || 'Sin tel'}</span></li>`;
-        });
-      } else { html += `<li class="list-group-item text-muted small">Sin registros</li>`; }
-      html += `</ul>`;
-
-      container.innerHTML = html;
-      new bootstrap.Modal(document.getElementById('modalDetalleOracion')).show();
-    }
-
-    // 4. ELIMINAR REGISTRO
-    async function confirmarEliminar(id, nombre) {
-      if (confirm(`¿Estás seguro de que deseas eliminar el registro de "${nombre}"? Esta acción no se puede deshacer.`)) {
-        try {
-          const response = await fetch(`/eliminar/${id}`, { method: 'DELETE' });
-          if (response.ok) {
-            const fila = document.getElementById(`fila-${id}`);
-            if (fila) fila.remove();
-            alert('Registro eliminado correctamente');
-            location.reload();
-          } else {
-            alert('Error al eliminar el registro');
-          }
-        } catch (error) {
-          console.error(error);
-          alert('Error de conexión al eliminar');
-        }
-      }
-    }
-
-    // 5. EXPORTAR A EXCEL
     function exportarExcel() {
       const filas = document.querySelectorAll('#tablaRegistros tbody tr');
       const datosExcel = [];
@@ -481,32 +323,28 @@
         const cols = tr.querySelectorAll('td');
         if (cols.length > 1) {
           datosExcel.push({
-            "No.": index + 1,
-            "Iglesia / Dirección": cols[1].innerText.replace(/\n/g, ' - ').trim(),
-            "Pastor": cols[2].innerText.replace(/\n/g, ' ').trim(),
-            "Líder": cols[3].innerText.replace(/\n/g, ' ').trim(),
+            "#": index + 1,
+            "Iglesia / Dirección": cols[1].innerText.replace(/\n/g, ' - '),
+            "Pastor": cols[2].innerText.replace(/\n/g, ' '),
+            "Líder": cols[3].innerText.replace(/\n/g, ' '),
             "Cajas": cols[4].innerText.trim(),
-            "Maestros": cols[5].innerText.replace(/\n/g, ' | ').trim(),
-            "Equipo Oración": cols[6].innerText.replace(/\n/g, ' | ').trim()
+            "Maestros": cols[5].innerText.replace(/\n/g, ' | ')
           });
         }
       });
 
       const ws = XLSX.utils.json_to_sheet(datosExcel);
-      ws['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 25 }, { wch: 25 }, { wch: 10 }, { wch: 35 }, { wch: 35 }];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Registros");
       XLSX.writeFile(wb, 'Registros_Iglesias.xlsx');
     }
 
-    // 6. EXPORTAR A PDF
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('l', 'mm', 'a4');
 
       doc.setFontSize(14);
-      doc.setTextColor(21, 87, 36);
-      doc.text("Reporte Completo de Registros - Samaritan's Purse", 14, 15);
+      doc.text("Reporte de Registros - Samaritan's Purse", 14, 15);
 
       const filasData = [];
       document.querySelectorAll('#tablaRegistros tbody tr').forEach((tr, index) => {
@@ -514,36 +352,28 @@
         if (cols.length > 1) {
           filasData.push([
             index + 1,
-            cols[1].innerText.trim(),
-            cols[2].innerText.trim(),
-            cols[3].innerText.trim(),
+            cols[1].innerText,
+            cols[2].innerText,
+            cols[3].innerText,
             cols[4].innerText.trim(),
-            cols[5].innerText.trim(),
-            cols[6].innerText.trim()
+            cols[5].innerText
           ]);
         }
       });
 
       doc.autoTable({
-        head: [['#', 'Iglesia / Dirección', 'Pastor', 'Líder', 'Cajas', 'Maestros', 'Equipo Oración']],
+        head: [['#', 'Iglesia / Dirección', 'Pastor', 'Líder', 'Cajas', 'Maestros']],
         body: filasData,
         startY: 22,
         theme: 'grid',
-        headStyles: { fillColor: [21, 87, 36], halign: 'center', valign: 'middle', fontSize: 8 },
-        styles: { fontSize: 7.5, cellPadding: 2.5, valign: 'middle', overflow: 'linebreak' },
-        columnStyles: {
-          0: { halign: 'center', cellWidth: 8 },
-          1: { halign: 'left', cellWidth: 48 },
-          2: { halign: 'left', cellWidth: 40 },
-          3: { halign: 'left', cellWidth: 40 },
-          4: { halign: 'center', cellWidth: 14 },
-          5: { halign: 'left', cellWidth: 55 },
-          6: { halign: 'left' }
-        }
+        headStyles: { fillColor: [21, 87, 36] },
+        styles: { fontSize: 8, cellPadding: 2 }
       });
 
       doc.save('Registros_Iglesias.pdf');
     }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
