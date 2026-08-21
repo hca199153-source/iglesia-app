@@ -1,220 +1,74 @@
 const express = require('express');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
-const session = require('express-session');
-require('dotenv').config();
 
 const app = express();
 
-// Configuración de plantillas y middlewares
+// Configuración de Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Configuración de plantillas EJS y Middleware
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Configuración de Sesión
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'secreto_samaritan',
-  resave: false,
-  saveUninitialized: false
-}));
-
-// Cliente Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
-
-// Middleware de Autenticación Admin
-const requiereAuth = (req, res, next) => {
-  if (req.session && req.session.esAdmin) {
-    return next();
-  }
-  res.redirect('/admin-login');
-};
-
-// --- RUTAS ---
-
-// Página Principal / Formulario
+// 1. RUTA PRINCIPAL (Formulario para los pastores)
 app.get('/', (req, res) => {
-  res.render('index');
+  res.render('index', { mensajeExito: null, mensajeError: null });
 });
 
-// Vista de Login Admin
-app.get('/admin-login', (req, res) => {
-  res.render('login', { error: null });
-});
-
-// Procesar Login Admin
-app.post('/admin-login', (req, res) => {
-  const { password } = req.body;
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'adminsat123';
-
-  if (password === ADMIN_PASSWORD) {
-    req.session.esAdmin = true;
-    return res.redirect('/admin');
+// 2. GUARDAR REGISTRO DEL FORMULARIO
+app.post('/guardar', async (req, res) => {
+  try {
+    const { error } = await supabase.from('registros').insert([req.body]);
+    if (error) throw error;
+    res.render('index', { mensajeExito: '¡Registro guardado con éxito!', mensajeError: null });
+  } catch (error) {
+    console.error("Error al guardar:", error);
+    res.render('index', { mensajeExito: null, mensajeError: 'Error al guardar los datos.' });
   }
-
-  res.render('login', { error: 'Contraseña incorrecta' });
 });
 
-// Panel de Administración (Protegido)
-app.get('/admin', requiereAuth, async (req, res) => {
+// 3. PANEL DE ADMINISTRACIÓN (Ver lista de iglesias)
+app.get('/admin', async (req, res) => {
   try {
     const { data: registros, error } = await supabase
       .from('registros')
-      .select(`
-        *,
-        maestros (*),
-        guerreros_oracion (*),
-        guerreritos_oracion (*),
-        tutores (*)
-      `)
+      .select('*')
       .order('id', { ascending: true });
 
     if (error) throw error;
-
-    res.render('admin', { registros: registros || [] });
+    res.render('admin', { registros });
   } catch (error) {
-    console.error("Error al cargar registros en /admin:", error);
+    console.error("Error al cargar admin:", error);
     res.render('admin', { registros: [] });
   }
 });
 
-// Procesar Envío de Formulario
-app.post('/guardar', async (req, res) => {
-  try {
-    const {
-      nombre_pastor, telefono_pastor, correo_pastor,
-      nombre_iglesia, direccion,
-      nombre_lider, telefono_lider, correo_lider,
-      num_cajas,
-      maestro_nombre, maestro_telefono, maestro_correo,
-      guerreros_oracion_nombre, guerreros_oracion_telefono,
-      guerreritos_oracion,
-      tutores_nombre, tutores_telefono
-    } = req.body;
-
-    // 1. Registro Principal
-    const { data: registro, error: errorReg } = await supabase
-      .from('registros')
-      .insert([{
-        nombre_pastor, telefono_pastor, correo_pastor,
-        nombre_iglesia, direccion,
-        nombre_lider, telefono_lider, correo_lider,
-        num_cajas: Number(num_cajas || 0)
-      }])
-      .select()
-      .single();
-
-    if (errorReg) throw errorReg;
-    const registro_id = registro.id;
-
-    // 2. Insertar Maestros
-    if (maestro_nombre) {
-      const nombres = Array.isArray(maestro_nombre) ? maestro_nombre : [maestro_nombre];
-      const telefonos = Array.isArray(maestro_telefono) ? maestro_telefono : [maestro_telefono];
-      const correos = Array.isArray(maestro_correo) ? maestro_correo : [maestro_correo];
-
-      const maestrosData = nombres
-        .map((nombre, i) => ({
-          registro_id,
-          nombre,
-          telefono: telefonos[i] || '',
-          correo: correos[i] || ''
-        }))
-        .filter(m => m.nombre && m.nombre.trim() !== '');
-
-      if (maestrosData.length > 0) {
-        await supabase.from('maestros').insert(maestrosData);
-      }
-    }
-
-    // 3. Insertar Guerreros de Oración
-    if (guerreros_oracion_nombre) {
-      const nombres = Array.isArray(guerreros_oracion_nombre) ? guerreros_oracion_nombre : [guerreros_oracion_nombre];
-      const telefonos = Array.isArray(guerreros_oracion_telefono) ? guerreros_oracion_telefono : [guerreros_oracion_telefono];
-
-      const guerrerosData = nombres
-        .map((nombre, i) => ({
-          registro_id,
-          nombre,
-          telefono: telefonos[i] || ''
-        }))
-        .filter(g => g.nombre && g.nombre.trim() !== '');
-
-      if (guerrerosData.length > 0) {
-        await supabase.from('guerreros_oracion').insert(guerrerosData);
-      }
-    }
-
-    // 4. Insertar Guerreritos de Oración
-    if (guerreritos_oracion) {
-      const nombres = Array.isArray(guerreritos_oracion) ? guerreritos_oracion : [guerreritos_oracion];
-
-      const guerreritosData = nombres
-        .filter(nombre => nombre && nombre.trim() !== '')
-        .map(nombre => ({ registro_id, nombre }));
-
-      if (guerreritosData.length > 0) {
-        await supabase.from('guerreritos_oracion').insert(guerreritosData);
-      }
-    }
-
-    // 5. Insertar Tutores
-    if (tutores_nombre) {
-      const nombres = Array.isArray(tutores_nombre) ? tutores_nombre : [tutores_nombre];
-      const telefonos = Array.isArray(tutores_telefono) ? tutores_telefono : [tutores_telefono];
-
-      const tutoresData = nombres
-        .map((nombre, i) => ({
-          registro_id,
-          nombre,
-          telefono: telefonos[i] || ''
-        }))
-        .filter(t => t.nombre && t.nombre.trim() !== '');
-
-      if (tutoresData.length > 0) {
-        await supabase.from('tutores').insert(tutoresData);
-      }
-    }
-
-    res.redirect('/?exito=true');
-  } catch (err) {
-    console.error("Error al guardar registro:", err);
-    res.status(500).send("Error interno al procesar el registro.");
-  }
-});
-
-// Eliminar Registro
-app.delete('/eliminar/:id', requiereAuth, async (req, res) => {
+// 4. ELIMINAR REGISTRO
+app.post('/eliminar/:id', async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Eliminar tablas secundarias
-    await supabase.from('maestros').delete().eq('registro_id', id);
-    await supabase.from('guerreros_oracion').delete().eq('registro_id', id);
-    await supabase.from('guerreritos_oracion').delete().eq('registro_id', id);
-    await supabase.from('tutores').delete().eq('registro_id', id);
-
-    // Eliminar registro principal
     const { error } = await supabase
       .from('registros')
       .delete()
       .eq('id', id);
 
-    if (error) {
-      console.error("Error Supabase:", error);
-      return res.status(400).json({ success: false, message: error.message });
-    }
-
-    return res.status(200).json({ success: true });
-  } catch (err) {
-    console.error("Error servidor:", err);
-    return res.status(500).json({ success: false });
+    if (error) console.error("Error al eliminar:", error);
+    res.redirect('/admin');
+  } catch (error) {
+    console.error("Error en servidor al eliminar:", error);
+    res.redirect('/admin');
   }
 });
 
-const PORT = process.env.PORT || 10000;
+// Puerto de ejecución
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor activo en puerto ${PORT}`);
+  console.log(`Servidor iniciado correctamente en puerto ${PORT}`);
 });
