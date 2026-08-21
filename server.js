@@ -1,120 +1,85 @@
 const express = require('express');
-const { Pool } = require('pg');
 const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Configuración de la base de datos PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: { rejectUnauthorized: false }
 });
 
-// Configuración de EJS y Archivos Estáticos
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// RUTA PRINCIPAL (Renderiza index.ejs)
 app.get('/', (req, res) => {
-  const mensajeExito = req.query.exito || '';
-  const mensajeError = req.query.error || '';
-
-  res.render('index', { 
-    mensajeExito: mensajeExito, 
-    mensajeError: mensajeError 
-  });
+  res.render('index', { mensajeExito: null, mensajeError: null });
 });
 
-// RUTA POST: Guardar cliente y maestros
 app.post('/guardar', async (req, res) => {
-  const client = await pool.connect();
-
   try {
     const {
-      nombre_completo,
-      telefono,
-      correo,
-      calle_numero,
-      colonia,
-      ciudad_estado,
-      cajas,
-      maestro_nombre,
-      maestro_telefono,
-      maestro_correo
+      nombre_pastor,
+      telefono_pastor,
+      correo_pastor,
+      nombre_iglesia,
+      direccion,
+      num_maestros,
+      nombre_lider,
+      telefono_lider,
+      correo_lider
     } = req.body;
 
-    await client.query('BEGIN');
+    await pool.query(
+      `INSERT INTO registros 
+       (nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, num_maestros, nombre_lider, telefono_lider, correo_lider) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        nombre_pastor || null,
+        telefono_pastor || null,
+        correo_pastor || null,
+        nombre_iglesia || null,
+        direccion || null,
+        parseInt(num_maestros, 10) || 0,
+        nombre_lider || null,
+        telefono_lider || null,
+        correo_lider || null
+      ]
+    );
 
-    // 1. Insertar el cliente principal
-    const queryCliente = `
-      INSERT INTO clientes (nombre_completo, telefono, correo, calle_numero, colonia, ciudad_estado, cajas)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING id;
-    `;
-    const valuesCliente = [
-      nombre_completo,
-      telefono,
-      correo,
-      calle_numero,
-      colonia,
-      ciudad_estado,
-      cajas
-    ];
-
-    const resultCliente = await client.query(queryCliente, valuesCliente);
-    const clienteId = resultCliente.rows[0].id;
-
-    // 2. Insertar los maestros (si existen)
-    if (maestro_nombre && Array.isArray(maestro_nombre)) {
-      const queryMaestro = `
-        INSERT INTO maestros (cliente_id, nombre_completo, telefono, correo)
-        VALUES ($1, $2, $3, $4);
-      `;
-
-      for (let i = 0; i < maestro_nombre.length; i++) {
-        if (maestro_nombre[i] && maestro_nombre[i].trim() !== '') {
-          await client.query(queryMaestro, [
-            clienteId,
-            maestro_nombre[i],
-            maestro_telefono[i] || null,
-            maestro_correo[i] || null
-          ]);
-        }
-      }
-    } else if (maestro_nombre && typeof maestro_nombre === 'string') {
-      // En caso de que se envíe un único maestro como string
-      const queryMaestro = `
-        INSERT INTO maestros (cliente_id, nombre_completo, telefono, correo)
-        VALUES ($1, $2, $3, $4);
-      `;
-      await client.query(queryMaestro, [
-        clienteId,
-        maestro_nombre,
-        maestro_telefono || null,
-        maestro_correo || null
-      ]);
-    }
-
-    await client.query('COMMIT');
-
-    // Redirecciona agregando el parámetro de éxito para que index.ejs lo detecte
-    res.redirect('/?exito=' + encodeURIComponent('¡Registro guardado exitosamente!'));
-
+    res.render('index', { mensajeExito: '¡Registro guardado con éxito!', mensajeError: null });
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error al guardar registro:', error);
-    res.redirect('/?error=' + encodeURIComponent('Ocurrió un error al guardar los datos. Inténtalo de nuevo.'));
-  } finally {
-    client.release();
+    console.error("Error SQL al guardar:", error);
+    res.render('index', { mensajeExito: null, mensajeError: 'Error al guardar los datos.' });
   }
 });
 
-// Iniciar servidor
+app.get('/admin', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM registros ORDER BY id ASC');
+    res.render('admin', { registros: result.rows });
+  } catch (error) {
+    console.error("Error al cargar admin:", error);
+    res.render('admin', { registros: [] });
+  }
+});
+
+app.post('/eliminar/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM registros WHERE id = $1', [id]);
+    res.redirect('/admin');
+  } catch (err) {
+    console.error("Error al eliminar:", err);
+    res.redirect('/admin');
+  }
+});
+
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en el puerto ${PORT}`);
+  console.log(`Servidor activo en el puerto ${PORT}`);
 });
