@@ -1,139 +1,56 @@
 const express = require('express');
-const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
+const session = require('express-session');
+require('dotenv').config();
 
 const app = express();
 
-// Configuración de Supabase
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Configuración de plantillas EJS y Middlewares
+// Configuración de plantillas y middlewares
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
-// 1. RUTA PRINCIPAL (Formulario para los pastores)
-app.get('/', (req, res) => {
-  res.render('index', { mensajeExito: null, mensajeError: null });
-});
+// Configuración de Sesión
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'secreto_samaritan',
+  resave: false,
+  saveUninitialized: false
+}));
 
-// 2. GUARDAR REGISTRO Y SUS RELACIONES (Maestros, Guerreros, Guerreritos, Tutores)
-app.post('/guardar', async (req, res) => {
-  try {
-    const {
-      nombre_pastor,
-      telefono_pastor,
-      correo_pastor,
-      nombre_iglesia,
-      direccion,
-      num_cajas,
-      nombre_lider,
-      telefono_lider,
-      correo_lider,
-      // Listas/Arreglos provenientes del formulario dinamico
-      maestros,
-      guerreros_oracion,
-      guerreritos_oracion,
-      tutores
-    } = req.body;
+// Supabase Client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
-    // A) Insertar el registro principal en la tabla 'registros'
-    const { data: registroInsertado, error: errorRegistro } = await supabase
-      .from('registros')
-      .insert([{
-        nombre_pastor,
-        telefono_pastor,
-        correo_pastor,
-        nombre_iglesia,
-        direccion,
-        num_cajas: Number(num_cajas) || 0,
-        nombre_lider,
-        telefono_lider,
-        correo_lider
-      }])
-      .select('id')
-      .single();
-
-    if (errorRegistro) throw errorRegistro;
-
-    const registro_id = registroInsertado.id;
-
-    // B) Insertar Maestros (si existen)
-    if (maestros && Array.isArray(maestros) && maestros.length > 0) {
-      const maestrosData = maestros
-        .filter(m => m.nombre && m.nombre.trim() !== '')
-        .map(m => ({
-          registro_id,
-          nombre: m.nombre,
-          telefono: m.telefono || ''
-        }));
-
-      if (maestrosData.length > 0) {
-        await supabase.from('maestros').insert(maestrosData);
-      }
-    }
-
-    // C) Insertar Guerreros de Oración (si existen)
-    if (guerreros_oracion && Array.isArray(guerreros_oracion) && guerreros_oracion.length > 0) {
-      const guerrerosData = guerreros_oracion
-        .filter(g => g.nombre && g.nombre.trim() !== '')
-        .map(g => ({
-          registro_id,
-          nombre: g.nombre,
-          telefono: g.telefono || ''
-        }));
-
-      if (guerrerosData.length > 0) {
-        await supabase.from('guerreros_oracion').insert(guerrerosData);
-      }
-    }
-
-    // D) Insertar Guerreritos de Oración (si existen)
-    if (guerreritos_oracion && Array.isArray(guerreritos_oracion) && guerreritos_oracion.length > 0) {
-      const guerreritosData = guerreritos_oracion
-        .filter(g => g.nombre && g.nombre.trim() !== '')
-        .map(g => ({
-          registro_id,
-          nombre: g.nombre
-        }));
-
-      if (guerreritosData.length > 0) {
-        await supabase.from('guerreritos_oracion').insert(guerreritosData);
-      }
-    }
-
-    // E) Insertar Tutores (si existen)
-    if (tutores && Array.isArray(tutores) && tutores.length > 0) {
-      const tutoresData = tutores
-        .filter(t => t.nombre && t.nombre.trim() !== '')
-        .map(t => ({
-          registro_id,
-          nombre: t.nombre,
-          telefono: t.telefono || ''
-        }));
-
-      if (tutoresData.length > 0) {
-        await supabase.from('tutores').insert(tutoresData);
-      }
-    }
-
-    res.render('index', { mensajeExito: '¡Registro guardado con éxito!', mensajeError: null });
-
-  } catch (error) {
-    console.error("Error completo al guardar:", error);
-    res.render('index', { mensajeExito: null, mensajeError: 'Error al guardar los datos.' });
+// Middleware Auth Admin
+const requiereAuth = (req, res, next) => {
+  if (req.session && req.session.esAdmin) {
+    return next();
   }
+  res.redirect('/admin-login');
+};
+
+// Rutas
+app.get('/admin-login', (req, res) => {
+  res.render('admin-login', { error: null });
 });
 
-// 3. PANEL DE ADMINISTRACIÓN (Obtener registros con sus relaciones)
-app.get('/admin', async (req, res) => {
+app.post('/admin-login', (req, res) => {
+  const { password } = req.body;
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+
+  if (password === ADMIN_PASSWORD) {
+    req.session.esAdmin = true;
+    return res.redirect('/admin');
+  }
+
+  res.render('admin-login', { error: 'Contraseña incorrecta' });
+});
+
+app.get('/admin', requiereAuth, async (req, res) => {
   try {
-    // Consulta relacional completa en Supabase
     const { data: registros, error } = await supabase
       .from('registros')
       .select(`
@@ -149,45 +66,40 @@ app.get('/admin', async (req, res) => {
 
     res.render('admin', { registros: registros || [] });
   } catch (error) {
-    console.error("Error al cargar admin:", error);
+    console.error("Error al cargar registros en /admin:", error);
     res.render('admin', { registros: [] });
   }
 });
 
-// 4. ELIMINAR REGISTRO (Endpoint para llamadas DELETE desde AJAX o redirección)
-app.delete('/eliminar/:id', async (req, res) => {
+app.delete('/eliminar/:id', requiereAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Al tener ON DELETE CASCADE configurado en Supabase, eliminar el registro borrará automáticamente maestros, guerreros, etc.
+    // Eliminar dependencias
+    await supabase.from('maestros').delete().eq('registro_id', id);
+    await supabase.from('guerreros_oracion').delete().eq('registro_id', id);
+    await supabase.from('guerreritos_oracion').delete().eq('registro_id', id);
+    await supabase.from('tutores').delete().eq('registro_id', id);
+
+    // Eliminar registro padre
     const { error } = await supabase
       .from('registros')
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error Supabase:", error);
+      return res.status(400).json({ success: false, message: error.message });
+    }
 
-    res.status(200).json({ success: true, message: 'Registro eliminado correctamente' });
-  } catch (error) {
-    console.error("Error al eliminar registro:", error);
-    res.status(500).json({ success: false, error: error.message });
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Error servidor:", err);
+    return res.status(500).json({ success: false });
   }
 });
 
-// Compatibilidad por si envías formulario HTML vía POST tradicional para eliminar
-app.post('/eliminar/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    await supabase.from('registros').delete().eq('id', id);
-    res.redirect('/admin');
-  } catch (error) {
-    console.error("Error al eliminar por POST:", error);
-    res.redirect('/admin');
-  }
-});
-
-// Puerto de ejecución
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`Servidor iniciado correctamente en puerto ${PORT}`);
+  console.log(`Servidor activo en puerto ${PORT}`);
 });
