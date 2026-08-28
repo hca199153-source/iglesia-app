@@ -116,10 +116,10 @@
               <img src="/images/foto2.jpg" class="d-block w-100" alt="Fotografía 2" onerror="this.src='/images/foto2.png'">
             </div>
           </div>
-          <button class="carousel-control-prev" type="button" data-bs-target="#carouselIglesia" data-bs-slide-prev>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselIglesia" data-bs-slide="prev">
             <span class="carousel-control-prev-icon"></span>
           </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#carouselIglesia" data-bs-slide-next>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselIglesia" data-bs-slide="next">
             <span class="carousel-control-next-icon"></span>
           </button>
         </div>
@@ -128,7 +128,7 @@
         <div id="seccionTerminos" class="card card-terms shadow-lg p-3 p-md-4 mb-4">
           <div class="text-center mb-3">
             <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm mb-2">
-            <h4 class="fw-bold text-success mb-1">REGISTRO DE SAN ANDRES TUXTLA </h4>
+            <h4 class="fw-bold text-success mb-1">REGISTRO DE SAN ANDRES TUXTLA</h4>
             <span class="badge bg-warning text-dark px-3 py-2 fs-6 shadow-sm">
               <i class="bi bi-exclamation-triangle-fill me-1"></i> Por favor lea cuidadosamente los lineamientos
             </span>
@@ -195,7 +195,7 @@
                   <div class="col-12 col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-calendar-check-fill text-primary me-1"></i> Seguimiento semanal</span></div>
                   <div class="col-12 col-sm-6 col-md-4"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-heart-pulse-fill text-danger me-1"></i> Crecimiento espiritual</span></div>
                   <div class="col-12 col-sm-6 col-md-6"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-mortarboard-fill text-warning me-1"></i> Llevarlos a la graduación</span></div>
-                  <div class="col-12 col-sm-6 col-md-6"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-hands me-1 text-info"></i> Orar por el niño y su familia</span></div>
+                  <div class="col-12 col-sm-6 col-md-6"><span class="badge bg-white text-dark border p-2 w-100 text-start"><i class="bi bi-heart-fill me-1 text-info"></i> Orar por el niño y su familia</span></div>
                 </div>
               </div>
             </div>
@@ -423,7 +423,7 @@
       seccionForm.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Generador dinámico de campos para maestros
+    // Generador dinámico de campos para maestros corregido para enviar arrays consistentes
     function actualizarMaestros() {
       const cajas = document.getElementById('selectCajas').value;
       const contenedor = document.getElementById('contenedorMaestros');
