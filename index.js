@@ -5,18 +5,18 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración de la base de datos PostgreSQL
+// Configuración de la base de datos PostgreSQL[cite: 3]
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// Middleware
+// Middleware[cite: 3]
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Motor de plantillas EJS
+// Motor de plantillas EJS[cite: 3]
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -42,10 +42,10 @@ app.post('/guardar', async (req, res) => {
   const client = await pool.connect();
 
   try {
-    // Iniciar transacción SQL para guardar iglesia + maestros juntos
+    // Iniciar transacción SQL para guardar iglesia + maestros juntos[cite: 3]
     await client.query('BEGIN');
 
-    // Insertar Iglesia / Registro Principal
+    // Insertar Iglesia / Registro Principal[cite: 3]
     const insertIglesiaQuery = `
       INSERT INTO registros_iglesias 
       (nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, fecha_registro)
@@ -62,7 +62,7 @@ app.post('/guardar', async (req, res) => {
     const result = await client.query(insertIglesiaQuery, iglesiaValues);
     const iglesiaId = result.rows[0].id;
 
-    // Insertar Maestros (Acepta arreglo dinámico de inputs)
+    // Insertar Maestros (Acepta arreglo dinámico de inputs)[cite: 3]
     if (maestro_nombre && Array.isArray(maestro_nombre)) {
       const insertMaestroQuery = `
         INSERT INTO maestros (iglesia_id, nombre, telefono, correo)
@@ -79,7 +79,7 @@ app.post('/guardar', async (req, res) => {
         }
       }
     } else if (maestro_nombre && typeof maestro_nombre === 'string') {
-      // Caso cuando solo viene 1 maestro
+      // Caso cuando solo viene 1 maestro[cite: 3]
       const insertMaestroQuery = `
         INSERT INTO maestros (iglesia_id, nombre, telefono, correo)
         VALUES ($1, $2, $3, $4);
@@ -116,12 +116,12 @@ app.post('/guardar', async (req, res) => {
 // ==========================================
 app.get('/admin', async (req, res) => {
   try {
-    // Obtener todas las iglesias
+    // Obtener todas las iglesias[cite: 3]
     const iglesiasQuery = 'SELECT * FROM registros_iglesias ORDER BY id DESC;';
     const iglesiasResult = await pool.query(iglesiasQuery);
     const iglesias = iglesiasResult.rows;
 
-    // Obtener los maestros asociados a cada iglesia
+    // Obtener los maestros asociados a cada iglesia[cite: 3]
     for (let iglesia of iglesias) {
       const maestrosQuery = 'SELECT nombre, telefono, correo FROM maestros WHERE iglesia_id = $1 ORDER BY id ASC;';
       const maestrosResult = await pool.query(maestrosQuery, [iglesia.id]);
@@ -145,10 +145,10 @@ app.post('/eliminar/:id', async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // 1. Borrar maestros vinculados
+    // 1. Borrar maestros vinculados[cite: 3]
     await client.query('DELETE FROM maestros WHERE iglesia_id = $1;', [id]);
 
-    // 2. Borrar registro principal de la iglesia
+    // 2. Borrar registro principal de la iglesia[cite: 3]
     await client.query('DELETE FROM registros_iglesias WHERE id = $1;', [id]);
 
     await client.query('COMMIT');
@@ -162,7 +162,7 @@ app.post('/eliminar/:id', async (req, res) => {
   }
 });
 
-// Arrancar el Servidor
+// Arrancar el Servidor[cite: 3]
 app.listen(port, () => {
   console.log(`Servidor activo en el puerto ${port}`);
 });
