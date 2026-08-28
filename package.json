@@ -1,16 +1,17 @@
 {
   "name": "iglesia-app",
   "version": "1.0.0",
-  "description": "App de registro para iglesia",
-  "main": "server.js",
+  "description": "Sistema de registro para iglesias",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
-    "ejs": "^3.1.9",
-    "express": "^4.18.2",
-    "express-session": "^1.18.0",
-    "pg": "^8.11.3"
-  }
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  },
+  "license": "ISC"
 }
