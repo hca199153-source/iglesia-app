@@ -1,18 +1,16 @@
 {
-  "name": "registro-iglesias",
+  "name": "iglesia-samaritan",
   "version": "1.0.0",
-  "description": "Sistema de registro de iglesias y maestros",
-  "main": "index.js",
+  "description": "Sistema de registro por zonas para Samaritan's Purse",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node server.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
     "dotenv": "^16.4.5",
-    "ejs": "^3.1.10",
+    "ejs": "^3.1.9",
     "express": "^4.19.2",
-    "pg": "^8.12.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "express-session": "^1.18.0"
   }
 }
