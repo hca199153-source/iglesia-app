@@ -286,6 +286,15 @@
             <div class="mb-3">
               <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm">
             </div>
+          <script>
+            function actualizarTituloZona() {
+              const select = document.getElementById('selectZona');
+              const tituloHeader = document.getElementById('tituloZonaHeader');
+              if (tituloHeader) {
+                tituloHeader.textContent = "REGISTRO DE " + select.value.toUpperCase();
+              }
+            }
+          </script>
             <h3 class="fw-bold text-white mb-1">Formulario de Registro</h3>
             <p class="text-white-50 small">Por favor complete la información requerida a continuación</p>
           </div>
