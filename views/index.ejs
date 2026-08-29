@@ -305,6 +305,18 @@
           <% } %>
 
           <form action="/guardar" method="POST">
+
+            <div class="mb-3">
+              <label class="form-label text-white fw-bold">Selecciona tu Zona de Procedencia *</label>
+              <select name="zona" id="selectZona" class="form-select form-select-lg" required onchange="actualizarTituloZona()">
+                <option value="" disabled selected>-- Elige tu municipio --</option>
+                <option value="San Andrés Tuxtla">San Andrés Tuxtla</option>
+                <option value="Ciudad Alemán">Ciudad Alemán</option>
+                <option value="Xalapa">Xalapa</option>
+                <option value="Veracruz Centro">Veracruz Centro</option>
+              </select>
+            </div>
+
             
             <!-- Datos del Pastor -->
             <h5 class="section-header pb-2 mb-3 fw-bold">
