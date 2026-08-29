@@ -129,6 +129,7 @@
           <div class="text-center mb-3">
             <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="app-logo bg-white p-2 rounded shadow-sm mb-2">
             <h4 class="fw-bold text-success mb-1">REGISTRO DE SAN ANDRES TUXTLA</h4>
+/////
             <span class="badge bg-warning text-dark px-3 py-2 fs-6 shadow-sm">
               <i class="bi bi-exclamation-triangle-fill me-1"></i> Por favor lea cuidadosamente los lineamientos
             </span>
@@ -305,6 +306,25 @@
           <% } %>
 
           <form action="/guardar" method="POST">
+
+
+            <!--zona de procedencia  -->
+            <h5 class="section-header pb-2 mb-3 fw-bold">
+              <i class="bi bi-box-seam me-2"></i>seleccionar la zona a la que pertenece
+            </h5>
+            <div class="row g-3 mb-4">
+              <div class="col-12">
+                <label class="form-label">Seleccionazona a la que pertenece  *</label>
+                <select name="num_cajas" id="selectCajas" class="form-select" required onchange="actualizarMaestros()">
+                  <option value="" disabled selected>-- Seleccion obligatoria  --</option>
+                  <option value="1">san andres tuxtla  (sat)</option>
+                  <option value="2">100 Cajas (cd. aleman )</option>a
+                  <option value="150">150 Cajas (xalapa)</option>
+                  <option value="150"> (xalapa)</option>
+                </select>
+              </div>
+            </div>
+
             
             <!-- Datos del Pastor -->
             <h5 class="section-header pb-2 mb-3 fw-bold">
