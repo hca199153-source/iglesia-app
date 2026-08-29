@@ -3,35 +3,32 @@ const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
-// Configuración de la base de datos PostgreSQL[cite: 3]
+// Configuración de la base de datos PostgreSQL (Render / Local)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// Middleware[cite: 3]
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Motor de plantillas EJS[cite: 3]
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// ==========================================
-// 1. RUTA PRINCIPAL (FORMULARIO DE REGISTRO)
-// ==========================================
+// Simulación simple de sesión (En producción usar express-session)
+let adminAutenticado = false;
+
+// 1. Ruta Principal: Formulario de Registro
 app.get('/', (req, res) => {
-  res.render('index', { mensajeExito: null, mensajeError: null });
+  res.render('index', { mensaje: null });
 });
 
-// ==========================================
-// 2. RUTA PARA GUARDAR UN REGISTRO
-// ==========================================
+// 2. Ruta para Guardar Registro (Transaccional)
 app.post('/guardar', async (req, res) => {
   const {
+    zona,
     nombre_pastor, telefono_pastor, correo_pastor,
     nombre_iglesia, direccion,
     nombre_lider, telefono_lider, correo_lider,
@@ -40,129 +37,118 @@ app.post('/guardar', async (req, res) => {
   } = req.body;
 
   const client = await pool.connect();
-
   try {
-    // Iniciar transacción SQL para guardar iglesia + maestros juntos[cite: 3]
     await client.query('BEGIN');
 
-    // Insertar Iglesia / Registro Principal[cite: 3]
-    const insertIglesiaQuery = `
+    // Insertar la iglesia principal incluyendo la zona
+    const queryIglesia = `
       INSERT INTO registros_iglesias 
-      (nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, fecha_registro)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+      (zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
       RETURNING id;
     `;
-    const iglesiaValues = [
-      nombre_pastor, telefono_pastor, correo_pastor || null,
-      nombre_iglesia, direccion || null,
-      nombre_lider, telefono_lider, correo_lider || null,
-      parseInt(num_cajas)
+    const valuesIglesia = [
+      zona,
+      nombre_pastor, telefono_pastor, correo_pastor || '',
+      nombre_iglesia, direccion,
+      nombre_lider, telefono_lider, correo_lider || '',
+      num_cajas
     ];
 
-    const result = await client.query(insertIglesiaQuery, iglesiaValues);
-    const iglesiaId = result.rows[0].id;
+    const resultIglesia = await client.query(queryIglesia, valuesIglesia);
+    const iglesiaId = resultIglesia.rows[0].id;
 
-    // Insertar Maestros (Acepta arreglo dinámico de inputs)[cite: 3]
-    if (maestro_nombre && Array.isArray(maestro_nombre)) {
-      const insertMaestroQuery = `
-        INSERT INTO maestros (iglesia_id, nombre, telefono, correo)
-        VALUES ($1, $2, $3, $4);
-      `;
-      for (let i = 0; i < maestro_nombre.length; i++) {
-        if (maestro_nombre[i] && maestro_nombre[i].trim() !== '') {
-          await client.query(insertMaestroQuery, [
-            iglesiaId,
-            maestro_nombre[i],
-            maestro_telefono[i],
-            maestro_correo[i] || null
-          ]);
+    // Insertar maestros asociados (si existen)
+    if (maestro_nombre) {
+      const nombres = Array.isArray(maestro_nombre) ? maestro_nombre : [maestro_nombre];
+      const telefonos = Array.isArray(maestro_telefono) ? maestro_telefono : [maestro_telefono];
+      const correos = Array.isArray(maestro_correo) ? maestro_correo : [maestro_correo];
+
+      for (let i = 0; i < nombres.length; i++) {
+        if (nombres[i].trim() !== '') {
+          const queryMaestro = `
+            INSERT INTO maestros (iglesia_id, nombre, telefono, correo) 
+            VALUES ($1, $2, $3, $4);
+          `;
+          await client.query(queryMaestro, [iglesiaId, nombres[i], telefonos[i], correos[i] || '']);
         }
       }
-    } else if (maestro_nombre && typeof maestro_nombre === 'string') {
-      // Caso cuando solo viene 1 maestro[cite: 3]
-      const insertMaestroQuery = `
-        INSERT INTO maestros (iglesia_id, nombre, telefono, correo)
-        VALUES ($1, $2, $3, $4);
-      `;
-      await client.query(insertMaestroQuery, [
-        iglesiaId,
-        maestro_nombre,
-        maestro_telefono,
-        maestro_correo || null
-      ]);
     }
 
     await client.query('COMMIT');
-    
-    res.render('index', { 
-      mensajeExito: '¡Registro guardado exitosamente!', 
-      mensajeError: null 
-    });
-
+    res.render('index', { mensaje: '¡Registro guardado exitosamente!' });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error al guardar el registro:', error);
-    res.render('index', { 
-      mensajeExito: null, 
-      mensajeError: 'Ocurrió un error al procesar el registro. Inténtalo de nuevo.' 
-    });
+    res.render('index', { mensaje: 'Hubo un error al procesar el registro. Intente nuevamente.' });
   } finally {
     client.release();
   }
 });
 
-// ==========================================
-// 3. RUTA PANEL ADMINISTRATIVO (ADMIN)
-// ==========================================
+// 3. Ruta Vista de Login de Administrador
+app.get('/login', (req, res) => {
+  res.render('login', { error: null });
+});
+
+// 4. Ruta Procesar Login
+app.post('/admin-login', (req, res) => {
+  const { password } = req.body;
+  const passwordAdminSecreta = process.env.ADMIN_PASS || 'admin123'; // Cambiar en producción
+
+  if (password === passwordAdminSecreta) {
+    adminAutenticado = true;
+    res.redirect('/admin');
+  } else {
+    res.render('login', { error: 'Contraseña incorrecta. Intente de nuevo.' });
+  }
+});
+
+// 5. Ruta Panel de Administración (Protegida)
 app.get('/admin', async (req, res) => {
+  if (!adminAutenticado) {
+    return res.redirect('/login');
+  }
+
   try {
-    // Obtener todas las iglesias[cite: 3]
-    const iglesiasQuery = 'SELECT * FROM registros_iglesias ORDER BY id DESC;';
-    const iglesiasResult = await pool.query(iglesiasQuery);
+    // Obtener iglesias
+    const iglesiasResult = await pool.query('SELECT * FROM registros_iglesias ORDER BY fecha_registro DESC');
     const iglesias = iglesiasResult.rows;
 
-    // Obtener los maestros asociados a cada iglesia[cite: 3]
-    for (let iglesia of iglesias) {
-      const maestrosQuery = 'SELECT nombre, telefono, correo FROM maestros WHERE iglesia_id = $1 ORDER BY id ASC;';
-      const maestrosResult = await pool.query(maestrosQuery, [iglesia.id]);
-      iglesia.maestros = maestrosResult.rows;
-    }
+    // Obtener maestros
+    const maestrosResult = await pool.query('SELECT * FROM maestros');
+    const maestros = maestrosResult.rows;
 
-    res.render('admin', { registros: iglesias });
+    res.render('admin', { iglesias, maestros });
   } catch (error) {
-    console.error('Error al consultar la base de datos:', error);
-    res.status(500).send('Error interno del servidor.');
+    console.error('Error al cargar el panel administrativo:', error);
+    res.status(500).send('Error interno del servidor');
   }
 });
 
-// ==========================================
-// 4. RUTA PARA ELIMINAR UN REGISTRO (DELETE)
-// ==========================================
-app.post('/eliminar/:id', async (req, res) => {
+// 6. Ruta Eliminar Registro
+app.post('/admin/eliminar/:id', async (req, res) => {
+  if (!adminAutenticado) {
+    return res.redirect('/login');
+  }
+
   const { id } = req.params;
-  const client = await pool.connect();
-
   try {
-    await client.query('BEGIN');
-
-    // 1. Borrar maestros vinculados[cite: 3]
-    await client.query('DELETE FROM maestros WHERE iglesia_id = $1;', [id]);
-
-    // 2. Borrar registro principal de la iglesia[cite: 3]
-    await client.query('DELETE FROM registros_iglesias WHERE id = $1;', [id]);
-
-    await client.query('COMMIT');
+    // Gracias a ON DELETE CASCADE configurado en SQL, se borran los maestros automáticamente
+    await pool.query('DELETE FROM registros_iglesias WHERE id = $1', [id]);
     res.redirect('/admin');
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error al borrar el registro:', error);
-    res.status(500).send('Error al intentar eliminar el registro.');
-  } finally {
-    client.release();
+    console.error('Error al eliminar registro:', error);
+    res.status(500).send('Error al eliminar el registro');
   }
 });
 
-// Arrancar el Servidor[cite: 3]
-app.listen(port, () => {
-  console.log(`Servidor activo en el puerto ${port}`);
+// 7. Ruta Cerrar Sesión
+app.get('/logout', (req, res) => {
+  adminAutenticado = false;
+  res.redirect('/login');
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
