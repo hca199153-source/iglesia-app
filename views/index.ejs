@@ -18,7 +18,7 @@
             padding: 0;
         }
         .main-container {
-            max-width: 650px;
+            max-width: 720px;
             margin: 30px auto;
             background: #ffffff;
             border-radius: 16px;
@@ -41,14 +41,14 @@
             text-align: center;
         }
         .carousel-item img {
-            height: 250px;
+            height: 270px;
             object-fit: cover;
         }
         .card-custom {
             border: none;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-left: 5px solid #059669;
         }
         .card-header-custom {
@@ -59,17 +59,60 @@
             padding: 12px 15px;
             border-radius: 0 10px 0 0;
         }
-        .btn-primary-custom {
-            background-color: #059669;
-            border: none;
-            padding: 12px;
-            font-weight: bold;
+        
+        /* Estilos modernos y coloridos para el Formulario */
+        .form-section-card {
+            background: #047857;
+            border-radius: 12px;
+            padding: 25px;
             color: white;
+            box-shadow: 0 4px 15px rgba(4, 120, 87, 0.2);
+        }
+        .form-section-title {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .form-section-title i {
+            margin-right: 8px;
+            color: #a7f3d0;
+        }
+        .form-label {
+            color: #ecfdf5;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            background-color: #ffffff;
+            color: #1f2937;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #34d399;
+            box-shadow: 0 0 0 0.25rem rgba(52, 211, 153, 0.25);
+        }
+        .btn-submit-custom {
+            background-color: #065f46;
+            border: 2px solid #34d399;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 12px;
             border-radius: 8px;
             width: 100%;
+            transition: all 0.3s ease;
         }
-        .btn-primary-custom:hover {
-            background-color: #047857;
+        .btn-submit-custom:hover {
+            background-color: #022c22;
+            color: #34d399;
+            border-color: #022c22;
         }
         .timer-box {
             background: #fff3cd;
@@ -147,7 +190,7 @@
             </div>
 
             <!-- Alerta Lineamientos -->
-            <div class="alert alert-warning py-2 text-center small fw-bold mb-4">
+            <div class="alert alert-warning py-2 text-center small fw-bold mb-4 shadow-sm">
                 <i class="fas fa-exclamation-triangle me-1"></i> Por favor lea cuidadosamente los lineamientos
             </div>
 
@@ -195,106 +238,121 @@
             </div>
 
             <!-- Temporizador Obligatorio -->
-            <div id="timerContainer" class="timer-box small">
+            <div id="timerContainer" class="timer-box small shadow-sm">
                 <i class="fas fa-hourglass-half fa-spin me-2"></i> Tiempo de lectura obligatorio: <span id="countdown" class="fs-5 text-dark">20</span>s
             </div>
 
-            <!-- Formulario de Registro -->
+            <!-- Formulario de Registro Colorido y Estilizado -->
             <div id="formContainer" style="display: none;">
                 <hr class="my-4">
-                <h5 class="text-success fw-bold mb-3 text-center"><i class="fas fa-file-alt me-2"></i> Formulario de Registro Oficial</h5>
+                
+                <div class="text-center mb-4">
+                    <h4 class="text-success fw-bold"><i class="fas fa-clipboard-check me-2"></i> Formulario de Registro</h4>
+                    <p class="text-muted small">Por favor complete la información requerida a continuación</p>
+                </div>
                 
                 <form action="/guardar-registro" method="POST" id="registroForm">
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Seleccionar Zona de Captura: <span class="text-danger">*</span></label>
-                        <select name="zona" class="form-select form-select-sm" required>
-                            <option value="">-- Seleccione una zona --</option>
-                            <option value="san_andres">San Andrés Tuxtla</option>
-                            <option value="veracruz">Veracruz</option>
-                            <option value="cd_aleman">Ciudad Alemán</option>
-                            <option value="xalapa">Xalapa</option>
-                        </select>
-                    </div>
-
-                    <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">1. Datos del Pastor</h6>
-                    <div class="mb-2">
-                        <label class="form-label small">Nombre del Pastor:</label>
-                        <input type="text" name="nombre_pastor" class="form-control form-control-sm" required>
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label small">Teléfono:</label>
-                            <input type="tel" name="telefono_pastor" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small">Correo:</label>
-                            <input type="email" name="correo_pastor" class="form-control form-control-sm">
-                        </div>
-                    </div>
-
-                    <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">2. Datos de la Iglesia</h6>
-                    <div class="mb-2">
-                        <label class="form-label small">Nombre de la Iglesia:</label>
-                        <input type="text" name="nombre_iglesia" class="form-control form-control-sm" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small">Dirección:</label>
-                        <input type="text" name="direccion" class="form-control form-control-sm" required>
-                    </div>
-
-                    <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">3. Datos del Líder / Coordinador</h6>
-                    <div class="mb-2">
-                        <label class="form-label small">Nombre del Líder:</label>
-                        <input type="text" name="nombre_lider" class="form-control form-control-sm" required>
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label small">Teléfono:</label>
-                            <input type="tel" name="telefono_lider" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small">Correo:</label>
-                            <input type="email" name="correo_lider" class="form-control form-control-sm">
-                        </div>
-                    </div>
-
-                    <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">4. Solicitud de Cajas y Maestros</h6>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label small">Cajitas Solicitadas:</label>
-                            <select name="num_cajas" id="num_cajas" class="form-select form-select-sm" required onchange="calcularMaestros()">
-                                <option value="">-- Seleccionar --</option>
-                                <option value="50">50 Cajas (2 Maestros)</option>
-                                <option value="100">100 Cajas (3 Maestros)</option>
-                                <option value="150">150 Cajas (4 Maestros)</option>
+                    <div class="form-section-card mb-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Seleccionar Zona de Captura: <span class="text-warning">*</span></label>
+                            <select name="zona" class="form-select" required>
+                                <option value="">-- Seleccione una zona --</option>
+                                <option value="san_andres">San Andrés Tuxtla</option>
+                                <option value="veracruz">Veracruz</option>
+                                <option value="cd_aleman">Ciudad Alemán</option>
+                                <option value="xalapa">Xalapa</option>
                             </select>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label small">Maestros Mínimos:</label>
-                            <input type="text" id="num_maestros_display" class="form-control form-control-sm bg-light fw-bold text-success" readonly value="Seleccione cajas">
+                    </div>
+
+                    <div class="form-section-card mb-4">
+                        <div class="form-section-title"><i class="fas fa-user-tie"></i> 1. Datos del Pastor</div>
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Pastor *</label>
+                            <input type="text" name="nombre_pastor" class="form-control" placeholder="Ej: Juan Pérez" required>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono *</label>
+                                <input type="tel" name="telefono_pastor" class="form-control" placeholder="10 dígitos" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input type="email" name="correo_pastor" class="form-control" placeholder="opcional">
+                            </div>
                         </div>
                     </div>
 
-                    <div id="maestros-container" class="mb-3"></div>
-
-                    <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">5. Red de Apoyo Espiritual</h6>
-                    <div class="mb-2">
-                        <label class="form-label small">Nombre del Guerrerito Principal:</label>
-                        <input type="text" name="guerrerito_nombre" class="form-control form-control-sm">
-                    </div>
-                    <div class="row g-2 mb-4">
-                        <div class="col-6">
-                            <label class="form-label small">Nombre del Tutor:</label>
-                            <input type="text" name="tutor_nombre" class="form-control form-control-sm">
+                    <div class="form-section-card mb-4">
+                        <div class="form-section-title"><i class="fas fa-church"></i> 2. Datos de la Iglesia</div>
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la Iglesia *</label>
+                            <input type="text" name="nombre_iglesia" class="form-control" placeholder="Ej: Iglesia Central" required>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label small">Teléfono Tutor:</label>
-                            <input type="tel" name="tutor_telefono" class="form-control form-control-sm">
+                        <div class="mb-3">
+                            <label class="form-label">Dirección *</label>
+                            <input type="text" name="direccion" class="form-control" placeholder="Calle, Número, Colonia, Ciudad" required>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary-custom shadow-sm"><i class="fas fa-paper-plane me-2"></i> Enviar Registro Oficial</button>
+                    <div class="form-section-card mb-4">
+                        <div class="form-section-title"><i class="fas fa-users"></i> 3. Datos del Líder / Coordinador</div>
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Líder *</label>
+                            <input type="text" name="nombre_lider" class="form-control" placeholder="Ej: María Gómez" required>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono *</label>
+                                <input type="tel" name="telefono_lider" class="form-control" placeholder="10 dígitos" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input type="email" name="correo_lider" class="form-control" placeholder="opcional">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section-card mb-4">
+                        <div class="form-section-title"><i class="fas fa-gift"></i> 4. Solicitud de Cajas y Maestros</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Cajitas Solicitadas *</label>
+                                <select name="num_cajas" id="num_cajas" class="form-select" required onchange="calcularMaestros()">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="50">50 Cajas (2 Maestros)</option>
+                                    <option value="100">100 Cajas (3 Maestros)</option>
+                                    <option value="150">150 Cajas (4 Maestros)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Maestros Mínimos Requeridos</label>
+                                <input type="text" id="num_maestros_display" class="form-control bg-light fw-bold text-success" readonly value="Seleccione cajas">
+                            </div>
+                        </div>
+                        <div id="maestros-container"></div>
+                    </div>
+
+                    <div class="form-section-card mb-4">
+                        <div class="form-section-title"><i class="fas fa-shield-alt"></i> 5. Red de Apoyo Espiritual (Guerreritos)</div>
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Guerrerito Principal</label>
+                            <input type="text" name="guerrerito_nombre" class="form-control" placeholder="Nombre completo">
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre del Tutor</label>
+                                <input type="text" name="tutor_nombre" class="form-control" placeholder="Nombre del tutor">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono del Tutor</label>
+                                <input type="tel" name="tutor_telefono" class="form-control" placeholder="10 dígitos">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-submit-custom shadow-sm"><i class="fas fa-paper-plane me-2"></i> Enviar Registro Oficial</button>
 
                 </form>
             </div>
@@ -328,13 +386,13 @@
 
             if (cajas) {
                 display.value = maestrosCount + " Requeridos";
-                let html = '<p class="small text-success fw-bold mb-2">Datos de los Maestros:</p>';
+                let html = '<p class="small text-light fw-bold mb-2"><i class="fas fa-user-graduate me-1"></i> Datos de los Maestros:</p>';
                 for (let i = 1; i <= maestrosCount; i++) {
                     html += `
-                        <div class="p-2 border rounded bg-light mb-2">
-                            <label class="form-label small fw-bold mb-1">Maestro ${i}</label>
-                            <input type="text" name="maestros[${i}][nombre]" class="form-control form-control-sm mb-1" placeholder="Nombre completo" required>
-                            <div class="row g-1">
+                        <div class="p-3 border rounded bg-white text-dark mb-2 shadow-sm">
+                            <label class="form-label text-success fw-bold mb-1">Maestro ${i}</label>
+                            <input type="text" name="maestros[${i}][nombre]" class="form-control form-control-sm mb-2" placeholder="Nombre completo" required>
+                            <div class="row g-2">
                                 <div class="col-6"><input type="tel" name="maestros[${i}][telefono]" class="form-control form-control-sm" placeholder="Teléfono" required></div>
                                 <div class="col-6"><input type="email" name="maestros[${i}][correo]" class="form-control form-control-sm" placeholder="Correo (opcional)"></div>
                             </div>
