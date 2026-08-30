@@ -1,15 +1,15 @@
 {
   "name": "iglesia-app",
   "version": "1.0.0",
-  "description": "Sistema de registro y administración para Samaritan's Purse",
+  "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
     "ejs": "^3.1.9",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "@supabase/supabase-js": "^2.39.0"
   }
 }
