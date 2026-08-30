@@ -19,18 +19,17 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// Ruta Principal
+// Ruta Principal (Index)
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-// Ruta de Administración con Conteo Filtrado por Zona
+// Ruta de Administración con Conteo Filtrado Exclusivamente por Zona
 app.get('/admin', async (req, res) => {
     try {
         const zonaActual = req.session.zona;
         if (!zonaActual) return res.redirect('/');
 
-        // Consultar iglesias filtradas por la zona de la sesión actual
         const { data: registros, error } = await supabase
             .from('iglesias')
             .select(`
@@ -42,7 +41,7 @@ app.get('/admin', async (req, res) => {
 
         if (error) throw new Error(error.message);
 
-        // Calcular totales específicamente de la zona actual
+        // Conteos específicos de la zona activa actual
         const totalIglesias = registros.length;
         const totalCajitas = registros.reduce((acc, curr) => acc + (parseInt(curr.num_cajas) || 0), 0);
         const totalMaestros = registros.reduce((acc, curr) => acc + (curr.maestros ? curr.maestros.length : 0), 0);
@@ -60,7 +59,7 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// Procesar Registro del Formulario (Incluyendo los 7 Guerreritos)
+// Procesar Registro del Formulario (Iglesias, Maestros y 7 Guerreritos)
 app.post('/guardar-registro', async (req, res) => {
     try {
         const {
@@ -75,10 +74,10 @@ app.post('/guardar-registro', async (req, res) => {
             correo_lider,
             num_cajas,
             maestros,
-            guerreritos // Array o objeto con los 7 registros
+            guerreritos
         } = req.body;
 
-        // 1. Insertar Iglesia
+        // 1. Insertar la Iglesia principal
         const { data: iglesiaData, error: iglesiaError } = await supabase
             .from('iglesias')
             .insert([{
@@ -117,11 +116,12 @@ app.post('/guardar-registro', async (req, res) => {
                 iglesia_id: iglesiaId,
                 nombre_guerrerito: g.nombre_guerrerito,
                 nombre_tutor: g.nombre_tutor,
-                telefono_tutor: g.telefono_tutor,
-                nombre_guerrero: g.nombre_guerrero,
-                telefono_guerrero: g.telefono_guerrero
-            }));
-            await supabase.from('guerreritos_oracion').insert(guerreritosArray);
+                telefono_tutor: g.telefono_tutor
+            })).filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '');
+
+            if (guerreritosArray.length > 0) {
+                await supabase.from('guerreritos_oracion').insert(guerreritosArray);
+            }
         }
 
         res.send(`
@@ -131,19 +131,19 @@ app.post('/guardar-registro', async (req, res) => {
             <body class="bg-light d-flex align-items-center justify-content-center vh-100">
                 <div class="card p-4 text-center shadow-sm" style="max-width: 450px;">
                     <h3 class="text-success mb-3">¡Registro Exitoso!</h3>
-                    <p class="text-muted">La iglesia y su red espiritual se han registrado correctamente.</p>
-                    <a href="/" class="btn btn-success mt-2">Regresar</a>
+                    <p class="text-muted">Los datos de la iglesia y su red de apoyo se han guardado correctamente.</p>
+                    <a href="/" class="btn btn-success mt-2">Regresar a la página principal</a>
                 </div>
             </body>
             </html>
         `);
     } catch (err) {
-        console.error(err);
+        console.error('Error al procesar registro:', err);
         res.status(500).send('Error al procesar: ' + err.message);
     }
 });
 
-// Ruta para Eliminar un Registro de la BD (Soluciona el botón de Borrar)
+// Ruta para Eliminar Registro (Soluciona el botón de Borrar)
 app.post('/eliminar-registro/:id', async (req, res) => {
     try {
         const id = req.params.id;
@@ -151,11 +151,11 @@ app.post('/eliminar-registro/:id', async (req, res) => {
         if (error) throw new Error(error.message);
         res.redirect('/admin');
     } catch (err) {
-        res.status(500).send('Error al eliminar: ' + err.message);
+        res.status(500).send('Error al eliminar el registro: ' + err.message);
     }
 });
 
-// Ruta para Exportar a Excel en Formato Limpio (.xls / HTML Tabla estructurada moderna)
+// Ruta para Exportar a Excel con formato limpio y organizado
 app.get('/exportar-excel', async (req, res) => {
     try {
         const zonaActual = req.session.zona || 'GENERAL';
@@ -170,13 +170,21 @@ app.get('/exportar-excel', async (req, res) => {
             <body>
             <h3>Reporte de Zona: ${zonaActual}</h3>
             <table border="1">
-                <tr style="background-color: #009639; color: #ffffff;">
-                    <th>#</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th><th>Maestros Asignados</th>
+                <tr style="background-color: #009639; color: #ffffff; font-weight: bold;">
+                    <th>#</th>
+                    <th>Iglesia</th>
+                    <th>Dirección</th>
+                    <th>Pastor</th>
+                    <th>Tel. Pastor</th>
+                    <th>Líder de Proyecto</th>
+                    <th>Tel. Líder</th>
+                    <th>Cajitas</th>
+                    <th>Maestros Asignados</th>
                 </tr>`;
 
         registros.forEach((reg, index) => {
             let maestrosNombres = reg.maestros && reg.maestros.length > 0 
-                ? reg.maestros.map(m => `${m.nombre} (${m.telefono})`).join(', ') 
+                ? reg.maestros.map(m => `${m.nombre} (${m.telefono})`).join('; ') 
                 : 'Sin maestros';
 
             htmlTabla += `
@@ -199,7 +207,7 @@ app.get('/exportar-excel', async (req, res) => {
         res.setHeader('Content-Disposition', `attachment; filename=Reporte_${zonaActual.replace(/\s+/g, '_')}.xls`);
         res.status(200).send(htmlTabla);
     } catch (err) {
-        res.status(500).send('Error al exportar excel');
+        res.status(500).send('Error al exportar archivo excel');
     }
 });
 
