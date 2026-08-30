@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
-// Ruta para procesar el Inicio de Sesión del Administrador (¡ESTA FALTABA!)
+// Ruta para procesar el Inicio de Sesión del Administrador
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
     
@@ -60,7 +60,6 @@ app.get('/admin', async (req, res) => {
     try {
         const zonaActual = req.session.zona;
         
-        // Si no hay sesión, renderizamos el panel pasando variables vacías para que el modal de acceso aparezca
         if (!zonaActual) {
             return res.render('admin', { 
                 registros: [], 
@@ -82,7 +81,6 @@ app.get('/admin', async (req, res) => {
 
         if (error) throw new Error(error.message);
 
-        // Conteos específicos de la zona activa actual
         const totalIglesias = registros.length;
         const totalCajitas = registros.reduce((acc, curr) => acc + (parseInt(curr.num_cajas) || 0), 0);
         const totalMaestros = registros.reduce((acc, curr) => acc + (curr.maestros ? curr.maestros.length : 0), 0);
@@ -118,7 +116,6 @@ app.post('/guardar-registro', async (req, res) => {
             guerreritos
         } = req.body;
 
-        // 1. Insertar la Iglesia principal
         const { data: iglesiaData, error: iglesiaError } = await supabase
             .from('iglesias')
             .insert([{
@@ -140,7 +137,6 @@ app.post('/guardar-registro', async (req, res) => {
         if (iglesiaError) throw new Error('Error al guardar iglesia: ' + iglesiaError.message);
         const iglesiaId = iglesiaData.id;
 
-        // 2. Insertar Maestros
         if (maestros) {
             const maestrosArray = Object.values(maestros).map(m => ({
                 iglesia_id: iglesiaId,
@@ -151,7 +147,6 @@ app.post('/guardar-registro', async (req, res) => {
             await supabase.from('maestros').insert(maestrosArray);
         }
 
-        // 3. Insertar los 7 Guerreritos de Oración / Tutores
         if (guerreritos && Array.isArray(guerreritos)) {
             const guerreritosArray = guerreritos.map(g => ({
                 iglesia_id: iglesiaId,
@@ -196,7 +191,7 @@ app.post('/eliminar-registro/:id', async (req, res) => {
     }
 });
 
-// Ruta para Exportar a Excel
+// Ruta para Exportar a Excel (Incluye Maestros y Guerreritos)
 app.get('/exportar-excel', async (req, res) => {
     try {
         const zonaActual = req.session.zona || 'GENERAL';
@@ -221,12 +216,17 @@ app.get('/exportar-excel', async (req, res) => {
                     <th>Tel. Líder</th>
                     <th>Cajitas</th>
                     <th>Maestros Asignados</th>
+                    <th>Guerreritos de Oración y Tutores</th>
                 </tr>`;
 
         registros.forEach((reg, index) => {
             let maestrosNombres = reg.maestros && reg.maestros.length > 0 
                 ? reg.maestros.map(m => `${m.nombre} (${m.telefono})`).join('; ') 
                 : 'Sin maestros';
+
+            let guerreritosNombres = reg.guerreritos_oracion && reg.guerreritos_oracion.length > 0 
+                ? reg.guerreritos_oracion.map((g, idx) => `G${idx+1}: ${g.nombre_guerrerito} - Tutor: ${g.nombre_tutor} (${g.telefono_tutor})`).join(' | ') 
+                : 'Sin guerreritos';
 
             htmlTabla += `
                 <tr>
@@ -239,6 +239,7 @@ app.get('/exportar-excel', async (req, res) => {
                     <td>${reg.telefono_lider}</td>
                     <td>${reg.num_cajas}</td>
                     <td>${maestrosNombres}</td>
+                    <td>${guerreritosNombres}</td>
                 </tr>`;
         });
 
