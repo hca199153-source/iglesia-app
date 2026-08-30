@@ -19,12 +19,12 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// Ruta Principal (Index - Formulario Público)
+// Ruta Principal (Formulario Público)
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-// Ruta para procesar el Inicio de Sesión del Administrador
+// Ruta para procesar el Inicio de Sesión del Administrador (¡ESTA FALTABA!)
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
     
@@ -59,8 +59,16 @@ app.get('/logout', (req, res) => {
 app.get('/admin', async (req, res) => {
     try {
         const zonaActual = req.session.zona;
+        
+        // Si no hay sesión, renderizamos el panel pasando variables vacías para que el modal de acceso aparezca
         if (!zonaActual) {
-            return res.render('admin', { registros: [], zona: null, totalIglesias: 0, totalCajitas: 0, totalMaestros: 0 });
+            return res.render('admin', { 
+                registros: [], 
+                zona: null, 
+                totalIglesias: 0, 
+                totalCajitas: 0, 
+                totalMaestros: 0 
+            });
         }
 
         const { data: registros, error } = await supabase
@@ -188,7 +196,7 @@ app.post('/eliminar-registro/:id', async (req, res) => {
     }
 });
 
-// Ruta para Exportar a Excel con formato limpio y organizado
+// Ruta para Exportar a Excel
 app.get('/exportar-excel', async (req, res) => {
     try {
         const zonaActual = req.session.zona || 'GENERAL';
