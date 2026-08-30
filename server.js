@@ -1,56 +1,66 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const supabase = require('./db.js'); // Conexión a Supabase
+const supabase = require('./db.js');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Configuración del motor de vistas EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middlewares esenciales
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configuración de sesiones
 app.use(session({
     secret: 'secreto_super_seguro_iglesia',
     resave: false,
     saveUninitialized: false
 }));
 
-// ==========================================
-// RUTAS DE LA APLICACIÓN
-// ==========================================
-
-// Ruta Principal (Formulario de Registro)
+// Ruta Principal
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-// Ruta del Panel de Administración (/admin) consultando la tabla 'iglesias'
+// Ruta de Administración con Conteo Filtrado por Zona
 app.get('/admin', async (req, res) => {
     try {
+        const zonaActual = req.session.zona;
+        if (!zonaActual) return res.redirect('/');
+
+        // Consultar iglesias filtradas por la zona de la sesión actual
         const { data: registros, error } = await supabase
             .from('iglesias')
-            .select('*');
+            .select(`
+                *,
+                maestros (*),
+                guerreritos_oracion (*)
+            `)
+            .eq('zona', zonaActual);
 
-        if (error) {
-            console.error('Error al obtener registros de Supabase:', error.message);
-            return res.status(500).send('Error al conectar con la base de datos: ' + error.message);
-        }
+        if (error) throw new Error(error.message);
 
-        res.render('admin', { registros: registros || [] });
+        // Calcular totales específicamente de la zona actual
+        const totalIglesias = registros.length;
+        const totalCajitas = registros.reduce((acc, curr) => acc + (parseInt(curr.num_cajas) || 0), 0);
+        const totalMaestros = registros.reduce((acc, curr) => acc + (curr.maestros ? curr.maestros.length : 0), 0);
+
+        res.render('admin', { 
+            registros: registros || [], 
+            zona: zonaActual,
+            totalIglesias,
+            totalCajitas,
+            totalMaestros
+        });
     } catch (err) {
-        console.error('Excepción en ruta /admin:', err);
-        res.status(500).send('Error interno del servidor');
+        console.error('Error en /admin:', err);
+        res.status(500).send('Error al cargar el panel: ' + err.message);
     }
 });
 
-// Procesar Registro del Formulario estructurado en tablas relacionales de Supabase
+// Procesar Registro del Formulario (Incluyendo los 7 Guerreritos)
 app.post('/guardar-registro', async (req, res) => {
     try {
         const {
@@ -65,12 +75,10 @@ app.post('/guardar-registro', async (req, res) => {
             correo_lider,
             num_cajas,
             maestros,
-            guerrerito_nombre,
-            tutor_nombre,
-            tutor_telefono
+            guerreritos // Array o objeto con los 7 registros
         } = req.body;
 
-        // 1. Insertar la iglesia principal
+        // 1. Insertar Iglesia
         const { data: iglesiaData, error: iglesiaError } = await supabase
             .from('iglesias')
             .insert([{
@@ -90,10 +98,9 @@ app.post('/guardar-registro', async (req, res) => {
             .single();
 
         if (iglesiaError) throw new Error('Error al guardar iglesia: ' + iglesiaError.message);
-
         const iglesiaId = iglesiaData.id;
 
-        // 2. Insertar maestros asociados
+        // 2. Insertar Maestros
         if (maestros) {
             const maestrosArray = Object.values(maestros).map(m => ({
                 iglesia_id: iglesiaId,
@@ -101,62 +108,99 @@ app.post('/guardar-registro', async (req, res) => {
                 telefono: m.telefono,
                 correo: m.correo || null
             }));
-
-            const { error: maestrosError } = await supabase.from('maestros').insert(maestrosArray);
-            if (maestrosError) throw new Error('Error al guardar maestros: ' + maestrosError.message);
+            await supabase.from('maestros').insert(maestrosArray);
         }
 
-        // 3. Insertar guerrerito de oración si fue provisto
-        if (guerrerito_nombre && guerrerito_nombre.trim() !== '') {
-            const { error: guerreritoError } = await supabase.from('guerreritos_oracion').insert([{
+        // 3. Insertar los 7 Guerreritos de Oración / Tutores
+        if (guerreritos && Array.isArray(guerreritos)) {
+            const guerreritosArray = guerreritos.map(g => ({
                 iglesia_id: iglesiaId,
-                nombre: guerrerito_nombre
-            }]);
-            if (guerreritoError) throw new Error('Error al guardar guerrerito: ' + guerreritoError.message);
+                nombre_guerrerito: g.nombre_guerrerito,
+                nombre_tutor: g.nombre_tutor,
+                telefono_tutor: g.telefono_tutor,
+                nombre_guerrero: g.nombre_guerrero,
+                telefono_guerrero: g.telefono_guerrero
+            }));
+            await supabase.from('guerreritos_oracion').insert(guerreritosArray);
         }
 
-        // 4. Insertar tutor si fue provisto
-        if (tutor_nombre && tutor_nombre.trim() !== '') {
-            const { error: tutorError } = await supabase.from('tutores').insert([{
-                iglesia_id: iglesiaId,
-                nombre: tutor_nombre,
-                telefono: tutor_telefono
-            }]);
-            if (tutorError) throw new Error('Error al guardar tutor: ' + tutorError.message);
-        }
-
-        // Respuesta de éxito
         res.send(`
             <!DOCTYPE html>
             <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-            </head>
+            <head><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
             <body class="bg-light d-flex align-items-center justify-content-center vh-100">
                 <div class="card p-4 text-center shadow-sm" style="max-width: 450px;">
                     <h3 class="text-success mb-3">¡Registro Exitoso!</h3>
-                    <p class="text-muted">Los datos de la iglesia, maestros y red de apoyo se han guardado correctamente.</p>
-                    <a href="/" class="btn btn-success mt-2">Regresar a la página principal</a>
+                    <p class="text-muted">La iglesia y su red espiritual se han registrado correctamente.</p>
+                    <a href="/" class="btn btn-success mt-2">Regresar</a>
                 </div>
             </body>
             </html>
         `);
     } catch (err) {
-        console.error('Excepción al procesar el registro:', err);
-        res.status(500).send(`
-            <div style="font-family: Arial; padding: 30px; text-align: center;">
-                <h2 style="color: #d32f2f;">Error al procesar el registro</h2>
-                <p>${err.message}</p>
-                <a href="/" style="color: #009639; font-weight: bold;">Regresar al formulario</a>
-            </div>
-        `);
+        console.error(err);
+        res.status(500).send('Error al procesar: ' + err.message);
     }
 });
 
-// ==========================================
-// INICIALIZACIÓN DEL SERVIDOR
-// ==========================================
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo exitosamente en el puerto ${PORT}`);
+// Ruta para Eliminar un Registro de la BD (Soluciona el botón de Borrar)
+app.post('/eliminar-registro/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { error } = await supabase.from('iglesias').delete().eq('id', id);
+        if (error) throw new Error(error.message);
+        res.redirect('/admin');
+    } catch (err) {
+        res.status(500).send('Error al eliminar: ' + err.message);
+    }
 });
+
+// Ruta para Exportar a Excel en Formato Limpio (.xls / HTML Tabla estructurada moderna)
+app.get('/exportar-excel', async (req, res) => {
+    try {
+        const zonaActual = req.session.zona || 'GENERAL';
+        const { data: registros } = await supabase
+            .from('iglesias')
+            .select(`*, maestros(*), guerreritos_oracion(*)`)
+            .eq('zona', zonaActual);
+
+        let htmlTabla = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="UTF-8"></head>
+            <body>
+            <h3>Reporte de Zona: ${zonaActual}</h3>
+            <table border="1">
+                <tr style="background-color: #009639; color: #ffffff;">
+                    <th>#</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th><th>Maestros Asignados</th>
+                </tr>`;
+
+        registros.forEach((reg, index) => {
+            let maestrosNombres = reg.maestros && reg.maestros.length > 0 
+                ? reg.maestros.map(m => `${m.nombre} (${m.telefono})`).join(', ') 
+                : 'Sin maestros';
+
+            htmlTabla += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${reg.nombre_iglesia}</td>
+                    <td>${reg.direccion}</td>
+                    <td>${reg.nombre_pastor}</td>
+                    <td>${reg.telefono_pastor}</td>
+                    <td>${reg.nombre_lider}</td>
+                    <td>${reg.telefono_lider}</td>
+                    <td>${reg.num_cajas}</td>
+                    <td>${maestrosNombres}</td>
+                </tr>`;
+        });
+
+        htmlTabla += `</table></body></html>`;
+
+        res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename=Reporte_${zonaActual.replace(/\s+/g, '_')}.xls`);
+        res.status(200).send(htmlTabla);
+    } catch (err) {
+        res.status(500).send('Error al exportar excel');
+    }
+});
+
+app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
