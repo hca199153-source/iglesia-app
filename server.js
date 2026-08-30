@@ -19,16 +19,49 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// Ruta Principal (Index)
+// Ruta Principal (Index - Formulario Público)
 app.get('/', (req, res) => {
     res.render('index');
+});
+
+// Ruta para procesar el Inicio de Sesión del Administrador
+app.post('/login', (req, res) => {
+    const { zona, password } = req.body;
+    
+    const contrasenasZonas = {
+        "san_andres": "sanandres2026",
+        "veracruz": "veracruz2026",
+        "cd_aleman": "cdaleman2026",
+        "xalapa": "xalapa2026"
+    };
+
+    if (contrasenasZonas[zona] && contrasenasZonas[zona] === password) {
+        req.session.zona = zona;
+        res.redirect('/admin');
+    } else {
+        res.send(`
+            <script>
+                alert('Contraseña incorrecta para la zona seleccionada.');
+                window.location.href = '/admin';
+            </script>
+        `);
+    }
+});
+
+// Ruta para Cerrar Sesión
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/admin');
+    });
 });
 
 // Ruta de Administración con Conteo Filtrado Exclusivamente por Zona
 app.get('/admin', async (req, res) => {
     try {
         const zonaActual = req.session.zona;
-        if (!zonaActual) return res.redirect('/');
+        if (!zonaActual) {
+            return res.render('admin', { registros: [], zona: null, totalIglesias: 0, totalCajitas: 0, totalMaestros: 0 });
+        }
 
         const { data: registros, error } = await supabase
             .from('iglesias')
@@ -143,7 +176,7 @@ app.post('/guardar-registro', async (req, res) => {
     }
 });
 
-// Ruta para Eliminar Registro (Soluciona el botón de Borrar)
+// Ruta para Eliminar Registro
 app.post('/eliminar-registro/:id', async (req, res) => {
     try {
         const id = req.params.id;
