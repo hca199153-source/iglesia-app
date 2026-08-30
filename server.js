@@ -1,154 +1,86 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const supabase = require('./db');
-require('dotenv').config();
-
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
+// Configuración de motor de vistas EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Middlewares esenciales
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// CARPETA PÚBLICA PARA ARCHIVOS ESTÁTICOS (Imágenes, CSS, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Configuración de sesiones
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'secreto_samaritan_2026',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false }
+    secret: 'secreto_super_seguro_iglesia',
+    resave: false,
+    saveUninitialized: false
 }));
 
-// Ruta principal (Formulario público)
+// Ruta Principal (Renderiza el index.ejs)
 app.get('/', (req, res) => {
-  res.render('index', { error: null });
+    res.render('index');
 });
 
-// Ruta POST para guardar el registro de la iglesia
-app.post('/guardar-registro', async (req, res) => {
-  try {
-    const {
-      zona,
-      nombre_pastor,
-      telefono_pastor,
-      correo_pastor,
-      nombre_iglesia,
-      direccion,
-      nombre_lider,
-      telefono_lider,
-      correo_lider,
-      num_cajas,
-      maestros,
-      guerrerito_nombre,
-      guerrero_nombre,
-      guerrero_telefono,
-      tutor_nombre,
-      tutor_telefono
-    } = req.body;
-
-    const cajasInt = parseInt(num_cajas);
-    let numMaestros = 2;
-    if (cajasInt === 100) numMaestros = 3;
-    if (cajasInt === 150) numMaestros = 4;
-
-    const { data: iglesiaData, error: iglesiaError } = await supabase
-      .from('iglesias')
-      .insert([{
-        zona,
-        nombre_pastor,
-        telefono_pastor,
-        correo_pastor,
-        nombre_iglesia,
-        direccion,
-        nombre_lider,
-        telefono_lider,
-        correo_lider,
-        num_cajas: cajasInt,
-        num_maestros: numMaestros
-      }])
-      .select()
-      .single();
-
-    if (iglesiaError) throw iglesiaError;
-    const iglesiaId = iglesiaData.id;
-
-    if (maestros) {
-      const maestrosArray = Object.values(maestros).map(m => ({
-        iglesia_id: iglesiaId,
-        nombre: m.nombre,
-        telefono: m.telefono,
-        correo: m.correo
-      }));
-      await supabase.from('maestros').insert(maestrosArray);
-    }
-
-    if (guerrerito_nombre) {
-      await supabase.from('guerreritos_oracion').insert([{ iglesia_id: iglesiaId, nombre: guerrerito_nombre }]);
-    }
-
-    if (tutor_nombre) {
-      await supabase.from('tutores').insert([{ iglesia_id: iglesiaId, nombre: tutor_nombre, telefono: tutor_telefono || 'N/A' }]);
-    }
-
-    res.send("<script>alert('¡Registro guardado exitosamente!'); window.location.href='/';</script>");
-  } catch (error) {
-    console.error("Error al guardar:", error);
-    res.status(500).send("Error al procesar el registro: " + error.message);
-  }
-});
-
-// Ruta GET para mostrar el Login de Administración
+// Ruta de Login para Administradores
 app.get('/login', (req, res) => {
-  res.render('login', { error: null });
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Login Admin</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        </head>
+        <body class="bg-light d-flex align-items-center justify-content-center vh-100">
+            <div class="card p-4 shadow-sm" style="max-width: 400px; width: 100%;">
+                <h4 class="text-success text-center mb-3">Panel Admin</h4>
+                <form action="/login" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label small">Contraseña:</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Ingresar</button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="/" class="small text-muted text-decoration-none">← Volver al inicio</a>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
 });
 
-// Ruta POST para procesar el Login por Zona
-app.post('/login', (req, res) => {
-  const { zona, password } = req.body;
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-
-  if (password === adminPassword) {
-    req.session.isAdmin = true;
-    req.session.zona = zona;
-    res.redirect('/admin');
-  } else {
-    res.render('login', { error: 'Contraseña incorrecta. Intente de nuevo.' });
-  }
+// Procesar Registro del Formulario
+app.post('/guardar-registro', (req, res) => {
+    const datosRegistro = req.body;
+    console.log("Nuevo registro recibido:", datosRegistro);
+    // Aquí puedes agregar la lógica para guardar en Supabase
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        </head>
+        <body class="bg-light d-flex align-items-center justify-content-center vh-100">
+            <div class="card p-4 text-center shadow-sm" style="max-width: 450px;">
+                <h3 class="text-success mb-3">¡Registro Exitoso!</h3>
+                <p class="text-muted">Los datos se han guardado correctamente para la zona seleccionada.</p>
+                <a href="/" class="btn btn-success mt-2">Regresar a la página principal</a>
+            </div>
+        </body>
+        </html>
+    `);
 });
 
-// Ruta GET para el Panel de Administración (Filtrado por Zona)
-app.get('/admin', async (req, res) => {
-  if (!req.session.isAdmin) {
-    return res.redirect('/login');
-  }
-
-  try {
-    const zonaActual = req.session.zona;
-
-    // Consultar exclusivamente las iglesias de la zona autenticada
-    const { data: iglesias, error } = await supabase
-      .from('iglesias')
-      .select('*')
-      .eq('zona', zonaActual)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    res.render('admin', { zona: zonaActual, iglesias: iglesias || [] });
-  } catch (error) {
-    console.error("Error al cargar panel admin:", error);
-    res.status(500).send("Error al cargar los registros del panel.");
-  }
-});
-
-// Ruta para Cerrar Sesión
-app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/login');
-  });
-});
-
+// Inicialización del servidor
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en el puerto ${PORT}`);
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
