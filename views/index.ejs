@@ -28,17 +28,37 @@
             overflow: hidden;
             padding: 20px;
         }
-        .navbar-custom {
+        
+        /* Estilos de la parte superior según tu nuevo boceto */
+        .header-top-box {
             background: #ffffff;
-            padding: 12px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .navbar-brand img {
-            height: 40px;
+        .header-top-box img {
+            height: 65px;
             width: auto;
         }
+
+        .title-bar-box {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #d32f2f; /* Toque rojo navideño */
+        }
+        .title-bar-box h5 {
+            color: #0b221a;
+            font-weight: bold;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
         .hero-banner {
             background: linear-gradient(135deg, #007a2e, #005a22);
             color: white;
@@ -46,20 +66,23 @@
             text-align: center;
             border-radius: 10px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
+
         .carousel-item img {
             height: 260px;
             object-fit: cover;
             border-radius: 8px;
         }
-        /* Bloques interiores en Blanco puro como indicaste en el boceto */
+        
+        /* Bloques interiores en Blanco puro */
         .card-custom {
             border: none;
             border-radius: 10px;
             background-color: #ffffff;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 15px;
-            border-left: 5px solid #d32f2f; /* Toque rojo navideño del logotipo */
+            border-left: 5px solid #d32f2f;
         }
         .card-header-custom {
             background-color: #f8f9fa;
@@ -69,7 +92,8 @@
             padding: 10px 15px;
             border-radius: 0 10px 0 0;
         }
-        /* Sección del Formulario en Blanco con detalles limpios */
+        
+        /* Sección del Formulario en Blanco */
         .form-section-box {
             background-color: #ffffff;
             border-radius: 12px;
@@ -89,7 +113,8 @@
             border-color: #009639;
             box-shadow: 0 0 0 0.25rem rgba(0, 150, 57, 0.25);
         }
-        /* Franja amarilla de avisos tal como en tu boceto */
+        
+        /* Franja amarilla de avisos */
         .alert-yellow-custom {
             background-color: #ffc107;
             border: none;
@@ -101,7 +126,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .btn-primary-custom {
-            background-color: #d32f2f; /* Rojo navideño institucional */
+            background-color: #d32f2f;
             border: none;
             padding: 12px;
             font-weight: bold;
@@ -136,20 +161,22 @@
 
     <div class="main-container">
         
-        <!-- Navbar Superior (Blanco dentro del verde claro) -->
-        <nav class="navbar navbar-expand navbar-custom">
-            <div class="container-fluid px-0">
-                <a class="navbar-brand d-flex align-items-center" href="/">
-                    <img src="/images/logo.png" alt="Logo" class="me-2">
-                    <span class="text-success fw-bold fs-6">Operación Niño de la Navidad</span>
-                </a>
-                <div class="ms-auto">
-                    <a href="/login" class="btn btn-outline-danger btn-sm fw-bold"><i class="fas fa-lock me-1"></i> Admin</a>
-                </div>
+        <!-- 1. BLOQUE SUPERIOR: LOGO -->
+        <div class="header-top-box d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center mx-auto">
+                <img src="/images/logo.png" alt="Logo Samaritan's Purse" class="me-2">
             </div>
-        </nav>
+            <div>
+                <a href="/login" class="btn btn-outline-danger btn-sm fw-bold"><i class="fas fa-lock me-1"></i> Admin</a>
+            </div>
+        </div>
 
-        <!-- Encabezado -->
+        <!-- 2. SEGUNDO BLOQUE: TEXTO "OPERACIÓN SAMARITAN'S PURSE" -->
+        <div class="title-bar-box">
+            <h5>Operación Samaritan's Purse - Operación Niño de la Navidad</h5>
+        </div>
+
+        <!-- 3. TERCER BLOQUE: MODELO DE CRECIMIENTO Y MULTIPLICACIÓN -->
         <div class="hero-banner shadow-sm">
             <h4 class="fw-bold mb-1">Modelo de Crecimiento y Multiplicación</h4>
             <p class="small mb-0 text-light">De Números a Vidas Transformadas | Samaritan's Purse</p>
@@ -185,7 +212,7 @@
             </button>
         </div>
 
-        <!-- Franja Amarilla (Aviso de Lineamientos tal como el boceto) -->
+        <!-- Franja Amarilla (Aviso de Lineamientos) -->
         <div class="alert alert-yellow-custom mb-4">
             <i class="fas fa-exclamation-triangle me-1"></i> Por favor lea cuidadosamente los lineamientos
         </div>
@@ -238,7 +265,7 @@
             <i class="fas fa-hourglass-half fa-spin me-2"></i> Tiempo de lectura obligatorio: <span id="countdown" class="fs-5 text-dark">20</span>s
         </div>
 
-        <!-- Formulario de Registro (Bloque Blanco principal) -->
+        <!-- Formulario de Registro -->
         <div id="formContainer" style="display: none;" class="form-section-box shadow">
             <div class="text-center mb-4">
                 <h4 class="fw-bold mb-1 text-success"><i class="fas fa-file-alt me-2"></i> Formulario de Registro</h4>
@@ -335,7 +362,6 @@
                     </div>
                 </div>
 
-                <!-- Botón Rojo Navideño tal como el lazo del logo -->
                 <button type="submit" class="btn btn-primary-custom shadow-sm"><i class="fas fa-paper-plane me-2"></i> Enviar Registro Oficial</button>
 
             </form>
