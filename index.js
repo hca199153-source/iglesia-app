@@ -1,66 +1,45 @@
-app.post('/guardar-registro', async (req, res) => {
+const express = require('express');
+const path = require('path');
+const supabase = require('./db.js'); // Importa tu conexión existente desde db.js
+
+const app = express();
+
+// Configuración del motor de vistas EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Middlewares para procesar datos y archivos estáticos
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Ruta Principal (Formulario de Registro)
+app.get('/', (req, res) => {
+    res.render('index'); // Asegúrate de tener tu index.ejs en la carpeta views
+});
+
+// ==========================================
+// RUTA DEL PANEL DE ADMINISTRACIÓN (/admin)
+// ==========================================
+app.get('/admin', async (req, res) => {
     try {
-        const { 
-            zona, 
-            nombre_pastor, 
-            telefono_pastor, 
-            correo_pastor, 
-            nombre_iglesia, 
-            direccion, 
-            nombre_lider, 
-            telefono_lider, 
-            correo_lider, 
-            num_cajas,
-            maestro_nombre,
-            maestro_telefono,
-            maestro_correo 
-        } = req.body;
+        // Consulta los registros en Supabase (ajusta 'registros' si tu tabla se llama distinto, ej. 'iglesias')
+        const { data: registros, error } = await supabase
+            .from('registros')
+            .select('*');
 
-        // ERROR CORREGIDO: Mapeo y estructuración de los arreglos de maestros dinámicos
-        let maestrosArray = [];
-        if (maestro_nombre) {
-            // Si solo se envía un maestro, Express lo recibe como string; si son varios, como array
-            const nombres = Array.isArray(maestro_nombre) ? maestro_nombre : [maestro_nombre];
-            const telefonos = Array.isArray(maestro_telefono) ? maestro_telefono : [maestro_telefono];
-            const correos = Array.isArray(maestro_correo) ? maestro_correo : [maestro_correo];
-
-            for (let i = 0; i < nombres.length; i++) {
-                maestrosArray.push({
-                    nombre: nombres[i],
-                    telefono: telefonos[i],
-                    correo: correos[i] || ''
-                });
-            }
+        if (error) {
+            console.error('Error al obtener registros de Supabase:', error.message);
+            return res.status(500).send('Error al conectar con la base de datos: ' + error.message);
         }
 
-        const num_maestros = maestrosArray.length;
-
-        // Inserción en la base de datos Supabase manteniendo la estructura
-        const { data, error } = await supabase
-            .from('registros_iglesias')
-            .insert([
-                { 
-                    zona, 
-                    nombre_pastor, 
-                    telefono_pastor, 
-                    correo_pastor, 
-                    nombre_iglesia, 
-                    direccion, 
-                    num_maestros, 
-                    nombre_lider, 
-                    telefono_lider, 
-                    correo_lider, 
-                    num_cajas: parseInt(num_cajas),
-                    maestros: maestrosArray // Guardado como formato JSON/Array compatible con Supabase
-                }
-            ])
-            .select();
-
-        if (error) throw error;
-
-        res.render('index', { mensajeExito: '¡Registro guardado correctamente!', mensajeError: null });
+        // Renderiza views/admin.ejs pasándole la lista de registros
+        res.render('admin', { registros: registros || [] });
     } catch (err) {
-        console.error('Error al guardar el registro:', err.message);
-        res.render('index', { mensajeError: 'Error interno al guardar el registro. Verifique los datos.', mensajeExito: null });
+        console.error('Excepción en la ruta /admin:', err);
+        res.status(500).send('Error interno del servidor');
     }
 });
+
+// Exporta la aplicación para que server.js pueda levantarla
+module.exports = app;
