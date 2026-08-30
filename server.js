@@ -84,3 +84,10 @@ app.post('/guardar-registro', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
+
+const app = require('./index.js');
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo exitosamente en el puerto ${PORT}`);
+});
