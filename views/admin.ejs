@@ -38,7 +38,7 @@
 
         /* CONTENEDOR GENERAL ADMIN */
         .admin-container {
-            max-width: 1200px;
+            max-width: 1350px;
             margin: 20px auto;
             background: #009639;
             border-radius: 16px;
@@ -106,11 +106,11 @@
         .table-custom th {
             background-color: #009639 !important;
             color: white !important;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
         }
         .table-custom td {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             vertical-align: middle;
         }
 
@@ -140,7 +140,7 @@
 <body>
 
     <% if (!locals.zona) { %>
-        <!-- MODAL DE SELECCIÓN DE ZONA Y CONTRASEÑA (Se muestra si no hay sesión activa) -->
+        <!-- MODAL DE SELECCIÓN DE ZONA Y CONTRASEÑA -->
         <div id="authModal">
             <div class="auth-card">
                 <div class="text-center mb-4">
@@ -169,7 +169,7 @@
         </div>
     <% } %>
 
-    <!-- CONTENEDOR PRINCIPAL DEL PANEL (Visible únicamente si hay sesión activa) -->
+    <!-- CONTENEDOR PRINCIPAL DEL PANEL -->
     <% if (locals.zona) { %>
     <div class="admin-container" id="adminContent">
         
@@ -240,6 +240,7 @@
                             <th>Líder de Proyecto</th>
                             <th>Cajitas</th>
                             <th>Maestros Asignados</th>
+                            <th>Guerreritos de Oración</th> <!-- NUEVA COLUMNA -->
                             <th class="no-print">Acciones</th>
                         </tr>
                     </thead>
@@ -274,6 +275,18 @@
                                             <span class="small text-muted">Sin maestros</span>
                                         <% } %>
                                     </td>
+                                    <td>
+                                        <% if (item.guerreritos_oracion && item.guerreritos_oracion.length > 0) { %>
+                                            <% item.guerreritos_oracion.forEach((g, gIdx) => { %>
+                                                <div class="small text-secondary" style="line-height: 1.2; margin-bottom: 3px;">
+                                                    <strong>G<%= gIdx + 1 %>:</strong> <%= g.nombre_guerrerito %><br>
+                                                    <span class="text-muted" style="font-size: 0.72rem;">Tutor: <%= g.nombre_tutor %> (<%= g.telefono_tutor %>)</span>
+                                                </div>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <span class="small text-muted">Sin guerreritos</span>
+                                        <% } %>
+                                    </td>
                                     <td class="no-print text-center">
                                         <form action="/eliminar-registro/<%= item.id %>" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este registro?');" style="display:inline;">
                                             <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
@@ -283,7 +296,7 @@
                             <% }) %>
                         <% } else { %>
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">No hay registros guardados en el sistema para esta zona.</td>
+                                <td colspan="8" class="text-center text-muted py-4">No hay registros guardados en el sistema para esta zona.</td>
                             </tr>
                         <% } %>
                     </tbody>
