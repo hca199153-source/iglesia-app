@@ -31,11 +31,12 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
-// Ruta del Panel de Administración (/admin) con consulta real a Supabase
+// Ruta del Panel de Administración (/admin) consultando la tabla 'iglesias'
 app.get('/admin', async (req, res) => {
     try {
+        // Consultamos la tabla 'iglesias' y traemos también los datos relacionados si los necesitas
         const { data: registros, error } = await supabase
-            .from('registros') // Asegúrate de que tu tabla en Supabase se llame 'registros'
+            .from('iglesias')
             .select('*');
 
         if (error) {
@@ -43,7 +44,7 @@ app.get('/admin', async (req, res) => {
             return res.status(500).send('Error al conectar con la base de datos: ' + error.message);
         }
 
-        // Renderiza views/admin.ejs con los datos de Supabase
+        // Renderiza views/admin.ejs pasándole la lista de iglesias/registros
         res.render('admin', { registros: registros || [] });
     } catch (err) {
         console.error('Excepción en ruta /admin:', err);
@@ -56,9 +57,9 @@ app.post('/guardar-registro', async (req, res) => {
     const datosRegistro = req.body;
     console.log("Nuevo registro recibido:", datosRegistro);
     
-    // Aquí puedes agregar la inserción a Supabase si aún no la tienes conectada:
+    // Ejemplo de inserción a la tabla 'iglesias' en Supabase:
     /*
-    const { error } = await supabase.from('registros').insert([datosRegistro]);
+    const { error } = await supabase.from('iglesias').insert([datosRegistro]);
     if (error) console.error(error);
     */
 
@@ -72,7 +73,7 @@ app.post('/guardar-registro', async (req, res) => {
         <body class="bg-light d-flex align-items-center justify-content-center vh-100">
             <div class="card p-4 text-center shadow-sm" style="max-width: 450px;">
                 <h3 class="text-success mb-3">¡Registro Exitoso!</h3>
-                <p class="text-muted">Los datos se han guardado correctamente en el sistema.</p>
+                <p class="text-muted">Los datos se han guardado correctamente en la base de datos.</p>
                 <a href="/" class="btn btn-success mt-2">Regresar a la página principal</a>
             </div>
         </body>
