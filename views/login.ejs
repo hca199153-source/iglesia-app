@@ -1,1 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Administrador | Samaritan's Purse</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 400px; margin-top: 50px;">
+        <h2 style="text-align: center; color: #065f46;">🔑 Acceso Administrativo</h2>
+        
+        <% if (error) { %>
+            <div style="background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center;">
+                <%= error %>
+            </div>
+        <% } %>
 
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label>Seleccionar Zona a Administrar:</label>
+                <select name="zona" required>
+                    <option value="">-- Seleccione una zona --</option>
+                    <option value="san_andres">San Andrés Tuxtla, Veracruz</option>
+                    <option value="cd_aleman">Ciudad Alemán</option>
+                    <option value="xalapa">Xalapa</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Contraseña de Acceso:</label>
+                <input type="password" name="password" required placeholder="Ingrese la contraseña">
+            </div>
+
+            <button type="submit" class="btn-submit">Ingresar al Panel</button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="/" style="color: #059669; text-decoration: none; font-weight: bold;">← Volver al Formulario Público</a>
+        </div>
+    </div>
+</body>
+</html>
