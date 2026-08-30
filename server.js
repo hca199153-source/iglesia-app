@@ -147,8 +147,10 @@ app.post('/guardar-registro', async (req, res) => {
             await supabase.from('maestros').insert(maestrosArray);
         }
 
-        if (guerreritos && Array.isArray(guerreritos)) {
-            const guerreritosArray = guerreritos.map(g => ({
+        if (guerreritos) {
+            const listaGuerreritos = Array.isArray(guerreritos) ? guerreritos : Object.values(guerreritos);
+            
+            const guerreritosArray = listaGuerreritos.map(g => ({
                 iglesia_id: iglesiaId,
                 nombre_guerrerito: g.nombre_guerrerito,
                 nombre_tutor: g.nombre_tutor,
