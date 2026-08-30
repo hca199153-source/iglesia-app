@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background-color: #0b221a; /* Verde oscuro institucional */
+            /* Fondo exterior: Verde oscuro del logotipo */
+            background-color: #0b221a;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #2b2b2b;
             margin: 0;
@@ -20,55 +21,62 @@
         .main-container {
             max-width: 720px;
             margin: 30px auto;
-            background: #ffffff;
+            /* Contenedor central: Verde claro del logotipo */
+            background: #009639;
             border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
             overflow: hidden;
+            padding: 20px;
         }
         .navbar-custom {
             background: #ffffff;
             padding: 12px 20px;
-            border-bottom: 2px solid #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .navbar-brand img {
             height: 40px;
             width: auto;
         }
         .hero-banner {
-            background: linear-gradient(135deg, #065f46, #047857);
+            background: linear-gradient(135deg, #007a2e, #005a22);
             color: white;
-            padding: 25px 20px;
+            padding: 20px;
             text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
         .carousel-item img {
-            height: 280px;
+            height: 260px;
             object-fit: cover;
+            border-radius: 8px;
         }
+        /* Bloques interiores en Blanco puro como indicaste en el boceto */
         .card-custom {
             border: none;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background-color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 15px;
-            border-left: 5px solid #059669;
+            border-left: 5px solid #d32f2f; /* Toque rojo navideño del logotipo */
         }
         .card-header-custom {
             background-color: #f8f9fa;
-            color: #065f46;
+            color: #005a22;
             font-weight: bold;
             border-bottom: 1px solid #e9ecef;
             padding: 10px 15px;
             border-radius: 0 10px 0 0;
         }
-        /* Contenedor del formulario en verde claro institucional */
+        /* Sección del Formulario en Blanco con detalles limpios */
         .form-section-box {
-            background-color: #104332; /* Verde intermedio elegante */
+            background-color: #ffffff;
             border-radius: 12px;
             padding: 25px;
-            color: #ffffff;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.15);
-        }
-        .form-section-box h5, .form-section-box h6 {
-            color: #e2fce3;
+            color: #333333;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            margin-top: 20px;
         }
         .form-control, .form-select {
             background-color: #f8f9fa;
@@ -78,11 +86,22 @@
         }
         .form-control:focus, .form-select:focus {
             background-color: #ffffff;
-            border-color: #34d399;
-            box-shadow: 0 0 0 0.25rem rgba(52, 211, 153, 0.25);
+            border-color: #009639;
+            box-shadow: 0 0 0 0.25rem rgba(0, 150, 57, 0.25);
+        }
+        /* Franja amarilla de avisos tal como en tu boceto */
+        .alert-yellow-custom {
+            background-color: #ffc107;
+            border: none;
+            color: #533f03;
+            font-weight: bold;
+            border-radius: 10px;
+            text-align: center;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .btn-primary-custom {
-            background-color: #059669;
+            background-color: #d32f2f; /* Rojo navideño institucional */
             border: none;
             padding: 12px;
             font-weight: bold;
@@ -92,17 +111,17 @@
             transition: background 0.2s;
         }
         .btn-primary-custom:hover {
-            background-color: #047857;
+            background-color: #b71c1c;
         }
         .timer-box {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
+            background: #ffffff;
+            border: 2px dashed #ffc107;
             color: #856404;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 10px;
             text-align: center;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
         @media (max-width: 768px) {
             .main-container {
@@ -117,7 +136,7 @@
 
     <div class="main-container">
         
-        <!-- Navbar Superior -->
+        <!-- Navbar Superior (Blanco dentro del verde claro) -->
         <nav class="navbar navbar-expand navbar-custom">
             <div class="container-fluid px-0">
                 <a class="navbar-brand d-flex align-items-center" href="/">
@@ -125,206 +144,203 @@
                     <span class="text-success fw-bold fs-6">Operación Niño de la Navidad</span>
                 </a>
                 <div class="ms-auto">
-                    <a href="/login" class="btn btn-outline-success btn-sm fw-bold"><i class="fas fa-lock me-1"></i> Admin</a>
+                    <a href="/login" class="btn btn-outline-danger btn-sm fw-bold"><i class="fas fa-lock me-1"></i> Admin</a>
                 </div>
             </div>
         </nav>
 
         <!-- Encabezado -->
-        <div class="hero-banner">
+        <div class="hero-banner shadow-sm">
             <h4 class="fw-bold mb-1">Modelo de Crecimiento y Multiplicación</h4>
             <p class="small mb-0 text-light">De Números a Vidas Transformadas | Samaritan's Purse</p>
         </div>
 
-        <!-- Cuerpo con contenido -->
-        <div class="p-3 p-md-4">
-
-            <!-- Carrusel con Imágenes Locales -->
-            <div id="carouselSamaritans" class="carousel slide mb-4 rounded overflow-hidden shadow-sm" data-bs-ride="carousel">
-                <div class="carousel-indicators">
-                    <button type="button" data-bs-target="#carouselSamaritans" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                    <button type="button" data-bs-target="#carouselSamaritans" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                </div>
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img src="/images/foto1.jpg" class="d-block w-100" alt="Niños felices con cajitas">
-                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-1">
-                            <p class="small mb-0">La Cajita como Herramienta Evangelística</p>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <img src="/images/foto2.jpg" class="d-block w-100" alt="Discipulado infantil">
-                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-1">
-                            <p class="small mb-0">Discipulado "El Gran Viaje"</p>
-                        </div>
+        <!-- Carrusel con Imágenes Locales -->
+        <div id="carouselSamaritans" class="carousel slide mb-4 rounded overflow-hidden shadow-sm bg-white p-2" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#carouselSamaritans" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#carouselSamaritans" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="/images/foto1.jpg" class="d-block w-100" alt="Niños felices con cajitas">
+                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded p-1">
+                        <p class="small mb-0 text-white">La Cajita como Herramienta Evangelística</p>
                     </div>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselSamaritans" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Anterior</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselSamaritans" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Siguiente</span>
-                </button>
-            </div>
-
-            <!-- Alerta Lineamientos -->
-            <div class="alert alert-warning py-2 text-center small fw-bold mb-4">
-                <i class="fas fa-exclamation-triangle me-1"></i> Por favor lea cuidadosamente los lineamientos
-            </div>
-
-            <!-- Secciones de Lineamientos -->
-            <div class="card card-custom mb-3">
-                <div class="card-header-custom"><i class="fas fa-bullseye me-2"></i> 3. De Porcentajes a Números Reales</div>
-                <div class="card-body small">
-                    <p class="mb-2">Metas claras y alcanzables a través de un proceso intencional de discipulado.</p>
-                    <ul class="ps-3 mb-0 text-muted">
-                        <li><strong>Inscripción Esperada:</strong> Cuidar que cada cajita entregada llegue a un niño.</li>
-                        <li><strong>Graduación Esperada:</strong> Lograr que los niños inscritos completen su discipulado.</li>
-                    </ul>
+                <div class="carousel-item">
+                    <img src="/images/foto2.jpg" class="d-block w-100" alt="Discipulado infantil">
+                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded p-1">
+                        <p class="small mb-0 text-white">Discipulado "El Gran Viaje"</p>
+                    </div>
                 </div>
             </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselSamaritans" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon bg-dark rounded-circle p-2" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselSamaritans" data-bs-slide="next">
+                <span class="carousel-control-next-icon bg-dark rounded-circle p-2" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
+        </div>
 
-            <div class="card card-custom mb-3">
-                <div class="card-header-custom"><i class="fas fa-chalkboard-teacher me-2"></i> 4. Responsabilidad del Maestro</div>
-                <div class="card-body small">
-                    <p class="mb-2">Cada maestro acompaña aproximadamente <strong>26 niños</strong> durante todo el proceso:</p>
-                    <ul class="ps-3 mb-0 text-muted">
-                        <li>Inscribir a los niños y dar seguimiento semanal.</li>
-                        <li>Cuidar su crecimiento espiritual y llevarlos a la graduación.</li>
-                        <li>Orar por cada niño y su familia.</li>
-                    </ul>
-                </div>
+        <!-- Franja Amarilla (Aviso de Lineamientos tal como el boceto) -->
+        <div class="alert alert-yellow-custom mb-4">
+            <i class="fas fa-exclamation-triangle me-1"></i> Por favor lea cuidadosamente los lineamientos
+        </div>
+
+        <!-- Secciones de Lineamientos (Tarjetas Blancas) -->
+        <div class="card card-custom mb-3">
+            <div class="card-header-custom"><i class="fas fa-bullseye me-2 text-danger"></i> 3. De Porcentajes a Números Reales</div>
+            <div class="card-body small">
+                <p class="mb-2">Metas claras y alcanzables a través de un proceso intencional de discipulado.</p>
+                <ul class="ps-3 mb-0 text-muted">
+                    <li><strong>Inscripción Esperada:</strong> Cuidar que cada cajita entregada llegue a un niño.</li>
+                    <li><strong>Graduación Esperada:</strong> Lograr que los niños inscritos completen su discipulado.</li>
+                </ul>
             </div>
+        </div>
 
-            <div class="card card-custom mb-3">
-                <div class="card-header-custom"><i class="fas fa-hands-helping me-2"></i> 5. Requisitos del Compañero de Ministerio (CM)</div>
-                <div class="card-body small">
-                    <ul class="ps-3 mb-0 text-muted">
-                        <li>Contar con el número mínimo de maestros.</li>
-                        <li>Tener un plan para el discipulado y organizar eventos evangelísticos.</li>
-                        <li>Comprometerse con el seguimiento y reportar resultados.</li>
-                    </ul>
-                </div>
+        <div class="card card-custom mb-3">
+            <div class="card-header-custom"><i class="fas fa-chalkboard-teacher me-2 text-danger"></i> 4. Responsabilidad del Maestro</div>
+            <div class="card-body small">
+                <p class="mb-2">Cada maestro acompaña aproximadamente <strong>26 niños</strong> durante todo el proceso:</p>
+                <ul class="ps-3 mb-0 text-muted">
+                    <li>Inscribir a los niños y dar seguimiento semanal.</li>
+                    <li>Cuidar su crecimiento espiritual y llevarlos a la graduación.</li>
+                    <li>Orar por cada niño y su familia.</li>
+                </ul>
             </div>
+        </div>
 
-            <div class="card card-custom mb-4">
-                <div class="card-header-custom"><i class="fas fa-star me-2"></i> 6. Elementos del Discipulador & Guerreritos</div>
-                <div class="card-body small">
-                    <p class="mb-2">Comprometido con Cristo, conocimiento básico de la Biblia, constante y buen ejemplo cristiano.</p>
-                    <p class="text-danger fw-bold mb-0"><i class="fas fa-fire me-1"></i> Considerar <strong>7 Guerreritos de Oración</strong> para el respaldo espiritual.</p>
-                </div>
+        <div class="card card-custom mb-3">
+            <div class="card-header-custom"><i class="fas fa-hands-helping me-2 text-danger"></i> 5. Requisitos del Compañero de Ministerio (CM)</div>
+            <div class="card-body small">
+                <ul class="ps-3 mb-0 text-muted">
+                    <li>Contar con el número mínimo de maestros.</li>
+                    <li>Tener un plan para el discipulado y organizar eventos evangelísticos.</li>
+                    <li>Comprometerse con el seguimiento y reportar resultados.</li>
+                </ul>
             </div>
+        </div>
 
-            <!-- Temporizador Obligatorio -->
-            <div id="timerContainer" class="timer-box small">
-                <i class="fas fa-hourglass-half fa-spin me-2"></i> Tiempo de lectura obligatorio: <span id="countdown" class="fs-5 text-dark">20</span>s
+        <div class="card card-custom mb-3">
+            <div class="card-header-custom"><i class="fas fa-star me-2 text-danger"></i> 6. Elementos del Discipulador & Guerreritos</div>
+            <div class="card-body small">
+                <p class="mb-2">Comprometido con Cristo, conocimiento básico de la Biblia, constante y buen ejemplo cristiano.</p>
+                <p class="text-danger fw-bold mb-0"><i class="fas fa-fire me-1"></i> Considerar <strong>7 Guerreritos de Oración</strong> para el respaldo espiritual.</p>
             </div>
+        </div>
 
-            <!-- Formulario de Registro con Fondo Verde Claro / Menta -->
-            <div id="formContainer" style="display: none;" class="form-section-box">
-                <div class="text-center mb-4">
-                    <h4 class="fw-bold mb-1"><i class="fas fa-file-alt me-2"></i> Formulario de Registro</h4>
-                    <p class="small text-light mb-0">Por favor complete la información requerida a continuación</p>
-                </div>
+        <!-- Temporizador Obligatorio -->
+        <div id="timerContainer" class="timer-box small shadow-sm">
+            <i class="fas fa-hourglass-half fa-spin me-2"></i> Tiempo de lectura obligatorio: <span id="countdown" class="fs-5 text-dark">20</span>s
+        </div>
+
+        <!-- Formulario de Registro (Bloque Blanco principal) -->
+        <div id="formContainer" style="display: none;" class="form-section-box shadow">
+            <div class="text-center mb-4">
+                <h4 class="fw-bold mb-1 text-success"><i class="fas fa-file-alt me-2"></i> Formulario de Registro</h4>
+                <p class="small text-muted mb-0">Por favor complete la información requerida a continuación</p>
+            </div>
+            
+            <form action="/guardar-registro" method="POST" id="registroForm">
                 
-                <form action="/guardar-registro" method="POST" id="registroForm">
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Seleccionar Zona de Captura: <span class="text-warning">*</span></label>
-                        <select name="zona" class="form-select form-select-sm" required>
-                            <option value="">-- Seleccione una zona --</option>
-                            <option value="san_andres">San Andrés Tuxtla</option>
-                            <option value="veracruz">Veracruz</option>
-                            <option value="cd_aleman">Ciudad Alemán</option>
-                            <option value="xalapa">Xalapa</option>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-dark">Seleccionar Zona de Captura: <span class="text-danger">*</span></label>
+                    <select name="zona" class="form-select form-select-sm" required>
+                        <option value="">-- Seleccione una zona --</option>
+                        <option value="san_andres">San Andrés Tuxtla</option>
+                        <option value="veracruz">Veracruz</option>
+                        <option value="cd_aleman">Ciudad Alemán</option>
+                        <option value="xalapa">Xalapa</option>
+                    </select>
+                </div>
+
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success text-uppercase"><i class="fas fa-user-tie me-1"></i> 1. Datos del Pastor</h6>
+                <div class="mb-2">
+                    <label class="form-label small text-muted">Nombre del Pastor *</label>
+                    <input type="text" name="nombre_pastor" class="form-control form-control-sm" placeholder="Ej: Juan Pérez" required>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Teléfono *</label>
+                        <input type="tel" name="telefono_pastor" class="form-control form-control-sm" placeholder="10 dígitos" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Correo Electrónico</label>
+                        <input type="email" name="correo_pastor" class="form-control form-control-sm" placeholder="opcional">
+                    </div>
+                </div>
+
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success text-uppercase"><i class="fas fa-church me-1"></i> 2. Datos de la Iglesia</h6>
+                <div class="mb-2">
+                    <label class="form-label small text-muted">Nombre de la Iglesia *</label>
+                    <input type="text" name="nombre_iglesia" class="form-control form-control-sm" placeholder="Ej: Iglesia Central" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Dirección *</label>
+                    <input type="text" name="direccion" class="form-control form-control-sm" placeholder="Calle, Número, Ciudad" required>
+                </div>
+
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success text-uppercase"><i class="fas fa-users me-1"></i> 3. Datos del Líder / Coordinador</h6>
+                <div class="mb-2">
+                    <label class="form-label small text-muted">Nombre del Líder *</label>
+                    <input type="text" name="nombre_lider" class="form-control form-control-sm" placeholder="Ej: María Gómez" required>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Teléfono *</label>
+                        <input type="tel" name="telefono_lider" class="form-control form-control-sm" placeholder="10 dígitos" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Correo Electrónico</label>
+                        <input type="email" name="correo_lider" class="form-control form-control-sm" placeholder="opcional">
+                    </div>
+                </div>
+
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success text-uppercase"><i class="fas fa-box-open me-1"></i> 4. Solicitud de Cajas y Maestros</h6>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Cajitas Solicitadas *</label>
+                        <select name="num_cajas" id="num_cajas" class="form-select form-select-sm" required onchange="calcularMaestros()">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="50">50 Cajas (2 Maestros)</option>
+                            <option value="100">100 Cajas (3 Maestros)</option>
+                            <option value="150">150 Cajas (4 Maestros)</option>
                         </select>
                     </div>
-
-                    <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-uppercase"><i class="fas fa-user-tie me-1"></i> 1. Datos del Pastor</h6>
-                    <div class="mb-2">
-                        <label class="form-label small">Nombre del Pastor *</label>
-                        <input type="text" name="nombre_pastor" class="form-control form-control-sm" placeholder="Ej: Juan Pérez" required>
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Maestros Mínimos</label>
+                        <input type="text" id="num_maestros_display" class="form-control form-control-sm bg-light fw-bold text-success" readonly value="Seleccione cajas">
                     </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label small">Teléfono *</label>
-                            <input type="tel" name="telefono_pastor" class="form-control form-control-sm" placeholder="10 dígitos" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small">Correo Electrónico</label>
-                            <input type="email" name="correo_pastor" class="form-control form-control-sm" placeholder="opcional">
-                        </div>
-                    </div>
+                </div>
 
-                    <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-uppercase"><i class="fas fa-church me-1"></i> 2. Datos de la Iglesia</h6>
-                    <div class="mb-2">
-                        <label class="form-label small">Nombre de la Iglesia *</label>
-                        <input type="text" name="nombre_iglesia" class="form-control form-control-sm" placeholder="Ej: Iglesia Central" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small">Dirección *</label>
-                        <input type="text" name="direccion" class="form-control form-control-sm" placeholder="Calle, Número, Ciudad" required>
-                    </div>
+                <div id="maestros-container" class="mb-3"></div>
 
-                    <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-uppercase"><i class="fas fa-users me-1"></i> 3. Datos del Líder / Coordinador</h6>
-                    <div class="mb-2">
-                        <label class="form-label small">Nombre del Líder *</label>
-                        <input type="text" name="nombre_lider" class="form-control form-control-sm" placeholder="Ej: María Gómez" required>
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success text-uppercase"><i class="fas fa-hands-praying me-1"></i> 5. Red de Apoyo Espiritual</h6>
+                <div class="mb-2">
+                    <label class="form-label small text-muted">Nombre del Guerrerito Principal</label>
+                    <input type="text" name="guerrerito_nombre" class="form-control form-control-sm" placeholder="Nombre completo">
+                </div>
+                <div class="row g-2 mb-4">
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Nombre del Tutor</label>
+                        <input type="text" name="tutor_nombre" class="form-control form-control-sm" placeholder="Tutor responsable">
                     </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label small">Teléfono *</label>
-                            <input type="tel" name="telefono_lider" class="form-control form-control-sm" placeholder="10 dígitos" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small">Correo Electrónico</label>
-                            <input type="email" name="correo_lider" class="form-control form-control-sm" placeholder="opcional">
-                        </div>
+                    <div class="col-6">
+                        <label class="form-label small text-muted">Teléfono Tutor</label>
+                        <input type="tel" name="tutor_telefono" class="form-control form-control-sm" placeholder="10 dígitos">
                     </div>
+                </div>
 
-                    <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-uppercase"><i class="fas fa-box-open me-1"></i> 4. Solicitud de Cajas y Maestros</h6>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label small">Cajitas Solicitadas *</label>
-                            <select name="num_cajas" id="num_cajas" class="form-select form-select-sm" required onchange="calcularMaestros()">
-                                <option value="">-- Seleccionar --</option>
-                                <option value="50">50 Cajas (2 Maestros)</option>
-                                <option value="100">100 Cajas (3 Maestros)</option>
-                                <option value="150">150 Cajas (4 Maestros)</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small">Maestros Mínimos</label>
-                            <input type="text" id="num_maestros_display" class="form-control form-control-sm bg-white fw-bold text-success" readonly value="Seleccione cajas">
-                        </div>
-                    </div>
+                <!-- Botón Rojo Navideño tal como el lazo del logo -->
+                <button type="submit" class="btn btn-primary-custom shadow-sm"><i class="fas fa-paper-plane me-2"></i> Enviar Registro Oficial</button>
 
-                    <div id="maestros-container" class="mb-3"></div>
-
-                    <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-uppercase"><i class="fas fa-hands-praying me-1"></i> 5. Red de Apoyo Espiritual</h6>
-                    <div class="mb-2">
-                        <label class="form-label small">Nombre del Guerrerito Principal</label>
-                        <input type="text" name="guerrerito_nombre" class="form-control form-control-sm" placeholder="Nombre completo">
-                    </div>
-                    <div class="row g-2 mb-4">
-                        <div class="col-6">
-                            <label class="form-label small">Nombre del Tutor</label>
-                            <input type="text" name="tutor_nombre" class="form-control form-control-sm" placeholder="Tutor responsable">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small">Teléfono Tutor</label>
-                            <input type="tel" name="tutor_telefono" class="form-control form-control-sm" placeholder="10 dígitos">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-light text-success fw-bold shadow-sm py-2 w-100"><i class="fas fa-paper-plane me-2"></i> Enviar Registro Oficial</button>
-
-                </form>
-            </div>
-
+            </form>
         </div>
+
     </div>
 
     <!-- Bootstrap JS -->
@@ -353,10 +369,10 @@
 
             if (cajas) {
                 display.value = maestrosCount + " Requeridos";
-                let html = '<p class="small text-light fw-bold mb-2">Datos de los Maestros Asignados:</p>';
+                let html = '<p class="small text-success fw-bold mb-2">Datos de los Maestros Asignados:</p>';
                 for (let i = 1; i <= maestrosCount; i++) {
                     html += `
-                        <div class="p-2 border border-success rounded bg-white text-dark mb-2">
+                        <div class="p-2 border border-success rounded bg-light mb-2">
                             <label class="form-label small fw-bold mb-1 text-success">Maestro ${i}</label>
                             <input type="text" name="maestros[${i}][nombre]" class="form-control form-control-sm mb-1" placeholder="Nombre completo" required>
                             <div class="row g-1">
