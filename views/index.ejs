@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro | Samaritan's Purse - Operación Niño de la Navidad</title>
-    <!-- Favicon Oficial -->
-    <link rel="icon" type="image/png" href="https://i.imgur.com/7k1282s.png">
+    <!-- Favicon Local -->
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,7 +17,6 @@
             margin: 0;
             padding: 0;
         }
-        /* Contenedor principal estilo móvil / estrecho y elegante */
         .main-container {
             max-width: 650px;
             margin: 30px auto;
@@ -99,7 +98,7 @@
         <nav class="navbar navbar-expand navbar-custom">
             <div class="container-fluid px-0">
                 <a class="navbar-brand d-flex align-items-center" href="/">
-                    <img src="https://i.imgur.com/7k1282s.png" alt="Logo" class="me-2">
+                    <img src="/images/logo.png" alt="Logo" class="me-2">
                     <span class="text-success fw-bold fs-6">Operación Niño de la Navidad</span>
                 </a>
                 <div class="ms-auto">
@@ -117,30 +116,23 @@
         <!-- Cuerpo con contenido -->
         <div class="p-3 p-md-4">
 
-            <!-- Carrusel con Fotografías Oficiales -->
+            <!-- Carrusel con Imágenes Locales -->
             <div id="carouselSamaritans" class="carousel slide mb-4 rounded overflow-hidden shadow-sm" data-bs-ride="carousel">
                 <div class="carousel-indicators">
                     <button type="button" data-bs-target="#carouselSamaritans" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
                     <button type="button" data-bs-target="#carouselSamaritans" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                    <button type="button" data-bs-target="#carouselSamaritans" data-bs-slide-to="2" aria-label="Slide 3"></button>
                 </div>
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <img src="https://i.ibb.co/6yc1282/foto1.jpg" class="d-block w-100" alt="Niños felices con cajitas">
+                        <img src="/images/foto1.jpg" class="d-block w-100" alt="Niños felices con cajitas">
                         <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-1">
                             <p class="small mb-0">La Cajita como Herramienta Evangelística</p>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <img src="https://i.ibb.co/7k1282s/foto2.jpg" class="d-block w-100" alt="Discipulado infantil">
+                        <img src="/images/foto2.jpg" class="d-block w-100" alt="Discipulado infantil">
                         <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-1">
                             <p class="small mb-0">Discipulado "El Gran Viaje"</p>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80" class="d-block w-100" alt="Capacitación">
-                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-1">
-                            <p class="small mb-0">Maestros Comprometidos</p>
                         </div>
                     </div>
                 </div>
@@ -159,7 +151,7 @@
                 <i class="fas fa-exclamation-triangle me-1"></i> Por favor lea cuidadosamente los lineamientos
             </div>
 
-            <!-- Secciones de Lineamientos (Puntos 3 al 6) -->
+            <!-- Secciones de Lineamientos -->
             <div class="card card-custom mb-3">
                 <div class="card-header-custom"><i class="fas fa-bullseye me-2"></i> 3. De Porcentajes a Números Reales</div>
                 <div class="card-body small">
@@ -198,7 +190,7 @@
                 <div class="card-header-custom"><i class="fas fa-star me-2"></i> 6. Elementos del Discipulador & Guerreritos</div>
                 <div class="card-body small">
                     <p class="mb-2">Comprometido con Cristo, conocimiento básico de la Biblia, constante y buen ejemplo cristiano.</p>
-                    <p class="text-danger fw-bold mb-0"><i class="fas fa-fire me-1"></i> Considerar <strong>7 Guerreritos de Oración</strong> por todo para el respaldo espiritual.</p>
+                    <p class="text-danger fw-bold mb-0"><i class="fas fa-fire me-1"></i> Considerar <strong>7 Guerreritos de Oración</strong> para el respaldo espiritual.</p>
                 </div>
             </div>
 
@@ -207,14 +199,13 @@
                 <i class="fas fa-hourglass-half fa-spin me-2"></i> Tiempo de lectura obligatorio: <span id="countdown" class="fs-5 text-dark">20</span>s
             </div>
 
-            <!-- Formulario de Registro (Oculto hasta terminar temporizador) -->
+            <!-- Formulario de Registro -->
             <div id="formContainer" style="display: none;">
                 <hr class="my-4">
                 <h5 class="text-success fw-bold mb-3 text-center"><i class="fas fa-file-alt me-2"></i> Formulario de Registro Oficial</h5>
                 
                 <form action="/guardar-registro" method="POST" id="registroForm">
                     
-                    <!-- Zonas de Captura (4 Opciones) -->
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Seleccionar Zona de Captura: <span class="text-danger">*</span></label>
                         <select name="zona" class="form-select form-select-sm" required>
@@ -226,7 +217,6 @@
                         </select>
                     </div>
 
-                    <!-- Datos del Pastor -->
                     <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">1. Datos del Pastor</h6>
                     <div class="mb-2">
                         <label class="form-label small">Nombre del Pastor:</label>
@@ -243,7 +233,6 @@
                         </div>
                     </div>
 
-                    <!-- Datos de la Iglesia -->
                     <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">2. Datos de la Iglesia</h6>
                     <div class="mb-2">
                         <label class="form-label small">Nombre de la Iglesia:</label>
@@ -254,7 +243,6 @@
                         <input type="text" name="direccion" class="form-control form-control-sm" required>
                     </div>
 
-                    <!-- Datos del Líder -->
                     <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">3. Datos del Líder / Coordinador</h6>
                     <div class="mb-2">
                         <label class="form-label small">Nombre del Líder:</label>
@@ -271,7 +259,6 @@
                         </div>
                     </div>
 
-                    <!-- Solicitud de Cajas y Maestros -->
                     <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">4. Solicitud de Cajas y Maestros</h6>
                     <div class="row g-2 mb-3">
                         <div class="col-6">
@@ -291,7 +278,6 @@
 
                     <div id="maestros-container" class="mb-3"></div>
 
-                    <!-- Guerreritos de Oración -->
                     <h6 class="text-secondary border-bottom pb-1 mb-2 small fw-bold">5. Red de Apoyo Espiritual</h6>
                     <div class="mb-2">
                         <label class="form-label small">Nombre del Guerrerito Principal:</label>
@@ -319,7 +305,6 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Temporizador de lectura de 20 segundos
         let timeLeft = 20;
         const timerInterval = setInterval(() => {
             timeLeft--;
@@ -331,7 +316,6 @@
             }
         }, 1000);
 
-        // Función para calcular maestros en base a cajas
         function calcularMaestros() {
             const cajas = document.getElementById('num_cajas').value;
             const display = document.getElementById('num_maestros_display');
