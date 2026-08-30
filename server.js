@@ -1,20 +1,18 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const supabase = require('./db'); // Importamos la conexión centralizada
+const supabase = require('./db');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuración de motor de vistas y carpetas estáticas
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Configuración de sesiones
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secreto_samaritan_2026',
   resave: false,
@@ -27,7 +25,7 @@ app.get('/', (req, res) => {
   res.render('index', { error: null });
 });
 
-// Ruta POST para recibir y guardar el formulario en Supabase
+// Ruta POST para guardar el registro de la iglesia
 app.post('/guardar-registro', async (req, res) => {
   try {
     const {
@@ -41,7 +39,7 @@ app.post('/guardar-registro', async (req, res) => {
       telefono_lider,
       correo_lider,
       num_cajas,
-      maestros, // Objeto/Array de maestros dinámicos
+      maestros,
       guerrerito_nombre,
       guerrero_nombre,
       guerrero_telefono,
@@ -49,13 +47,11 @@ app.post('/guardar-registro', async (req, res) => {
       tutor_telefono
     } = req.body;
 
-    // 1. Calcular el número de maestros obligatorio según reglas de negocio
     const cajasInt = parseInt(num_cajas);
     let numMaestros = 2;
     if (cajasInt === 100) numMaestros = 3;
     if (cajasInt === 150) numMaestros = 4;
 
-    // 2. Insertar en la tabla principal 'iglesias'
     const { data: iglesiaData, error: iglesiaError } = await supabase
       .from('iglesias')
       .insert([{
@@ -75,10 +71,8 @@ app.post('/guardar-registro', async (req, res) => {
       .single();
 
     if (iglesiaError) throw iglesiaError;
-
     const iglesiaId = iglesiaData.id;
 
-    // 3. Insertar los maestros asociados
     if (maestros) {
       const maestrosArray = Object.values(maestros).map(m => ({
         iglesia_id: iglesiaId,
@@ -86,46 +80,75 @@ app.post('/guardar-registro', async (req, res) => {
         telefono: m.telefono,
         correo: m.correo
       }));
-
-      const { error: maestrosError } = await supabase
-        .from('maestros')
-        .insert(maestrosArray);
-
-      if (maestrosError) throw maestrosError;
+      await supabase.from('maestros').insert(maestrosArray);
     }
 
-    // 4. Insertar Guerrerito de Oración (si se llenó)
     if (guerrerito_nombre) {
-      await supabase.from('guerreritos_oracion').insert([{
-        iglesia_id: iglesiaId,
-        nombre: guerrerito_nombre
-      }]);
+      await supabase.from('guerreritos_oracion').insert([{ iglesia_id: iglesiaId, nombre: guerrerito_nombre }]);
     }
 
-    // 5. Insertar Tutor (si se llenó)
     if (tutor_nombre) {
-      await supabase.from('tutores').insert([{
-        iglesia_id: iglesiaId,
-        nombre: tutor_nombre,
-        telefono: tutor_telefono || 'N/A'
-      }]);
+      await supabase.from('tutores').insert([{ iglesia_id: iglesiaId, nombre: tutor_nombre, telefono: tutor_telefono || 'N/A' }]);
     }
 
-    // Redirigir o mostrar éxito (por ahora renderizamos la misma vista con mensaje)
     res.send("<script>alert('¡Registro guardado exitosamente!'); window.location.href='/';</script>");
-
   } catch (error) {
-    console.error("Error al guardar registro:", error);
-    res.status(500).send("Ocurrió un error al procesar el registro en la base de datos: " + error.message);
+    console.error("Error al guardar:", error);
+    res.status(500).send("Error al procesar el registro: " + error.message);
   }
 });
 
-// Ruta de Login para Administradores
+// Ruta GET para mostrar el Login de Administración
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
 
-// Iniciar servidor
+// Ruta POST para procesar el Login por Zona
+app.post('/login', (req, res) => {
+  const { zona, password } = req.body;
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+
+  if (password === adminPassword) {
+    req.session.isAdmin = true;
+    req.session.zona = zona;
+    res.redirect('/admin');
+  } else {
+    res.render('login', { error: 'Contraseña incorrecta. Intente de nuevo.' });
+  }
+});
+
+// Ruta GET para el Panel de Administración (Filtrado por Zona)
+app.get('/admin', async (req, res) => {
+  if (!req.session.isAdmin) {
+    return res.redirect('/login');
+  }
+
+  try {
+    const zonaActual = req.session.zona;
+
+    // Consultar exclusivamente las iglesias de la zona autenticada
+    const { data: iglesias, error } = await supabase
+      .from('iglesias')
+      .select('*')
+      .eq('zona', zonaActual)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    res.render('admin', { zona: zonaActual, iglesias: iglesias || [] });
+  } catch (error) {
+    console.error("Error al cargar panel admin:", error);
+    res.status(500).send("Error al cargar los registros del panel.");
+  }
+});
+
+// Ruta para Cerrar Sesión
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
