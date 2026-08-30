@@ -1,18 +1,18 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const supabase = require('./db.js'); // Conexión a Supabase
+
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Configuración de motor de vistas EJS
+// Configuración del motor de vistas EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Middlewares esenciales
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// CARPETA PÚBLICA PARA ARCHIVOS ESTÁTICOS (Imágenes, CSS, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Configuración de sesiones
@@ -22,46 +22,46 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// Ruta Principal (Renderiza el index.ejs)
+// ==========================================
+// RUTAS DE LA APLICACIÓN
+// ==========================================
+
+// Ruta Principal (Formulario de Registro)
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-// Ruta de Login para Administradores
-app.get('/login', (req, res) => {
-    res.send(`
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Login Admin</title>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        </head>
-        <body class="bg-light d-flex align-items-center justify-content-center vh-100">
-            <div class="card p-4 shadow-sm" style="max-width: 400px; width: 100%;">
-                <h4 class="text-success text-center mb-3">Panel Admin</h4>
-                <form action="/login" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label small">Contraseña:</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">Ingresar</button>
-                </form>
-                <div class="text-center mt-3">
-                    <a href="/" class="small text-muted text-decoration-none">← Volver al inicio</a>
-                </div>
-            </div>
-        </body>
-        </html>
-    `);
+// Ruta del Panel de Administración (/admin) con consulta real a Supabase
+app.get('/admin', async (req, res) => {
+    try {
+        const { data: registros, error } = await supabase
+            .from('registros') // Asegúrate de que tu tabla en Supabase se llame 'registros'
+            .select('*');
+
+        if (error) {
+            console.error('Error al obtener registros de Supabase:', error.message);
+            return res.status(500).send('Error al conectar con la base de datos: ' + error.message);
+        }
+
+        // Renderiza views/admin.ejs con los datos de Supabase
+        res.render('admin', { registros: registros || [] });
+    } catch (err) {
+        console.error('Excepción en ruta /admin:', err);
+        res.status(500).send('Error interno del servidor');
+    }
 });
 
 // Procesar Registro del Formulario
-app.post('/guardar-registro', (req, res) => {
+app.post('/guardar-registro', async (req, res) => {
     const datosRegistro = req.body;
     console.log("Nuevo registro recibido:", datosRegistro);
-    // Aquí puedes agregar la lógica para guardar en Supabase
+    
+    // Aquí puedes agregar la inserción a Supabase si aún no la tienes conectada:
+    /*
+    const { error } = await supabase.from('registros').insert([datosRegistro]);
+    if (error) console.error(error);
+    */
+
     res.send(`
         <!DOCTYPE html>
         <html lang="es">
@@ -72,7 +72,7 @@ app.post('/guardar-registro', (req, res) => {
         <body class="bg-light d-flex align-items-center justify-content-center vh-100">
             <div class="card p-4 text-center shadow-sm" style="max-width: 450px;">
                 <h3 class="text-success mb-3">¡Registro Exitoso!</h3>
-                <p class="text-muted">Los datos se han guardado correctamente para la zona seleccionada.</p>
+                <p class="text-muted">Los datos se han guardado correctamente en el sistema.</p>
                 <a href="/" class="btn btn-success mt-2">Regresar a la página principal</a>
             </div>
         </body>
@@ -80,14 +80,9 @@ app.post('/guardar-registro', (req, res) => {
     `);
 });
 
-// Inicialización del servidor
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
-});
-
-const app = require('./index.js');
-const PORT = process.env.PORT || 3000;
-
+// ==========================================
+// INICIALIZACIÓN DEL SERVIDOR
+// ==========================================
 app.listen(PORT, () => {
     console.log(`Servidor corriendo exitosamente en el puerto ${PORT}`);
 });
