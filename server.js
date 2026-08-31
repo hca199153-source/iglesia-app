@@ -75,7 +75,8 @@ app.get('/admin', async (req, res) => {
             .select(`
                 *,
                 maestros (*),
-                guerreritos_oracion (*)
+                guerreritos_oracion (*),
+                guerreros_oracion (*)
             `)
             .eq('zona', zonaActual);
 
@@ -98,7 +99,7 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// Procesar Registro del Formulario (Iglesias, Maestros y 7 Guerreritos)
+// Procesar Registro del Formulario (Iglesias, Maestros, Guerreritos y Guerreros Adultos)
 app.post('/guardar-registro', async (req, res) => {
     try {
         const {
@@ -113,7 +114,8 @@ app.post('/guardar-registro', async (req, res) => {
             correo_lider,
             num_cajas,
             maestros,
-            guerreritos
+            guerreritos,
+            guerreros
         } = req.body;
 
         const { data: iglesiaData, error: iglesiaError } = await supabase
@@ -162,6 +164,20 @@ app.post('/guardar-registro', async (req, res) => {
             }
         }
 
+        if (guerreros) {
+            const listaGuerreros = Array.isArray(guerreros) ? guerreros : Object.values(guerreros);
+            
+            const guerrerosArray = listaGuerreros.map(gu => ({
+                iglesia_id: iglesiaId,
+                nombre_guerrero: gu.nombre_guerrero,
+                telefono_guerrero: gu.telefono_guerrero
+            })).filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '');
+
+            if (guerrerosArray.length > 0) {
+                await supabase.from('guerreros_oracion').insert(guerrerosArray);
+            }
+        }
+
         res.send(`
             <!DOCTYPE html>
             <html lang="es">
@@ -193,13 +209,13 @@ app.post('/eliminar-registro/:id', async (req, res) => {
     }
 });
 
-// Ruta para Exportar a Excel (Incluye Maestros y Guerreritos)
+// Ruta para Exportar a Excel (Incluye Maestros, Guerreritos y Guerreros Adultos)
 app.get('/exportar-excel', async (req, res) => {
     try {
         const zonaActual = req.session.zona || 'GENERAL';
         const { data: registros } = await supabase
             .from('iglesias')
-            .select(`*, maestros(*), guerreritos_oracion(*)`)
+            .select(`*, maestros(*), guerreritos_oracion(*), guerreros_oracion(*)`)
             .eq('zona', zonaActual);
 
         let htmlTabla = `
@@ -218,7 +234,8 @@ app.get('/exportar-excel', async (req, res) => {
                     <th>Tel. Líder</th>
                     <th>Cajitas</th>
                     <th>Maestros Asignados</th>
-                    <th>Guerreritos de Oración y Tutores</th>
+                    <th>Guerreritos de Oración (Niños y Tutores)</th>
+                    <th>Guerreros de Oración (Adultos)</th>
                 </tr>`;
 
         registros.forEach((reg, index) => {
@@ -229,6 +246,10 @@ app.get('/exportar-excel', async (req, res) => {
             let guerreritosNombres = reg.guerreritos_oracion && reg.guerreritos_oracion.length > 0 
                 ? reg.guerreritos_oracion.map((g, idx) => `G${idx+1}: ${g.nombre_guerrerito} - Tutor: ${g.nombre_tutor} (${g.telefono_tutor})`).join(' | ') 
                 : 'Sin guerreritos';
+
+            let guerrerosNombres = reg.guerreros_oracion && reg.guerreros_oracion.length > 0 
+                ? reg.guerreros_oracion.map((gu, idx) => `A${idx+1}: ${gu.nombre_guerrero} (${gu.telefono_guerrero})`).join(' | ') 
+                : 'Sin guerreros';
 
             htmlTabla += `
                 <tr>
@@ -242,6 +263,7 @@ app.get('/exportar-excel', async (req, res) => {
                     <td>${reg.num_cajas}</td>
                     <td>${maestrosNombres}</td>
                     <td>${guerreritosNombres}</td>
+                    <td>${guerrerosNombres}</td>
                 </tr>`;
         });
 
