@@ -35,19 +35,17 @@
             <p class="small mb-0 text-light">De Números a Vidas Transformadas</p>
         </div>
 
-        <!-- LINEAMIENTOS Y RECUADROS -->
         <div class="card card-custom mb-3">
             <div class="card-header-custom"><i class="fas fa-bullseye me-2 text-danger"></i> 3. De Porcentajes a Números Reales</div>
             <div class="card-body small">
                 <p class="mb-2">Metas claras y alcanzables a través de un proceso intencional de discipulado.</p>
                 <ul class="ps-3 mb-0 text-muted">
-                    <li><strong>Inscripción Esperada:</strong> Cuidar que cada cajita entregada llegue a un niño (Meta: 6,002).</li>
-                    <li><strong>Graduación Esperada:</strong> Lograr que los niños completen su discipulado (Meta: 5,702).</li>
+                    <li><strong>Inscripción Esperada:</strong> Cuidar que cada cajita entregada llegue a un niño .</li>
+                    <li><strong>Graduación Esperada:</strong> Lograr que los niños completen su discipulado.</li>
                 </ul>
             </div>
         </div>
 
-        <!-- CUADRO DE OBJETIVO Y COMPROMISO -->
         <div class="row g-2 mb-3">
             <div class="col-md-6">
                 <div class="p-3 border border-danger rounded bg-white text-center shadow-sm h-100">
@@ -67,7 +65,7 @@
             <div class="card-header-custom"><i class="fas fa-star me-2 text-danger"></i> 6. Elementos del Discipulador & Guerreritos</div>
             <div class="card-body small">
                 <p class="mb-2">Comprometido con Cristo, conocimiento básico de la Biblia y constante.</p>
-                <p class="text-danger fw-bold mb-0"><i class="fas fa-fire me-1"></i> Considerar <strong>7 Guerreritos de Oración</strong> con sus respectivos tutores.</p>
+                <p class="text-danger fw-bold mb-0"><i class="fas fa-fire me-1"></i> Considerar <strong>7 Guerreritos de Oración</strong> (niños) y <strong>7 Guerreros de Oración</strong> (adultos).</p>
             </div>
         </div>
 
@@ -133,8 +131,8 @@
                 </div>
                 <div id="maestros-container" class="mb-3"></div>
 
-                <!-- 5. RED DE APOYO ESPIRITUAL (7 GUERRERITOS) -->
-                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-shield-alt me-1"></i> 5. Red de Apoyo Espiritual (7 Guerreritos)</h6>
+                <!-- 5. RED DE APOYO ESPIRITUAL (7 GUERRERITOS - NIÑOS) -->
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-child me-1"></i> 5. Red de Apoyo Espiritual (7 Guerreritos - Niños)</h6>
                 <div id="guerreritos-container">
                     <% for(let i = 1; i <= 7; i++) { %>
                         <div class="border p-2 mb-2 rounded bg-light">
@@ -143,6 +141,20 @@
                                 <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_guerrerito]" class="form-control form-control-sm" placeholder="Nombre guerrerito" required></div>
                                 <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_tutor]" class="form-control form-control-sm" placeholder="Nombre tutor" required></div>
                                 <div class="col-md-4"><input type="tel" name="guerreritos[<%= i-1 %>][telefono_tutor]" class="form-control form-control-sm" placeholder="Teléfono tutor" required></div>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- 6. RED DE APOYO ESPIRITUAL (7 GUERREROS - ADULTOS) -->
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success mt-4"><i class="fas fa-user-shield me-1"></i> 6. Red de Apoyo Espiritual (7 Guerreros - Adultos)</h6>
+                <div id="guerreros-container">
+                    <% for(let i = 1; i <= 7; i++) { %>
+                        <div class="border p-2 mb-2 rounded bg-light">
+                            <span class="small fw-bold text-success">Guerrero Adulto #<%= i %></span>
+                            <div class="row g-1 mt-1">
+                                <div class="col-md-7"><input type="text" name="guerreros[<%= i-1 %>][nombre_guerrero]" class="form-control form-control-sm" placeholder="Nombre completo del guerrero" required></div>
+                                <div class="col-md-5"><input type="tel" name="guerreros[<%= i-1 %>][telefono_guerrero]" class="form-control form-control-sm" placeholder="Número de teléfono" required></div>
                             </div>
                         </div>
                     <% } %>
