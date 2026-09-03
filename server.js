@@ -146,7 +146,10 @@ app.post('/guardar-registro', async (req, res) => {
                 telefono: m.telefono,
                 correo: m.correo || null
             }));
-            await supabase.from('maestros').insert(maestrosArray);
+            
+            // Validación y captura de error agregada para la tabla maestros
+            const { error: maestrosError } = await supabase.from('maestros').insert(maestrosArray);
+            if (maestrosError) throw new Error('Error al guardar maestros: ' + maestrosError.message);
         }
 
         if (guerreritos) {
@@ -160,7 +163,8 @@ app.post('/guardar-registro', async (req, res) => {
             })).filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '');
 
             if (guerreritosArray.length > 0) {
-                await supabase.from('guerreritos_oracion').insert(guerreritosArray);
+                const { error: guerreritosError } = await supabase.from('guerreritos_oracion').insert(guerreritosArray);
+                if (guerreritosError) throw new Error('Error al guardar guerreritos: ' + guerreritosError.message);
             }
         }
 
@@ -174,7 +178,8 @@ app.post('/guardar-registro', async (req, res) => {
             })).filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '');
 
             if (guerrerosArray.length > 0) {
-                await supabase.from('guerreros_oracion').insert(guerrerosArray);
+                const { error: guerrerosError } = await supabase.from('guerreros_oracion').insert(guerrerosArray);
+                if (guerrerosError) throw new Error('Error al guardar guerreros: ' + guerrerosError.message);
             }
         }
 
