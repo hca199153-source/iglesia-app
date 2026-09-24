@@ -36,7 +36,7 @@
         }
 
         .admin-container {
-            max-width: 1450px;
+            max-width: 1550px;
             margin: 20px auto;
             background: #009639;
             border-radius: 16px;
@@ -166,7 +166,7 @@
             </div>
             <div class="d-flex gap-2">
                 <a href="/exportar-excel" class="btn btn-excel btn-sm"><i class="fas fa-file-excel me-1"></i> Excel</a>
-                <button onclick="window.print()" class="btn btn-print btn-sm"><i class="fas fa-print me-1"></i> Imprimir</button>
+                <button onclick="window.print()" class="btn btn-print btn-sm"><i class="fas fa-print me-1"></i> Imprimir / PDF</button>
                 <a href="/logout" class="btn btn-outline-secondary btn-sm"><i class="fas fa-sign-out-alt"></i> Salir</a>
             </div>
         </div>
@@ -206,7 +206,7 @@
                 <h6 class="fw-bold text-success mb-0"><i class="fas fa-list me-2"></i> Registros de la Zona</h6>
                 <div class="input-group input-group-sm w-50">
                     <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar por iglesia, pastor o líder..." onkeyup="filtrarTabla()">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar por iglesia, pastor, líder o correo..." onkeyup="filtrarTabla()">
                 </div>
             </div>
 
@@ -221,7 +221,7 @@
                             <th>Cajitas</th>
                             <th>Maestros Asignados</th>
                             <th>Guerreritos de Oración</th>
-                            <th>Guerreros (Adultos)</th> <!-- NUEVA COLUMNA -->
+                            <th>Guerreros (Adultos)</th>
                             <th class="no-print">Acciones</th>
                         </tr>
                     </thead>
@@ -236,11 +236,21 @@
                                     </td>
                                     <td>
                                         <strong><%= item.nombre_pastor %></strong><br>
-                                        <small class="text-muted"><i class="fas fa-phone me-1"></i> <%= item.telefono_pastor %></small>
+                                        <small class="text-muted"><i class="fas fa-phone me-1"></i> <%= item.telefono_pastor %></small><br>
+                                        <% if (item.correo_pastor) { %>
+                                            <small class="text-primary"><i class="fas fa-envelope me-1"></i> <%= item.correo_pastor %></small>
+                                        <% } else { %>
+                                            <small class="text-muted italic">Sin correo</small>
+                                        <% } %>
                                     </td>
                                     <td>
                                         <strong><%= item.nombre_lider %></strong><br>
-                                        <small class="text-muted"><i class="fas fa-phone me-1"></i> <%= item.telefono_lider %></small>
+                                        <small class="text-muted"><i class="fas fa-phone me-1"></i> <%= item.telefono_lider %></small><br>
+                                        <% if (item.correo_lider) { %>
+                                            <small class="text-primary"><i class="fas fa-envelope me-1"></i> <%= item.correo_lider %></small>
+                                        <% } else { %>
+                                            <small class="text-muted italic">Sin correo</small>
+                                        <% } %>
                                     </td>
                                     <td>
                                         <span class="badge bg-success"><%= item.num_cajas %> Cajas</span>
@@ -248,8 +258,12 @@
                                     <td>
                                         <% if (item.maestros && item.maestros.length > 0) { %>
                                             <% item.maestros.forEach((m, mIdx) => { %>
-                                                <div class="small text-secondary">
-                                                    <strong>M<%= mIdx + 1 %>:</strong> <%= m.nombre %> (<%= m.telefono %>)
+                                                <div class="small text-secondary mb-1" style="line-height: 1.2;">
+                                                    <strong>M<%= mIdx + 1 %>:</strong> <%= m.nombre %><br>
+                                                    <span class="text-muted" style="font-size: 0.72rem;"><i class="fas fa-phone me-1"></i><%= m.telefono %></span>
+                                                    <% if (m.correo) { %>
+                                                        <br><span class="text-primary" style="font-size: 0.72rem;"><i class="fas fa-envelope me-1"></i><%= m.correo %></span>
+                                                    <% } %>
                                                 </div>
                                             <% }) %>
                                         <% } else { %>
