@@ -124,12 +124,12 @@ app.post('/guardar-registro', async (req, res) => {
                 zona,
                 nombre_pastor,
                 telefono_pastor,
-                correo_pastor,
+                correo_pastor: correo_pastor || null,
                 nombre_iglesia,
                 direccion,
                 nombre_lider,
                 telefono_lider,
-                correo_lider,
+                correo_lider: correo_lider || null,
                 num_cajas: parseInt(num_cajas) || 0,
                 num_maestros: maestros ? Object.keys(maestros).length : 0
             }])
@@ -147,7 +147,6 @@ app.post('/guardar-registro', async (req, res) => {
                 correo: m.correo || null
             }));
             
-            // Validación y captura de error agregada para la tabla maestros
             const { error: maestrosError } = await supabase.from('maestros').insert(maestrosArray);
             if (maestrosError) throw new Error('Error al guardar maestros: ' + maestrosError.message);
         }
@@ -214,7 +213,7 @@ app.post('/eliminar-registro/:id', async (req, res) => {
     }
 });
 
-// Ruta para Exportar a Excel (Incluye Maestros, Guerreritos y Guerreros Adultos)
+// Ruta para Exportar a Excel (Incluye Correos, Maestros, Guerreritos y Guerreros Adultos)
 app.get('/exportar-excel', async (req, res) => {
     try {
         const zonaActual = req.session.zona || 'GENERAL';
@@ -235,8 +234,10 @@ app.get('/exportar-excel', async (req, res) => {
                     <th>Dirección</th>
                     <th>Pastor</th>
                     <th>Tel. Pastor</th>
+                    <th>Correo Pastor</th>
                     <th>Líder de Proyecto</th>
                     <th>Tel. Líder</th>
+                    <th>Correo Líder</th>
                     <th>Cajitas</th>
                     <th>Maestros Asignados</th>
                     <th>Guerreritos de Oración (Niños y Tutores)</th>
@@ -245,7 +246,7 @@ app.get('/exportar-excel', async (req, res) => {
 
         registros.forEach((reg, index) => {
             let maestrosNombres = reg.maestros && reg.maestros.length > 0 
-                ? reg.maestros.map(m => `${m.nombre} (${m.telefono})`).join('; ') 
+                ? reg.maestros.map(m => `${m.nombre} (${m.telefono}${m.correo ? ' - ' + m.correo : ''})`).join('; ') 
                 : 'Sin maestros';
 
             let guerreritosNombres = reg.guerreritos_oracion && reg.guerreritos_oracion.length > 0 
@@ -263,8 +264,10 @@ app.get('/exportar-excel', async (req, res) => {
                     <td>${reg.direccion}</td>
                     <td>${reg.nombre_pastor}</td>
                     <td>${reg.telefono_pastor}</td>
+                    <td>${reg.correo_pastor || 'Sin correo'}</td>
                     <td>${reg.nombre_lider}</td>
                     <td>${reg.telefono_lider}</td>
+                    <td>${reg.correo_lider || 'Sin correo'}</td>
                     <td>${reg.num_cajas}</td>
                     <td>${maestrosNombres}</td>
                     <td>${guerreritosNombres}</td>
