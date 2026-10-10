@@ -66,7 +66,10 @@ app.get('/admin', async (req, res) => {
                 zona: null, 
                 totalIglesias: 0, 
                 totalCajitas: 0, 
-                totalMaestros: 0 
+                totalMaestros: 0,
+                totalPastores: 0,
+                totalGuerreritos: 0,
+                totalGuerreros: 0
             });
         }
 
@@ -82,16 +85,25 @@ app.get('/admin', async (req, res) => {
 
         if (error) throw new Error(error.message);
 
+        // Cálculos de totales
         const totalIglesias = registros.length;
         const totalCajitas = registros.reduce((acc, curr) => acc + (parseInt(curr.num_cajas) || 0), 0);
         const totalMaestros = registros.reduce((acc, curr) => acc + (curr.maestros ? curr.maestros.length : 0), 0);
+        
+        // Nuevos cálculos solicitados
+        const totalPastores = registros.filter(r => r.nombre_pastor && r.nombre_pastor.trim() !== '').length;
+        const totalGuerreritos = registros.reduce((acc, curr) => acc + (curr.guerreritos_oracion ? curr.guerreritos_oracion.length : 0), 0);
+        const totalGuerreros = registros.reduce((acc, curr) => acc + (curr.guerreros_oracion ? curr.guerreros_oracion.length : 0), 0);
 
         res.render('admin', { 
             registros: registros || [], 
             zona: zonaActual,
             totalIglesias,
             totalCajitas,
-            totalMaestros
+            totalMaestros,
+            totalPastores,
+            totalGuerreritos,
+            totalGuerreros
         });
     } catch (err) {
         console.error('Error en /admin:', err);
@@ -257,7 +269,6 @@ app.post('/actualizar-registro/:id', async (req, res) => {
             guerreros
         } = req.body;
 
-        // 1. Actualizar los datos principales de la iglesia
         const { error: iglesiaError } = await supabase
             .from('iglesias')
             .update({
@@ -277,7 +288,6 @@ app.post('/actualizar-registro/:id', async (req, res) => {
 
         if (iglesiaError) throw new Error('Error al actualizar iglesia: ' + iglesiaError.message);
 
-        // 2. Limpiar y reinsertar registros relacionados de forma segura para evitar duplicados
         await supabase.from('maestros').delete().eq('iglesia_id', id);
         await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
         await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
