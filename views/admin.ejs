@@ -114,9 +114,6 @@
         .btn-print { background-color: #d32f2f; color: white; font-weight: bold; }
         .btn-print:hover { background-color: #b71c1c; color: white; }
 
-        /* =========================================================
-           CONFIGURACIÓN ESPECIAL PARA EXPORTACIÓN Y VISTA IMPRESA / PDF
-           ========================================================= */
         @page {
             size: A4 landscape;
             margin: 8mm;
@@ -144,7 +141,6 @@
                 display: none !important;
             }
 
-            /* Formato compacto para métricas principales al imprimir */
             .stat-card-green, .stat-card-blue, .stat-card-yellow {
                 border: 1px solid #ccc !important;
                 box-shadow: none !important;
@@ -191,13 +187,11 @@
                 word-wrap: break-word;
             }
 
-            /* Evita que una fila de la tabla se rompa a la mitad entre 2 hojas */
             tr {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
 
-            /* Anchos proporcionales para ajustar perfectamente en A4 Horizontal */
             .col-num { width: 3%; }
             .col-iglesia { width: 17%; }
             .col-pastor { width: 13%; }
@@ -207,7 +201,6 @@
             .col-guerreritos { width: 16%; }
             .col-guerreros { width: 16%; }
 
-            /* Color visible para iconos y enlaces en impresión */
             .text-primary, a {
                 color: #000 !important;
                 text-decoration: none !important;
@@ -323,7 +316,7 @@
                             <th class="col-maestros">Maestros Asignados</th>
                             <th class="col-guerreritos">Guerreritos de Oración</th>
                             <th class="col-guerreros">Guerreros (Adultos)</th>
-                            <th class="no-print">Acciones</th>
+                            <th class="no-print text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -396,9 +389,14 @@
                                         <% } %>
                                     </td>
                                     <td class="no-print text-center">
-                                        <form action="/eliminar-registro/<%= item.id %>" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este registro?');" style="display:inline;">
-                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-                                        </form>
+                                        <div class="d-flex flex-column gap-1 align-items-center">
+                                            <a href="/editar-registro/<%= item.id %>" class="btn btn-outline-primary btn-sm" title="Editar Registro">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="/eliminar-registro/<%= item.id %>" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este registro?');" style="display:inline;">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <% }) %>
