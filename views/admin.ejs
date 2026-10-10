@@ -61,11 +61,12 @@
             width: auto;
         }
 
+        /* ESTILOS DE LAS TARJETAS MÉTRICAS */
         .stat-card-green {
             background-color: #007a2e;
             color: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 18px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             display: flex;
             justify-content: space-between;
@@ -75,7 +76,7 @@
             background-color: #0056b3;
             color: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 18px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             display: flex;
             justify-content: space-between;
@@ -85,7 +86,37 @@
             background-color: #ffc107;
             color: #533f03;
             border-radius: 12px;
-            padding: 20px;
+            padding: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-card-teal {
+            background-color: #0d9488;
+            color: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-card-purple {
+            background-color: #7c3aed;
+            color: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-card-red {
+            background-color: #dc2626;
+            color: white;
+            border-radius: 12px;
+            padding: 18px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             display: flex;
             justify-content: space-between;
@@ -141,23 +172,23 @@
                 display: none !important;
             }
 
-            .stat-card-green, .stat-card-blue, .stat-card-yellow {
+            .stat-card-green, .stat-card-blue, .stat-card-yellow, .stat-card-teal, .stat-card-purple, .stat-card-red {
                 border: 1px solid #ccc !important;
                 box-shadow: none !important;
-                padding: 8px 12px !important;
+                padding: 6px 10px !important;
                 color: #000 !important;
                 background: #f8f9fa !important;
                 border-radius: 6px !important;
             }
 
-            .stat-card-green h2, .stat-card-blue h2, .stat-card-yellow h2 {
-                font-size: 1.2rem !important;
+            .stat-card-green h2, .stat-card-blue h2, .stat-card-yellow h2, .stat-card-teal h2, .stat-card-purple h2, .stat-card-red h2 {
+                font-size: 1.1rem !important;
                 color: #000 !important;
             }
 
-            .stat-card-green span, .stat-card-blue span, .stat-card-yellow span {
+            .stat-card-green span, .stat-card-blue span, .stat-card-yellow span, .stat-card-teal span, .stat-card-purple span, .stat-card-red span {
                 color: #444 !important;
-                font-size: 0.65rem !important;
+                font-size: 0.6rem !important;
             }
 
             .table-section {
@@ -264,9 +295,9 @@
             </div>
         </div>
 
-        <!-- Tarjetas de Métricas Resumidas -->
+        <!-- Tarjetas de Métricas Resumidas (6 Tarjetas Organizativas) -->
         <div class="row g-2 mb-3">
-            <div class="col-4">
+            <div class="col-md-4 col-sm-6">
                 <div class="stat-card-green">
                     <div>
                         <span class="small text-uppercase fw-bold opacity-75">Iglesias</span>
@@ -275,7 +306,7 @@
                     <i class="fas fa-church fa-2x opacity-50 no-print"></i>
                 </div>
             </div>
-            <div class="col-4">
+            <div class="col-md-4 col-sm-6">
                 <div class="stat-card-blue">
                     <div>
                         <span class="small text-uppercase fw-bold opacity-75">Cajitas</span>
@@ -284,13 +315,42 @@
                     <i class="fas fa-box-open fa-2x opacity-50 no-print"></i>
                 </div>
             </div>
-            <div class="col-4">
+            <div class="col-md-4 col-sm-6">
                 <div class="stat-card-yellow">
                     <div>
                         <span class="small text-uppercase fw-bold opacity-75">Maestros</span>
                         <h2 class="fw-bold mb-0"><%= totalMaestros %></h2>
                     </div>
                     <i class="fas fa-users fa-2x opacity-50 no-print"></i>
+                </div>
+            </div>
+
+            <!-- Nuevas 3 Tarjetas -->
+            <div class="col-md-4 col-sm-6">
+                <div class="stat-card-teal">
+                    <div>
+                        <span class="small text-uppercase fw-bold opacity-75">Pastores</span>
+                        <h2 class="fw-bold mb-0"><%= totalPastores %></h2>
+                    </div>
+                    <i class="fas fa-user-tie fa-2x opacity-50 no-print"></i>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="stat-card-purple">
+                    <div>
+                        <span class="small text-uppercase fw-bold opacity-75">Guerreritos</span>
+                        <h2 class="fw-bold mb-0"><%= totalGuerreritos %></h2>
+                    </div>
+                    <i class="fas fa-child fa-2x opacity-50 no-print"></i>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="stat-card-red">
+                    <div>
+                        <span class="small text-uppercase fw-bold opacity-75">Guerreros (Adultos)</span>
+                        <h2 class="fw-bold mb-0"><%= totalGuerreros %></h2>
+                    </div>
+                    <i class="fas fa-user-shield fa-2x opacity-50 no-print"></i>
                 </div>
             </div>
         </div>
