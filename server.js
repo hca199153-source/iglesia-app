@@ -201,6 +201,137 @@ app.post('/guardar-registro', async (req, res) => {
     }
 });
 
+// Ruta para Cargar la Vista de Edición con sus relaciones
+app.get('/editar-registro/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { data: iglesia, error } = await supabase
+            .from('iglesias')
+            .select(`
+                *,
+                maestros (*),
+                guerreritos_oracion (*),
+                guerreros_oracion (*)
+            `)
+            .eq('id', id)
+            .single();
+
+        if (error || !iglesia) throw new Error('No se encontró el registro.');
+
+        res.render('editar', { iglesia });
+    } catch (err) {
+        console.error('Error al abrir edición:', err);
+        res.status(500).send('Error al cargar el registro para editar: ' + err.message);
+    }
+});
+
+// Ruta para Procesar la Actualización Segura en Supabase
+app.post('/actualizar-registro/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const {
+            zona,
+            nombre_pastor,
+            telefono_pastor,
+            correo_pastor,
+            nombre_iglesia,
+            direccion,
+            nombre_lider,
+            telefono_lider,
+            correo_lider,
+            num_cajas,
+            maestros,
+            guerreritos,
+            guerreros
+        } = req.body;
+
+        // 1. Actualizar los datos principales de la iglesia
+        const { error: iglesiaError } = await supabase
+            .from('iglesias')
+            .update({
+                zona,
+                nombre_pastor,
+                telefono_pastor,
+                correo_pastor: correo_pastor || null,
+                nombre_iglesia,
+                direccion,
+                nombre_lider,
+                telefono_lider,
+                correo_lider: correo_lider || null,
+                num_cajas: parseInt(num_cajas) || 0,
+                num_maestros: maestros ? Object.keys(maestros).filter(k => maestros[k].nombre).length : 0
+            })
+            .eq('id', id);
+
+        if (iglesiaError) throw new Error('Error al actualizar iglesia: ' + iglesiaError.message);
+
+        // 2. Limpiar e reinsertar registros relacionados de forma segura para evitar conflictos o duplicados
+        await supabase.from('maestros').delete().eq('iglesia_id', id);
+        await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
+        await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
+
+        if (maestros) {
+            const maestrosArray = Object.values(maestros)
+                .filter(m => m.nombre && m.nombre.trim() !== '')
+                .map(m => ({
+                    iglesia_id: id,
+                    nombre: m.nombre,
+                    telefono: m.telefono,
+                    correo: m.correo || null
+                }));
+            if (maestrosArray.length > 0) {
+                await supabase.from('maestros').insert(maestrosArray);
+            }
+        }
+
+        if (guerreritos) {
+            const listaGuerreritos = Array.isArray(guerreritos) ? guerreritos : Object.values(guerreritos);
+            const guerreritosArray = listaGuerreritos
+                .filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '')
+                .map(g => ({
+                    iglesia_id: id,
+                    nombre_guerrerito: g.nombre_guerrerito,
+                    nombre_tutor: g.nombre_tutor,
+                    telefono_tutor: g.telefono_tutor
+                }));
+            if (guerreritosArray.length > 0) {
+                await supabase.from('guerreritos_oracion').insert(guerreritosArray);
+            }
+        }
+
+        if (guerreros) {
+            const listaGuerreros = Array.isArray(guerreros) ? guerreros : Object.values(guerreros);
+            const guerrerosArray = listaGuerreros
+                .filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '')
+                .map(gu => ({
+                    iglesia_id: id,
+                    nombre_guerrero: gu.nombre_guerrero,
+                    telefono_guerrero: gu.telefono_guerrero
+                }));
+            if (guerrerosArray.length > 0) {
+                await supabase.from('guerreros_oracion').insert(guerrerosArray);
+            }
+        }
+
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="es">
+            <head><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+            <body class="bg-light d-flex align-items-center justify-content-center vh-100">
+                <div class="card p-4 text-center shadow-sm" style="max-width: 450px;">
+                    <h3 class="text-success mb-3">¡Actualización Exitosa!</h3>
+                    <p class="text-muted">Los cambios se guardaron correctamente en la base de datos.</p>
+                    <a href="/admin" class="btn btn-success mt-2">Regresar al Panel de Administración</a>
+                </div>
+            </body>
+            </html>
+        `);
+    } catch (err) {
+        console.error('Error al actualizar registro:', err);
+        res.status(500).send('Error al actualizar: ' + err.message);
+    }
+});
+
 // Ruta para Eliminar Registro
 app.post('/eliminar-registro/:id', async (req, res) => {
     try {
@@ -213,7 +344,7 @@ app.post('/eliminar-registro/:id', async (req, res) => {
     }
 });
 
-// Ruta para Exportar a Excel (Incluye Correos, Maestros, Guerreritos y Guerreros Adultos)
+// Ruta para Exportar a Excel
 app.get('/exportar-excel', async (req, res) => {
     try {
         const zonaActual = req.session.zona || 'GENERAL';
