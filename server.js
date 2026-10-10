@@ -201,10 +201,15 @@ app.post('/guardar-registro', async (req, res) => {
     }
 });
 
-// Ruta para Cargar la Vista de Edición con sus relaciones
+// Ruta para Cargar la Vista de Edición con validación segura de ID
 app.get('/editar-registro/:id', async (req, res) => {
     try {
-        const id = req.params.id;
+        const id = parseInt(req.params.id, 10);
+
+        if (isNaN(id)) {
+            return res.status(400).send('ID de registro no válido.');
+        }
+
         const { data: iglesia, error } = await supabase
             .from('iglesias')
             .select(`
@@ -214,21 +219,28 @@ app.get('/editar-registro/:id', async (req, res) => {
                 guerreros_oracion (*)
             `)
             .eq('id', id)
-            .single();
+            .maybeSingle();
 
-        if (error || !iglesia) throw new Error('No se encontró el registro.');
+        if (error) {
+            console.error('Error de Supabase:', error);
+            return res.status(500).send('Error de base de datos: ' + error.message);
+        }
+
+        if (!iglesia) {
+            return res.status(404).send('No se encontró ningún registro con el ID: ' + id);
+        }
 
         res.render('editar', { iglesia });
     } catch (err) {
-        console.error('Error al abrir edición:', err);
-        res.status(500).send('Error al cargar el registro para editar: ' + err.message);
+        console.error('Error interno en /editar-registro:', err);
+        res.status(500).send('Error interno del servidor: ' + err.message);
     }
 });
 
 // Ruta para Procesar la Actualización Segura en Supabase
 app.post('/actualizar-registro/:id', async (req, res) => {
     try {
-        const id = req.params.id;
+        const id = parseInt(req.params.id, 10);
         const {
             zona,
             nombre_pastor,
@@ -265,7 +277,7 @@ app.post('/actualizar-registro/:id', async (req, res) => {
 
         if (iglesiaError) throw new Error('Error al actualizar iglesia: ' + iglesiaError.message);
 
-        // 2. Limpiar e reinsertar registros relacionados de forma segura para evitar conflictos o duplicados
+        // 2. Limpiar y reinsertar registros relacionados de forma segura para evitar duplicados
         await supabase.from('maestros').delete().eq('iglesia_id', id);
         await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
         await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
