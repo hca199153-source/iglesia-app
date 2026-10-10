@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Registro | Samaritan's Purse</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2b2b2b; margin: 0; padding: 0; }
+        .main-container { max-width: 720px; margin: 30px auto; background: #009639; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 20px; }
+        .form-section-box { background-color: #ffffff; border-radius: 12px; padding: 25px; margin-top: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .form-control, .form-select { background-color: #f8f9fa; border: 1px solid #ced4da; border-radius: 8px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="form-section-box shadow">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0 text-success"><i class="fas fa-edit me-2"></i> Editar Registro de Iglesia</h4>
+                <a href="/admin" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Regresar al Panel</a>
+            </div>
+            
+            <form action="/actualizar-registro/<%= iglesia.id %>" method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Zona de Captura:</label>
+                    <select name="zona" class="form-select form-select-sm" required>
+                        <option value="san_andres" <%= iglesia.zona === 'san_andres' ? 'selected' : '' %>>San Andrés Tuxtla</option>
+                        <option value="veracruz" <%= iglesia.zona === 'veracruz' ? 'selected' : '' %>>Veracruz</option>
+                        <option value="cd_aleman" <%= iglesia.zona === 'cd_aleman' ? 'selected' : '' %>>Ciudad Alemán</option>
+                        <option value="xalapa" <%= iglesia.zona === 'xalapa' ? 'selected' : '' %>>Xalapa</option>
+                    </select>
+                </div>
+
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-user-tie me-1"></i> 1. Datos del Pastor</h6>
+                <div class="mb-2">
+                    <label class="form-label small text-muted">Nombre del Pastor *</label>
+                    <input type="text" name="nombre_pastor" class="form-control form-control-sm" value="<%= iglesia.nombre_pastor %>" required>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_pastor" class="form-control form-control-sm" value="<%= iglesia.telefono_pastor %>" required></div>
+                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_pastor" class="form-control form-control-sm" value="<%= iglesia.correo_pastor || '' %>"></div>
+                </div>
+
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-church me-1"></i> 2. Datos de la Iglesia</h6>
+                <div class="mb-2"><label class="form-label small text-muted">Nombre de la Iglesia *</label><input type="text" name="nombre_iglesia" class="form-control form-control-sm" value="<%= iglesia.nombre_iglesia %>" required></div>
+                <div class="mb-3"><label class="form-label small text-muted">Dirección *</label><input type="text" name="direccion" class="form-control form-control-sm" value="<%= iglesia.direccion %>" required></div>
+
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-users me-1"></i> 3. Datos del Líder</h6>
+                <div class="mb-2"><label class="form-label small text-muted">Nombre del Líder *</label><input type="text" name="nombre_lider" class="form-control form-control-sm" value="<%= iglesia.nombre_lider %>" required></div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_lider" class="form-control form-control-sm" value="<%= iglesia.telefono_lider %>" required></div>
+                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_lider" class="form-control form-control-sm" value="<%= iglesia.correo_lider || '' %>"></div>
+                </div>
+
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-box-open me-1"></i> 4. Solicitud de Cajas</h6>
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Cajitas Solicitadas *</label>
+                    <select name="num_cajas" class="form-select form-select-sm" required>
+                        <option value="50" <%= iglesia.num_cajas === 50 ? 'selected' : '' %>>50 Cajas</option>
+                        <option value="100" <%= iglesia.num_cajas === 100 ? 'selected' : '' %>>100 Cajas</option>
+                        <option value="150" <%= iglesia.num_cajas === 150 ? 'selected' : '' %>>150 Cajas</option>
+                    </select>
+                </div>
+
+                <!-- Maestros Asignados -->
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-users me-1"></i> Maestros Asignados</h6>
+                <% for(let i = 0; i < 4; i++) { 
+                    let m = (iglesia.maestros && iglesia.maestros[i]) ? iglesia.maestros[i] : {};
+                %>
+                    <div class="p-2 border border-success rounded bg-light mb-2">
+                        <span class="small fw-bold text-success">Maestro <%= i+1 %></span>
+                        <input type="text" name="maestros[<%= i+1 %>][nombre]" class="form-control form-control-sm mb-1 mt-1" placeholder="Nombre completo" value="<%= m.nombre || '' %>">
+                        <div class="row g-1">
+                            <div class="col-6"><input type="tel" name="maestros[<%= i+1 %>][telefono]" class="form-control form-control-sm" placeholder="Teléfono" value="<%= m.telefono || '' %>"></div>
+                            <div class="col-6"><input type="email" name="maestros[<%= i+1 %>][correo]" class="form-control form-control-sm" placeholder="Correo" value="<%= m.correo || '' %>"></div>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Guerreritos de Oración -->
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success mt-4"><i class="fas fa-child me-1"></i> Red de Apoyo (7 Guerreritos - Niños)</h6>
+                <% for(let i = 0; i < 7; i++) { 
+                    let g = (iglesia.guerreritos_oracion && iglesia.guerreritos_oracion[i]) ? iglesia.guerreritos_oracion[i] : {};
+                %>
+                    <div class="border p-2 mb-2 rounded bg-light">
+                        <span class="small fw-bold text-success">Guerrerito #<%= i+1 %></span>
+                        <div class="row g-1 mt-1">
+                            <div class="col-md-4"><input type="text" name="guerreritos[<%= i %>][nombre_guerrerito]" class="form-control form-control-sm" placeholder="Nombre guerrerito" value="<%= g.nombre_guerrerito || '' %>"></div>
+                            <div class="col-md-4"><input type="text" name="guerreritos[<%= i %>][nombre_tutor]" class="form-control form-control-sm" placeholder="Nombre tutor" value="<%= g.nombre_tutor || '' %>"></div>
+                            <div class="col-md-4"><input type="tel" name="guerreritos[<%= i %>][telefono_tutor]" class="form-control form-control-sm" placeholder="Teléfono tutor" value="<%= g.telefono_tutor || '' %>"></div>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Guerreros de Oración Adultos -->
+                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success mt-4"><i class="fas fa-user-shield me-1"></i> Red de Apoyo (7 Guerreros Adultos)</h6>
+                <% for(let i = 0; i < 7; i++) { 
+                    let gu = (iglesia.guerreros_oracion && iglesia.guerreros_oracion[i]) ? iglesia.guerreros_oracion[i] : {};
+                %>
+                    <div class="border p-2 mb-2 rounded bg-light">
+                        <span class="small fw-bold text-success">Guerrero Adulto #<%= i+1 %></span>
+                        <div class="row g-1 mt-1">
+                            <div class="col-md-7"><input type="text" name="guerreros[<%= i %>][nombre_guerrero]" class="form-control form-control-sm" placeholder="Nombre completo" value="<%= gu.nombre_guerrero || '' %>"></div>
+                            <div class="col-md-5"><input type="tel" name="guerreros[<%= i %>][telefono_guerrero]" class="form-control form-control-sm" placeholder="Teléfono" value="<%= gu.telefono_guerrero || '' %>"></div>
+                        </div>
+                    </div>
+                <% } %>
+
+                <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-3 shadow-sm"><i class="fas fa-save me-2"></i> Guardar Cambios Actualizados</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
