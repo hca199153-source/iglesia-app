@@ -23,14 +23,29 @@
             </div>
             
             <form action="/actualizar-registro/<%= iglesia.id %>" method="POST">
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Zona de Captura:</label>
+                        <select name="zona" class="form-select form-select-sm" required>
+                            <option value="san_andres" <%= iglesia.zona === 'san_andres' ? 'selected' : '' %>>San Andrés Tuxtla</option>
+                            <option value="veracruz" <%= iglesia.zona === 'veracruz' ? 'selected' : '' %>>Veracruz</option>
+                            <option value="cd_aleman" <%= iglesia.zona === 'cd_aleman' ? 'selected' : '' %>>Ciudad Alemán</option>
+                            <option value="xalapa" <%= iglesia.zona === 'xalapa' ? 'selected' : '' %>>Xalapa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Estado Semáforo:</label>
+                        <select name="estado_semaforo" class="form-select form-select-sm" required>
+                            <option value="verde" <%= (iglesia.estado_semaforo || 'verde') === 'verde' ? 'selected' : '' %>>🟢 Verde (Completo)</option>
+                            <option value="amarillo" <%= iglesia.estado_semaforo === 'amarillo' ? 'selected' : '' %>>🟡 Amarillo (Faltante Menor)</option>
+                            <option value="rojo" <%= iglesia.estado_semaforo === 'rojo' ? 'selected' : '' %>>🔴 Rojo (Faltante Crítico)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="mb-3">
-                    <label class="form-label fw-bold small">Zona de Captura:</label>
-                    <select name="zona" class="form-select form-select-sm" required>
-                        <option value="san_andres" <%= iglesia.zona === 'san_andres' ? 'selected' : '' %>>San Andrés Tuxtla</option>
-                        <option value="veracruz" <%= iglesia.zona === 'veracruz' ? 'selected' : '' %>>Veracruz</option>
-                        <option value="cd_aleman" <%= iglesia.zona === 'cd_aleman' ? 'selected' : '' %>>Ciudad Alemán</option>
-                        <option value="xalapa" <%= iglesia.zona === 'xalapa' ? 'selected' : '' %>>Xalapa</option>
-                    </select>
+                    <label class="form-label small fw-bold">Palabra / Motivo del Faltante:</label>
+                    <input type="text" name="observacion_semaforo" class="form-control form-control-sm" value="<%= iglesia.observacion_semaforo || 'Completo' %>" required maxlength="30">
                 </div>
 
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-user-tie me-1"></i> 1. Datos del Pastor</h6>
