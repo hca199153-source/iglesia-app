@@ -1,10 +1,14 @@
 const express = require('express');
 const session = require('express-session');
+const multer = require('multer');
 const path = require('path');
 const supabase = require('./db.js');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
+
+// Configuración de Multer para recibir la imagen de la solicitud en memoria
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -22,6 +26,48 @@ app.use(session({
 // Ruta Principal
 app.get('/', (req, res) => {
     res.render('index');
+});
+
+// NUEVA RUTA: Procesar imagen mediante Google Cloud Vision API
+app.post('/escanear-vision', upload.single('imagenFormulario'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No se subió ninguna imagen.' });
+        }
+
+        // Convertir la imagen a Base64
+        const imageBytes = req.file.buffer.toString('base64');
+        const apiKey = 'AIzaSyAQo6X3fv4gTWNks7w1jFN3LaldV5dWDE'; // Tu clave de Google Cloud API
+        const url = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
+
+        const body = {
+            requests: [
+                {
+                    image: { content: imageBytes },
+                    features: [{ type: 'DOCUMENT_TEXT_DETECTION' }] // Diseñado específicamente para manuscritos y documentos
+                }
+            ]
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+
+        if (data.responses && data.responses[0].fullTextAnnotation) {
+            const textoCompleto = data.responses[0].fullTextAnnotation.text;
+            res.json({ success: true, text: textoCompleto });
+        } else {
+            res.json({ success: false, error: 'No se detectó texto legible en la imagen.' });
+        }
+
+    } catch (error) {
+        console.error('Error al procesar con Cloud Vision:', error);
+        res.status(500).json({ success: false, error: 'Error interno al procesar la imagen.' });
+    }
 });
 
 // Inicio de Sesión
@@ -225,7 +271,7 @@ app.get('/editar-registro/:id', async (req, res) => {
     }
 });
 
-// Actualizar Registro (Incluye actualización rápida del semáforo)
+// Actualizar Registro
 app.post('/actualizar-registro/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
@@ -269,7 +315,6 @@ app.post('/actualizar-registro/:id', async (req, res) => {
 
         if (iglesiaError) throw new Error('Error al actualizar: ' + iglesiaError.message);
 
-        // Si la petición viene de la vista /editar-registro reinsertamos tablas hijas
         if (maestros || guerreritos || guerreros) {
             await supabase.from('maestros').delete().eq('iglesia_id', id);
             await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
@@ -305,7 +350,7 @@ app.post('/actualizar-registro/:id', async (req, res) => {
     }
 });
 
-// Ruta para actualizar ÚNICAMENTE el semáforo desde el modal flotante rápido
+// Actualizar Semáforo
 app.post('/actualizar-semaforo/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
