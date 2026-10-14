@@ -7,8 +7,6 @@
     <link rel="icon" type="image/png" href="/images/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Tesseract.js para reconocimiento óptico de caracteres local -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2b2b2b; margin: 0; padding: 0; }
         .main-container { max-width: 720px; margin: 30px auto; background: #009639; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 20px; }
@@ -19,6 +17,7 @@
         .form-section-box { background-color: #ffffff; border-radius: 12px; padding: 25px; margin-top: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
         .form-control, .form-select { background-color: #f8f9fa; border: 1px solid #ced4da; border-radius: 8px; padding: 10px; }
         .timer-box { background: #ffffff; border: 2px dashed #ffc107; color: #856404; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; margin-top: 20px; }
+        .preview-container { position: sticky; top: 10px; z-index: 1000; background: #ffffff; border: 2px solid #198754; border-radius: 10px; padding: 10px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -42,32 +41,9 @@
             <div class="card-body small">
                 <p class="mb-2">Metas claras y alcanzables a través de un proceso intencional de discipulado.</p>
                 <ul class="ps-3 mb-0 text-muted">
-                    <li><strong>Inscripción Esperada:</strong> Cuidar que cada cajita entregada llegue a un niño .</li>
+                    <li><strong>Inscripción Esperada:</strong> Cuidar que cada cajita entregada llegue a un niño.</li>
                     <li><strong>Graduación Esperada:</strong> Lograr que los niños completen su discipulado.</li>
                 </ul>
-            </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-            <div class="col-md-6">
-                <div class="p-3 border border-danger rounded bg-white text-center shadow-sm h-100">
-                    <h6 class="text-danger fw-bold mb-1"><i class="fas fa-bullseye"></i> NUESTRO COMPROMISO</h6>
-                    <p class="small text-muted mb-0">Cuántos niños inscribimos y cuidamos para graduarse.</p>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="p-3 border border-success rounded bg-white text-center shadow-sm h-100">
-                    <h6 class="text-success fw-bold mb-1"><i class="fas fa-flag-checkered"></i> OBJETIVO FINAL</h6>
-                    <p class="small text-muted mb-0">Vidas transformadas que multiplican el Evangelio.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card card-custom mb-3">
-            <div class="card-header-custom"><i class="fas fa-star me-2 text-danger"></i> 6. Elementos del Discipulador & Guerreritos</div>
-            <div class="card-body small">
-                <p class="mb-2">Comprometido con Cristo, conocimiento básico de la Biblia y constante.</p>
-                <p class="text-danger fw-bold mb-0"><i class="fas fa-fire me-1"></i> Considerar <strong>7 Guerreritos de Oración</strong> (niños) y <strong>7 Guerreros de Oración</strong> (adultos).</p>
             </div>
         </div>
 
@@ -82,31 +58,24 @@
                 <h4 class="fw-bold mb-1 text-success"><i class="fas fa-file-alt me-2"></i> Formulario de Registro</h4>
             </div>
 
-            <!-- MÓDULO DE ESCANEO / FOTO DE HOJA FÍSICA -->
+            <!-- MÓDULO DE CARGA Y VISOR DE SOLICITUD FÍSICA -->
             <div class="card p-3 mb-4 border-success bg-light shadow-sm">
                 <h6 class="fw-bold text-success mb-2">
-                    <i class="fas fa-camera me-2"></i> Lector de Solicitud Física / Foto
+                    <i class="fas fa-camera me-2"></i> Adjuntar Solicitud Física (Referencia Visual)
                 </h6>
-                <p class="small text-muted mb-3">
-                    Suba o tome una foto de su hoja de solicitud física para escanear números telefónicos y tener la referencia visual a la mano.
+                <p class="small text-muted mb-2">
+                    Tome una foto o cargue la imagen de su hoja de solicitud manuscrita para consultarla cómodamente mientras llena los campos de abajo.
                 </p>
 
-                <div class="row g-2 align-items-center">
-                    <div class="col-md-8">
-                        <input type="file" id="inputFotoSolicitud" class="form-control form-control-sm" accept="image/*" capture="environment">
+                <input type="file" id="inputFotoSolicitud" class="form-control form-control-sm mb-2" accept="image/*" capture="environment" onchange="mostrarPrevisualizacion(this)">
+                
+                <!-- Visor flotante que se mantiene visible al deslizar el formulario -->
+                <div id="contenedorPrevisualizacion" class="preview-container text-center" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small fw-bold text-success"><i class="fas fa-image me-1"></i> Solicitud Física de Referencia:</span>
+                        <button type="button" class="btn-close btn-sm" onclick="cerrarPrevisualizacion()" title="Cerrar imagen"></button>
                     </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-success btn-sm w-100 fw-bold" onclick="procesarFotoSolicitud()">
-                            <i class="fas fa-magic me-1"></i> Escanear
-                        </button>
-                    </div>
-                </div>
-
-                <div id="statusOCR" class="small text-primary mt-2 fw-bold" style="display: none;"></div>
-
-                <div id="contenedorPrevisualizacion" class="mt-3 text-center" style="display: none;">
-                    <p class="small text-muted mb-1 fw-bold">Referencia Visual de la Solicitud:</p>
-                    <img id="imgPreview" src="" alt="Solicitud Física" style="max-height: 220px; border-radius: 8px; border: 1px solid #ccc;" class="img-fluid shadow-sm">
+                    <img id="imgPreview" src="" alt="Solicitud Física" style="max-height: 280px; border-radius: 6px;" class="img-fluid shadow-sm">
                 </div>
             </div>
             
@@ -231,54 +200,22 @@
             } else { display.value = "Seleccione cajas"; }
         }
 
-        // LÓGICA DE ESCANEO DE FOTO DE SOLICITUD
-        async function procesarFotoSolicitud() {
-            const fileInput = document.getElementById('inputFotoSolicitud');
-            const statusDiv = document.getElementById('statusOCR');
-            const imgPreview = document.getElementById('imgPreview');
-            const contenedorPrev = document.getElementById('contenedorPrevisualizacion');
-
-            if (!fileInput.files || fileInput.files.length === 0) {
-                alert('Por favor seleccione una imagen o tome una foto de la solicitud física.');
-                return;
+        // MOSTRAR LA FOTO DE LA SOLICITUD EN UN VISOR FLOTANTE DE REFERENCIA
+        function mostrarPrevisualizacion(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imgPreview').src = e.target.result;
+                    document.getElementById('contenedorPrevisualizacion').style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
             }
+        }
 
-            const file = fileInput.files[0];
-            imgPreview.src = URL.createObjectURL(file);
-            contenedorPrev.style.display = 'block';
-
-            statusDiv.style.display = 'block';
-            statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Analizando documento...';
-
-            try {
-                const result = await Tesseract.recognize(file, 'spa', {
-                    logger: m => {
-                        if (m.status === 'recognizing text') {
-                            statusDiv.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i> Leyendo texto: ${Math.round(m.progress * 100)}%`;
-                        }
-                    }
-                });
-
-                const textoDetectado = result.data.text;
-                statusDiv.className = 'small text-success mt-2 fw-bold';
-                statusDiv.innerHTML = '<i class="fas fa-check-circle me-1"></i> ¡Lectura finalizada! Se extrajeron números detectados.';
-
-                // Rellenar automáticamente teléfonos detectados en casillas disponibles
-                const telefonosEncontrados = textoDetectado.match(/(?:\d[\s-]*){10}/g) || [];
-                const inputsTelefonos = document.querySelectorAll('input[type="tel"]');
-                telefonosEncontrados.forEach((tel, idx) => {
-                    const telLimpio = tel.replace(/\D/g, '');
-                    if (inputsTelefonos[idx] && telLimpio.length === 10) {
-                        inputsTelefonos[idx].value = telLimpio;
-                    }
-                });
-
-            } catch (err) {
-                console.error(err);
-                statusDiv.className = 'small text-danger mt-2 fw-bold';
-                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> No se pudo extraer automáticamente. Use la imagen previa de referencia.';
-            }
+        function cerrarPrevisualizacion() {
+            document.getElementById('contenedorPrevisualizacion').style.display = 'none';
+            document.getElementById('inputFotoSolicitud').value = '';
         }
     </script>
 </body>
-</html>s
+</html>
