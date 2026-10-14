@@ -7,6 +7,8 @@
     <link rel="icon" type="image/png" href="/images/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tesseract.js para OCR local -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2b2b2b; margin: 0; padding: 0; }
         .main-container { max-width: 720px; margin: 30px auto; background: #009639; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 20px; }
@@ -17,7 +19,7 @@
         .form-section-box { background-color: #ffffff; border-radius: 12px; padding: 25px; margin-top: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
         .form-control, .form-select { background-color: #f8f9fa; border: 1px solid #ced4da; border-radius: 8px; padding: 10px; }
         .timer-box { background: #ffffff; border: 2px dashed #ffc107; color: #856404; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; margin-top: 20px; }
-        .preview-container { position: sticky; top: 10px; z-index: 1000; background: #ffffff; border: 2px solid #198754; border-radius: 10px; padding: 10px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .preview-container { background: #ffffff; border: 2px solid #198754; border-radius: 10px; padding: 10px; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -58,24 +60,35 @@
                 <h4 class="fw-bold mb-1 text-success"><i class="fas fa-file-alt me-2"></i> Formulario de Registro</h4>
             </div>
 
-            <!-- MÓDULO DE CARGA Y VISOR DE SOLICITUD FÍSICA -->
+            <!-- MÓDULO DE ESCANEO Y LLENADO AUTOMÁTICO -->
             <div class="card p-3 mb-4 border-success bg-light shadow-sm">
                 <h6 class="fw-bold text-success mb-2">
-                    <i class="fas fa-camera me-2"></i> Adjuntar Solicitud Física (Referencia Visual)
+                    <i class="fas id-card me-2"></i> Lector Automático de Solicitud Física
                 </h6>
                 <p class="small text-muted mb-2">
-                    Tome una foto o cargue la imagen de su hoja de solicitud manuscrita para consultarla cómodamente mientras llena los campos de abajo.
+                    Seleccione o tome la foto de su hoja de formato físico. Luego presione <strong>"Rellenar Automáticamente"</strong> para transferir los datos detectados al formulario.
                 </p>
 
-                <input type="file" id="inputFotoSolicitud" class="form-control form-control-sm mb-2" accept="image/*" capture="environment" onchange="mostrarPrevisualizacion(this)">
-                
-                <!-- Visor flotante que se mantiene visible al deslizar el formulario -->
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-7">
+                        <input type="file" id="inputFotoSolicitud" class="form-control form-control-sm" accept="image/*" capture="environment" onchange="cargarImagenReferencia(this)">
+                    </div>
+                    <div class="col-md-5">
+                        <button type="button" class="btn btn-primary btn-sm w-100 fw-bold" onclick="ejecutarExtraccionAutomatica()">
+                            <i class="fas fa-magic me-1"></i> Rellenar Automáticamente
+                        </button>
+                    </div>
+                </div>
+
+                <div id="statusOCR" class="small text-primary mt-2 fw-bold" style="display: none;"></div>
+
+                <!-- Visor de la solicitud cargada -->
                 <div id="contenedorPrevisualizacion" class="preview-container text-center" style="display: none;">
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="small fw-bold text-success"><i class="fas fa-image me-1"></i> Solicitud Física de Referencia:</span>
-                        <button type="button" class="btn-close btn-sm" onclick="cerrarPrevisualizacion()" title="Cerrar imagen"></button>
+                        <span class="small fw-bold text-success"><i class="fas fa-image me-1"></i> Imagen de la Solicitud:</span>
+                        <button type="button" class="btn-close btn-sm" onclick="cerrarPrevisualizacion()"></button>
                     </div>
-                    <img id="imgPreview" src="" alt="Solicitud Física" style="max-height: 280px; border-radius: 6px;" class="img-fluid shadow-sm">
+                    <img id="imgPreview" src="" alt="Solicitud" style="max-height: 220px; border-radius: 6px;" class="img-fluid shadow-sm">
                 </div>
             </div>
             
@@ -94,22 +107,22 @@
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-user-tie me-1"></i> 1. Datos del Pastor</h6>
                 <div class="mb-2">
                     <label class="form-label small text-muted">Nombre del Pastor *</label>
-                    <input type="text" name="nombre_pastor" class="form-control form-control-sm" required>
+                    <input type="text" name="nombre_pastor" id="nombre_pastor" class="form-control form-control-sm" required>
                 </div>
                 <div class="row g-2 mb-3">
-                    <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_pastor" class="form-control form-control-sm" required></div>
-                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_pastor" class="form-control form-control-sm"></div>
+                    <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_pastor" id="telefono_pastor" class="form-control form-control-sm" required></div>
+                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_pastor" id="correo_pastor" class="form-control form-control-sm"></div>
                 </div>
 
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-church me-1"></i> 2. Datos de la Iglesia</h6>
-                <div class="mb-2"><label class="form-label small text-muted">Nombre de la Iglesia *</label><input type="text" name="nombre_iglesia" class="form-control form-control-sm" required></div>
-                <div class="mb-3"><label class="form-label small text-muted">Dirección *</label><input type="text" name="direccion" class="form-control form-control-sm" required></div>
+                <div class="mb-2"><label class="form-label small text-muted">Nombre de la Iglesia *</label><input type="text" name="nombre_iglesia" id="nombre_iglesia" class="form-control form-control-sm" required></div>
+                <div class="mb-3"><label class="form-label small text-muted">Dirección *</label><input type="text" name="direccion" id="direccion" class="form-control form-control-sm" required></div>
 
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-users me-1"></i> 3. Datos del Líder</h6>
-                <div class="mb-2"><label class="form-label small text-muted">Nombre del Líder *</label><input type="text" name="nombre_lider" class="form-control form-control-sm" required></div>
+                <div class="mb-2"><label class="form-label small text-muted">Nombre del Líder *</label><input type="text" name="nombre_lider" id="nombre_lider" class="form-control form-control-sm" required></div>
                 <div class="row g-2 mb-3">
-                    <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_lider" class="form-control form-control-sm" required></div>
-                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_lider" class="form-control form-control-sm"></div>
+                    <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_lider" id="telefono_lider" class="form-control form-control-sm" required></div>
+                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_lider" id="correo_lider" class="form-control form-control-sm"></div>
                 </div>
 
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-box-open me-1"></i> 4. Solicitud de Cajas y Maestros</h6>
@@ -137,9 +150,9 @@
                         <div class="border p-2 mb-2 rounded bg-light">
                             <span class="small fw-bold text-success">Guerrerito #<%= i %></span>
                             <div class="row g-1 mt-1">
-                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_guerrerito]" class="form-control form-control-sm" placeholder="Nombre guerrerito" required></div>
-                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_tutor]" class="form-control form-control-sm" placeholder="Nombre tutor" required></div>
-                                <div class="col-md-4"><input type="tel" name="guerreritos[<%= i-1 %>][telefono_tutor]" class="form-control form-control-sm" placeholder="Teléfono tutor" required></div>
+                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_guerrerito]" class="form-control form-control-sm input-guerrerito-nombre" placeholder="Nombre guerrerito" required></div>
+                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_tutor]" class="form-control form-control-sm input-guerrerito-tutor" placeholder="Nombre tutor" required></div>
+                                <div class="col-md-4"><input type="tel" name="guerreritos[<%= i-1 %>][telefono_tutor]" class="form-control form-control-sm input-guerrerito-tel" placeholder="Teléfono tutor" required></div>
                             </div>
                         </div>
                     <% } %>
@@ -152,8 +165,8 @@
                         <div class="border p-2 mb-2 rounded bg-light">
                             <span class="small fw-bold text-success">Guerrero Adulto #<%= i %></span>
                             <div class="row g-1 mt-1">
-                                <div class="col-md-7"><input type="text" name="guerreros[<%= i-1 %>][nombre_guerrero]" class="form-control form-control-sm" placeholder="Nombre completo del guerrero" required></div>
-                                <div class="col-md-5"><input type="tel" name="guerreros[<%= i-1 %>][telefono_guerrero]" class="form-control form-control-sm" placeholder="Número de teléfono" required></div>
+                                <div class="col-md-7"><input type="text" name="guerreros[<%= i-1 %>][nombre_guerrero]" class="form-control form-control-sm input-guerrero-nombre" placeholder="Nombre completo del guerrero" required></div>
+                                <div class="col-md-5"><input type="tel" name="guerreros[<%= i-1 %>][telefono_guerrero]" class="form-control form-control-sm input-guerrero-tel" placeholder="Número de teléfono" required></div>
                             </div>
                         </div>
                     <% } %>
@@ -200,8 +213,7 @@
             } else { display.value = "Seleccione cajas"; }
         }
 
-        // MOSTRAR LA FOTO DE LA SOLICITUD EN UN VISOR FLOTANTE DE REFERENCIA
-        function mostrarPrevisualizacion(input) {
+        function cargarImagenReferencia(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -215,6 +227,71 @@
         function cerrarPrevisualizacion() {
             document.getElementById('contenedorPrevisualizacion').style.display = 'none';
             document.getElementById('inputFotoSolicitud').value = '';
+        }
+
+        // FUNCIÓN DEL BOTÓN PARA EJECUTAR EL RECONOCIMIENTO Y RELLENAR CAMPOS
+        async function ejecutarExtraccionAutomatica() {
+            const fileInput = document.getElementById('inputFotoSolicitud');
+            const statusDiv = document.getElementById('statusOCR');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Por favor seleccione primero una foto o imagen de su solicitud física.');
+                return;
+            }
+
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'small text-primary mt-2 fw-bold';
+            statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Analizando imagen y extrayendo datos...';
+
+            try {
+                const result = await Tesseract.recognize(
+                    fileInput.files[0],
+                    'spa',
+                    {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                statusDiv.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i> Leyendo documento: ${Math.round(m.progress * 100)}%`;
+                            }
+                        }
+                    }
+                );
+
+                const textoExtraido = result.data.text;
+                
+                // Extraer teléfonos numéricos de 10 dígitos detectados
+                const telefonos = textoExtraido.match(/(?:\d[\s-]*){10}/g) || [];
+                const telefonosLimpios = telefonos.map(t => t.replace(/\D/g, ''));
+
+                // Asignar teléfonos encontrados a los campos correspondientes de la red de apoyo
+                const inputsTelGuerreritos = document.querySelectorAll('.input-guerrerito-tel');
+                const inputsTelGuerreros = document.querySelectorAll('.input-guerrero-tel');
+                
+                let contadorTel = 0;
+                
+                // Rellenar teléfonos de guerreritos
+                inputsTelGuerreritos.forEach(input => {
+                    if (telefonosLimpios[contadorTel]) {
+                        input.value = telefonosLimpios[contadorTel];
+                        contadorTel++;
+                    }
+                });
+
+                // Rellenar teléfonos de guerreros adultos
+                inputsTelGuerreros.forEach(input => {
+                    if (telefonosLimpios[contadorTel]) {
+                        input.value = telefonosLimpios[contadorTel];
+                        contadorTel++;
+                    }
+                });
+
+                statusDiv.className = 'small text-success mt-2 fw-bold';
+                statusDiv.innerHTML = `<i class="fas fa-check-circle me-1"></i> ¡Proceso completado! Se detectaron y rellenaron ${telefonosLimpios.length} números telefónicos automáticamente.`;
+
+            } catch (err) {
+                console.error('Error OCR:', err);
+                statusDiv.className = 'small text-danger mt-2 fw-bold';
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> No se pudo completar la extracción automática. Puede usar la imagen adjunta arriba como referencia visual.';
+            }
         }
     </script>
 </body>
