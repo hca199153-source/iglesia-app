@@ -50,6 +50,36 @@
         .semaforo-amarillo { background-color: #ffc107; color: #000; }
         .semaforo-rojo { background-color: #dc3545; color: white; }
 
+        /* ESTILO DEL BOTÓN DE DICTADO POR BOCINA DEBAJO DEL SEMÁFORO */
+        .btn-audio-dictado {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-audio-dictado:hover {
+            background-color: #0b5ed7;
+            color: white;
+            transform: scale(1.05);
+        }
+        .btn-audio-dictado.reproduciendo {
+            background-color: #dc3545;
+            animation: pulse-audio 1.2s infinite;
+        }
+        @keyframes pulse-audio {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
         @page { size: A4 landscape; margin: 8mm; }
         @media print {
             body { background: white !important; color: #000 !important; font-size: 10px !important; margin: 0 !important; padding: 0 !important; }
@@ -105,6 +135,7 @@
                 </div>
             </div>
             <div class="d-flex gap-2 no-print">
+                <button onclick="detenerDictadoGlobal()" class="btn btn-warning btn-sm fw-bold"><i class="fas fa-volume-mute me-1"></i> Detener Audio</button>
                 <a href="/exportar-excel" class="btn btn-excel btn-sm"><i class="fas fa-file-excel me-1"></i> Excel</a>
                 <button onclick="window.print()" class="btn btn-print btn-sm"><i class="fas fa-print me-1"></i> Imprimir / PDF</button>
                 <a href="/logout" class="btn btn-outline-secondary btn-sm"><i class="fas fa-sign-out-alt"></i> Salir</a>
@@ -238,6 +269,27 @@
                                 } else {
                                     textoEstado = item.observacion_semaforo || 'Completo';
                                 }
+
+                                // FORMATEO DE TEXTOS PARA EL DICTADO DE VOZ
+                                let textoIglesia = `Iglesia ${item.nombre_iglesia}. Dirección: ${item.direccion}.`;
+                                let textoPastor = `Pastor ${item.nombre_pastor}. Teléfono: ${item.telefono_pastor || 'No registrado'}.`;
+                                let textoLider = `Líder de proyecto ${item.nombre_lider}. Teléfono: ${item.telefono_lider || 'No registrado'}.`;
+                                let textoCajas = `Cajitas solicitadas: ${item.num_cajas}.`;
+                                
+                                let textoMaestros = "Maestros asignados: ";
+                                if (item.maestros && item.maestros.length > 0) {
+                                    textoMaestros += item.maestros.map((m, i) => `Maestro ${i+1}: ${m.nombre}, teléfono ${m.telefono}`).join('. ');
+                                } else { textoMaestros += "Sin maestros registrados."; }
+
+                                let textoGuerreritos = "Guerreritos de oración: ";
+                                if (item.guerreritos_oracion && item.guerreritos_oracion.length > 0) {
+                                    textoGuerreritos += item.guerreritos_oracion.map((g, i) => `Guerrerito ${i+1}: ${g.nombre_guerrerito}, tutor ${g.nombre_tutor}, teléfono ${g.telefono_tutor}`).join('. ');
+                                } else { textoGuerreritos += "Sin guerreritos registrados."; }
+
+                                let textoGuerreros = "Guerreros adultos: ";
+                                if (item.guerreros_oracion && item.guerreros_oracion.length > 0) {
+                                    textoGuerreros += item.guerreros_oracion.map((gu, i) => `Guerrero ${i+1}: ${gu.nombre_guerrero}, teléfono ${gu.telefono_guerrero}`).join('. ');
+                                } else { textoGuerreros += "Sin guerreros registrados."; }
                             %>
                                 <tr data-id="<%= item.id %>"
                                     data-num="<%= index + 1 %>"
@@ -245,7 +297,17 @@
                                     data-pastor="<%= (item.nombre_pastor || '').toLowerCase() %>"
                                     data-direccion="<%= (item.direccion || '').toLowerCase() %>"
                                     data-cajas="<%= item.num_cajas || 0 %>"
-                                    data-semaforo="<%= item.estado_semaforo || 'verde' %>">
+                                    data-semaforo="<%= item.estado_semaforo || 'verde' %>"
+                                    
+                                    /* ATRIBUTOS PARA LECTURA EN VOZ ALTA */
+                                    data-dictado-iglesia="<%= textoIglesia %>"
+                                    data-dictado-pastor="<%= textoPastor %>"
+                                    data-dictado-lider="<%= textoLider %>"
+                                    data-dictado-cajas="<%= textoCajas %>"
+                                    data-dictado-maestros="<%= textoMaestros %>"
+                                    data-dictado-guerreritos="<%= textoGuerreritos %>"
+                                    data-dictado-guerreros="<%= textoGuerreros %>">
+                                    
                                     <td class="fw-bold col-index"><%= index + 1 %></td>
                                     <td>
                                         <strong><%= item.nombre_iglesia %></strong><br>
@@ -321,11 +383,19 @@
                                                 <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                                             </form>
 
+                                            <!-- SEMÁFORO -->
                                             <span class="badge-semaforo <%= colorClase %> mt-1" 
                                                   onclick="abrirModalSemaforo('<%= item.id %>', '<%= item.estado_semaforo || 'verde' %>', '<%= item.observacion_semaforo || '' %>')" 
                                                   title="Hacer clic para cambiar estado o ver faltantes">
                                                 <i class="fas fa-circle"></i> <%= textoEstado %>
                                             </span>
+
+                                            <!-- BOTÓN DE BOCINA DE DICTADO (UBICADO DEBAJO DEL SEMÁFORO) -->
+                                            <button type="button" class="btn-audio-dictado mt-1" id="btnAudio_<%= item.id %>" 
+                                                    onclick="abrirModalDictado('<%= item.id %>')" 
+                                                    title="Dictar en voz alta">
+                                                <i class="fas fa-volume-up"></i> Dictar
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -341,6 +411,49 @@
         </div>
     </div>
     <% } %>
+
+    <!-- MODAL DE DICTADO POR VOZ (OPCIONES DE VELOCIDAD Y SECCIÓN INICIAL) -->
+    <div class="modal fade" id="modalDictado" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header py-2 bg-primary text-white">
+                    <h6 class="modal-title fw-bold"><i class="fas fa-volume-up me-1"></i> Dictado por Voz</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="detenerDictadoGlobal()"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="dictadoActiveRowId">
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold"><i class="fas fa-play me-1 text-primary"></i> Empezar lectura desde:</label>
+                        <select id="selectDictadoInicio" class="form-select form-select-sm">
+                            <option value="inicio">1. Desde el Inicio (Iglesia)</option>
+                            <option value="pastor">2. Pastor</option>
+                            <option value="lider">3. Líder de Proyecto</option>
+                            <option value="cajas">4. Cajas Solicitadas</option>
+                            <option value="maestros">5. Maestros Asignados</option>
+                            <option value="guerreritos">6. Guerreritos de Oración</option>
+                            <option value="guerreros">7. Guerreros (Adultos)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold"><i class="fas fa-tachometer-alt me-1 text-success"></i> Velocidad de Dictado:</label>
+                        <select id="selectDictadoVelocidad" class="form-select form-select-sm">
+                            <option value="1">1.0x (Normal)</option>
+                            <option value="0.75" selected>0.75x (Lenta - Recomendada)</option>
+                            <option value="0.5">0.5x (Muy Lenta / Dictado)</option>
+                            <option value="1.25">1.25x (Rápida)</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary btn-sm w-100 fw-bold" onclick="iniciarLecturaVoz()"><i class="fas fa-play me-1"></i> Iniciar Dictado</button>
+                        <button type="button" class="btn btn-danger btn-sm w-100 fw-bold" onclick="detenerDictadoGlobal()"><i class="fas fa-stop me-1"></i> Detener</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL DE CAMBIO RÁPIDO DE ESTADO DE SEMÁFORO -->
     <div class="modal fade" id="modalSemaforo" tabindex="-1" aria-hidden="true">
@@ -386,7 +499,6 @@
             const tbody = document.querySelector('#tablaRegistros tbody');
             const filas = Array.from(tbody.querySelectorAll('tr[data-id]'));
 
-            // 1. Filtrar filas
             filas.forEach(fila => {
                 const textoCompleto = fila.innerText.toLowerCase();
                 const semaforoVal = fila.getAttribute('data-semaforo');
@@ -398,14 +510,9 @@
                 const cumpleCajas = !filterCajas || cajasVal === filterCajas;
                 const cumpleLocalidad = !filterLocalidad || direccionVal.includes(filterLocalidad);
 
-                if (cumpleSearch && cumpleSemaforo && cumpleCajas && cumpleLocalidad) {
-                    fila.style.display = '';
-                } else {
-                    fila.style.display = 'none';
-                }
+                fila.style.display = (cumpleSearch && cumpleSemaforo && cumpleCajas && cumpleLocalidad) ? '' : 'none';
             });
 
-            // 2. Ordenar filas visibles/ocultas
             filas.sort((a, b) => {
                 const numA = parseInt(a.getAttribute('data-num')) || 0;
                 const numB = parseInt(b.getAttribute('data-num')) || 0;
@@ -417,25 +524,16 @@
                 const cajasB = parseInt(b.getAttribute('data-cajas')) || 0;
 
                 switch (sortOption) {
-                    case 'iglesia_asc':
-                        return iglesiaA.localeCompare(iglesiaB);
-                    case 'iglesia_desc':
-                        return iglesiaB.localeCompare(iglesiaA);
-                    case 'pastor_asc':
-                        return pastorA.localeCompare(pastorB);
-                    case 'pastor_desc':
-                        return pastorB.localeCompare(pastorA);
-                    case 'cajas_desc':
-                        return cajasB - cajasA;
-                    case 'cajas_asc':
-                        return cajasA - cajasB;
-                    case 'num_asc':
-                    default:
-                        return numA - numB;
+                    case 'iglesia_asc': return iglesiaA.localeCompare(iglesiaB);
+                    case 'iglesia_desc': return iglesiaB.localeCompare(iglesiaA);
+                    case 'pastor_asc': return pastorA.localeCompare(pastorB);
+                    case 'pastor_desc': return pastorB.localeCompare(pastorA);
+                    case 'cajas_desc': return cajasB - cajasA;
+                    case 'cajas_asc': return cajasA - cajasB;
+                    default: return numA - numB;
                 }
             });
 
-            // Reinsertar las filas ordenadas en el tbody
             filas.forEach(fila => tbody.appendChild(fila));
         }
 
@@ -448,6 +546,7 @@
             aplicarFiltrosYOrden();
         }
 
+        // --- LÓGICA DE SEMÁFORO ---
         let modalSemaforoBs = null;
         function abrirModalSemaforo(id, estadoActual, observacionActual) {
             const form = document.getElementById('formSemaforo');
@@ -466,6 +565,85 @@
             const inputObs = document.getElementById('inputObservacionSemaforo');
             if (estado === 'verde' && !inputObs.value) {
                 inputObs.value = 'Completo';
+            }
+        }
+
+        // --- LÓGICA DE DICTADO POR VOZ (SÍNTESIS DE VOZ) ---
+        let modalDictadoBs = null;
+        let currentBtnDictado = null;
+
+        function abrirModalDictado(id) {
+            detenerDictadoGlobal();
+            document.getElementById('dictadoActiveRowId').value = id;
+            if (!modalDictadoBs) {
+                modalDictadoBs = new bootstrap.Modal(document.getElementById('modalDictado'));
+            }
+            modalDictadoBs.show();
+        }
+
+        function iniciarLecturaVoz() {
+            if (!('speechSynthesis' in window)) {
+                alert('Tu navegador no soporta la lectura por voz.');
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+
+            const rowId = document.getElementById('dictadoActiveRowId').value;
+            const row = document.querySelector(`tr[data-id="${rowId}"]`);
+            if (!row) return;
+
+            const inicio = document.getElementById('selectDictadoInicio').value;
+            const velocidad = parseFloat(document.getElementById('selectDictadoVelocidad').value) || 1;
+
+            const partes = [
+                { id: 'inicio', texto: row.getAttribute('data-dictado-iglesia') },
+                { id: 'pastor', texto: row.getAttribute('data-dictado-pastor') },
+                { id: 'lider', texto: row.getAttribute('data-dictado-lider') },
+                { id: 'cajas', texto: row.getAttribute('data-dictado-cajas') },
+                { id: 'maestros', texto: row.getAttribute('data-dictado-maestros') },
+                { id: 'guerreritos', texto: row.getAttribute('data-dictado-guerreritos') },
+                { id: 'guerreros', texto: row.getAttribute('data-dictado-guerreros') }
+            ];
+
+            let indexStart = 0;
+            if (inicio !== 'inicio') {
+                indexStart = partes.findIndex(p => p.id === inicio);
+                if (indexStart === -1) indexStart = 0;
+            }
+
+            const textoFinal = partes.slice(indexStart).map(p => p.texto).join(' ');
+
+            const utterance = new SpeechSynthesisUtterance(textoFinal);
+            utterance.lang = 'es-MX';
+            utterance.rate = velocidad;
+
+            currentBtnDictado = document.getElementById(`btnAudio_${rowId}`);
+            if (currentBtnDictado) {
+                currentBtnDictado.classList.add('reproduciendo');
+                currentBtnDictado.innerHTML = `<i class="fas fa-volume-up fa-spin"></i> Leyendo...`;
+            }
+
+            utterance.onend = function () {
+                detenerDictadoGlobal();
+            };
+
+            utterance.onerror = function () {
+                detenerDictadoGlobal();
+            };
+
+            window.speechSynthesis.speak(utterance);
+            if (modalDictadoBs) modalDictadoBs.hide();
+        }
+
+        function detenerDictadoGlobal() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            if (currentBtnDictado) {
+                currentBtnDictado.classList.remove('reproduciendo');
+                currentBtnDictado.innerHTML = `<i class="fas fa-volume-up"></i> Dictar`;
+                currentBtnDictado = null;
             }
         }
     </script>
