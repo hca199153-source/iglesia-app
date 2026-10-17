@@ -17,7 +17,12 @@
         .form-section-box { background-color: #ffffff; border-radius: 12px; padding: 25px; margin-top: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
         .form-control, .form-select { background-color: #f8f9fa; border: 1px solid #ced4da; border-radius: 8px; padding: 10px; }
         .timer-box { background: #ffffff; border: 2px dashed #ffc107; color: #856404; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; margin-top: 20px; }
-        .preview-container { background: #ffffff; border: 2px solid #198754; border-radius: 10px; padding: 10px; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        /* ESTILOS PARA EL ASISTENTE DE VOZ INTELIGENTE */
+        .voice-assistant-box { background: linear-gradient(135deg, #072217, #0b221a); border: 2px solid #00ff66; border-radius: 12px; padding: 20px; color: white; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-mic { background-color: #dc3545; color: white; border-radius: 50px; padding: 10px 20px; font-weight: bold; border: none; transition: all 0.3s; }
+        .btn-mic.escuchando { background-color: #ffc107; color: #000; animation: pulse-mic 1.2s infinite; }
+        @keyframes pulse-mic { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -58,42 +63,27 @@
                 <h4 class="fw-bold mb-1 text-success"><i class="fas fa-file-alt me-2"></i> Formulario de Registro</h4>
             </div>
 
-            <!-- MÓDULO DE ESCANEO CON GOOGLE CLOUD VISION API -->
-            <div class="card p-3 mb-4 border-success bg-light shadow-sm">
-                <h6 class="fw-bold text-success mb-2">
-                    <i class="fas fa-id-card me-2"></i> Lector Automático de Solicitud Física (IA)
-                </h6>
-                <p class="small text-muted mb-2">
-                    Seleccione o tome la foto de su hoja de formato físico. Luego presione <strong>"Rellenar Automáticamente"</strong> para que Google Cloud Vision lea la letra manuscrita.
+            <!-- MÓDULO DE ASISTENTE DE DICTADO POR VOZ INTELIGENTE -->
+            <div class="voice-assistant-box text-center">
+                <h5 class="fw-bold text-success mb-2">
+                    <i class="fas fa-microphone-alt me-2"></i> Relleno Inteligente por Voz
+                </h5>
+                <p class="small text-light mb-3">
+                    Presiona el botón y di comandos como: <br>
+                    <em>"Pastor Juan Pérez"</em>, <em>"Iglesia Bautista El Shaddai"</em>, <em>"Teléfono 2831002030"</em> o <em>"Cajas 100"</em>.
                 </p>
 
-                <div class="row g-2 align-items-center">
-                    <div class="col-md-7">
-                        <input type="file" id="inputFotoSolicitud" class="form-control form-control-sm" accept="image/*" capture="environment" onchange="cargarImagenReferencia(this)">
-                    </div>
-                    <div class="col-md-5">
-                        <button type="button" class="btn btn-primary btn-sm w-100 fw-bold" onclick="ejecutarExtraccionAutomatica()">
-                            <i class="fas fa-magic me-1"></i> Rellenar Automáticamente
-                        </button>
-                    </div>
-                </div>
+                <button type="button" id="btnMic" class="btn btn-mic shadow" onclick="alternarDictadoVoz()">
+                    <i class="fas fa-microphone me-2"></i> <span id="txtMic">Iniciar Dictado por Voz</span>
+                </button>
 
-                <div id="statusOCR" class="small text-primary mt-2 fw-bold" style="display: none;"></div>
-
-                <!-- Visor de la solicitud cargada -->
-                <div id="contenedorPrevisualizacion" class="preview-container text-center" style="display: none;">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="small fw-bold text-success"><i class="fas fa-image me-1"></i> Imagen de la Solicitud:</span>
-                        <button type="button" class="btn-close btn-sm" onclick="cerrarPrevisualizacion()"></button>
-                    </div>
-                    <img id="imgPreview" src="" alt="Solicitud" style="max-height: 220px; border-radius: 6px;" class="img-fluid shadow-sm">
-                </div>
+                <div id="statusVoz" class="small mt-2 font-monospace text-warning" style="min-height: 22px;"></div>
             </div>
             
             <form action="/guardar-registro" method="POST" id="registroForm">
                 <div class="mb-3">
                     <label class="form-label fw-bold small">Zona de Captura: <span class="text-danger">*</span></label>
-                    <select name="zona" class="form-select form-select-sm" required>
+                    <select name="zona" id="input_zona" class="form-select form-select-sm" required>
                         <option value="">-- Seleccione una zona --</option>
                         <option value="san_andres">San Andrés Tuxtla</option>
                         <option value="veracruz">Veracruz</option>
@@ -211,85 +201,126 @@
             } else { display.value = "Seleccione cajas"; }
         }
 
-        function cargarImagenReferencia(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('imgPreview').src = e.target.result;
-                    document.getElementById('contenedorPrevisualizacion').style.display = 'block';
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
+        // --- MOTOR DE DICTADO INTELIGENTE POR VOZ (NATIVO DEL NAVEGADOR) ---
+        let recognition = null;
+        let isListening = false;
 
-        function cerrarPrevisualizacion() {
-            document.getElementById('contenedorPrevisualizacion').style.display = 'none';
-            document.getElementById('inputFotoSolicitud').value = '';
-        }
-
-        // FUNCIÓN CONECTADA A GOOGLE CLOUD VISION API
-        async function ejecutarExtraccionAutomatica() {
-            const fileInput = document.getElementById('inputFotoSolicitud');
-            const statusDiv = document.getElementById('statusOCR');
-
-            if (!fileInput.files || fileInput.files.length === 0) {
-                alert('Por favor seleccione primero una foto o imagen de su solicitud física.');
+        function alternarDictadoVoz() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Tu navegador no soporta reconocimiento de voz. Usa Google Chrome.');
                 return;
             }
 
-            statusDiv.style.display = 'block';
-            statusDiv.className = 'small text-primary mt-2 fw-bold';
-            statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Procesando con Google Cloud Vision (IA)...';
+            const btnMic = document.getElementById('btnMic');
+            const txtMic = document.getElementById('txtMic');
+            const statusVoz = document.getElementById('statusVoz');
 
-            const formData = new FormData();
-            formData.append('imagenFormulario', fileInput.files[0]);
-
-            try {
-                const response = await fetch('/escanear-vision', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const resultado = await response.json();
-
-                if (resultado.success) {
-                    const textoExtraido = resultado.text;
-                    
-                    // Extraer teléfonos numéricos de 10 dígitos detectados
-                    const telefonos = textoExtraido.match(/(?:\d[\s-]*){10}/g) || [];
-                    const telefonosLimpios = telefonos.map(t => t.replace(/\D/g, ''));
-
-                    const inputsTelGuerreritos = document.querySelectorAll('.input-guerrerito-tel');
-                    const inputsTelGuerreros = document.querySelectorAll('.input-guerrero-tel');
-                    
-                    let contadorTel = 0;
-                    
-                    inputsTelGuerreritos.forEach(input => {
-                        if (telefonosLimpios[contadorTel]) {
-                            input.value = telefonosLimpios[contadorTel];
-                            contadorTel++;
-                        }
-                    });
-
-                    inputsTelGuerreros.forEach(input => {
-                        if (telefonosLimpios[contadorTel]) {
-                            input.value = telefonosLimpios[contadorTel];
-                            contadorTel++;
-                        }
-                    });
-
-                    statusDiv.className = 'small text-success mt-2 fw-bold';
-                    statusDiv.innerHTML = `<i class="fas fa-check-circle me-1"></i> ¡Lectura exitosa! Se detectaron y rellenaron ${telefonosLimpios.length} números telefónicos.`;
-                } else {
-                    statusDiv.className = 'small text-danger mt-2 fw-bold';
-                    statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> ' + (resultado.error || 'No se detectó texto legible.');
-                }
-
-            } catch (err) {
-                console.error('Error Vision API:', err);
-                statusDiv.className = 'small text-danger mt-2 fw-bold';
-                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Error al conectar con el servidor para procesar la imagen.';
+            if (isListening) {
+                recognition.stop();
+                return;
             }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-MX';
+            recognition.continuous = true;
+            recognition.interimResults = false;
+
+            recognition.onstart = function() {
+                isListening = true;
+                btnMic.classList.add('escuchando');
+                txtMic.innerText = 'Escuchando... (Hable ahora)';
+                statusVoz.innerHTML = '<i class="fas fa-circle text-danger fa-spin me-1"></i> Escuchando comandos de voz...';
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+                statusVoz.innerHTML = `Escuchado: "${transcript}"`;
+                procesarComandoInteligente(transcript);
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Error de voz:', event.error);
+                statusVoz.innerText = 'Error al capturar voz. Intente de nuevo.';
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                btnMic.classList.remove('escuchando');
+                txtMic.innerText = 'Iniciar Dictado por Voz';
+                statusVoz.innerText = 'Dictado detenido.';
+            };
+
+            recognition.start();
+        }
+
+        // INTELIGENCIA PARA RELLENAR CAMPOS SEGÚN LO QUE PRONUNCIE EL USUARIO
+        function procesarComandoInteligente(texto) {
+            // 1. Pastor
+            if (texto.includes('pastor') || texto.includes('el pastor')) {
+                let valor = texto.replace('pastor', '').replace('el pastor', '').replace('nombre del pastor', '').trim();
+                if (valor) {
+                    document.getElementById('nombre_pastor').value = capitalizarPrimeraLetra(valor);
+                    mostrarNotificacionVoz('Pastor actualizado');
+                }
+            } 
+            // 2. Iglesia
+            else if (texto.includes('iglesia') || texto.includes('nombre de la iglesia')) {
+                let valor = texto.replace('iglesia', '').replace('nombre de la iglesia', '').trim();
+                if (valor) {
+                    document.getElementById('nombre_iglesia').value = capitalizarPrimeraLetra(valor);
+                    mostrarNotificacionVoz('Iglesia actualizada');
+                }
+            } 
+            // 3. Dirección / Localidad
+            else if (texto.includes('dirección') || texto.includes('calle') || texto.includes('ubicación')) {
+                let valor = texto.replace('dirección', '').replace('calle', '').replace('ubicación', '').trim();
+                if (valor) {
+                    document.getElementById('direccion').value = capitalizarPrimeraLetra(valor);
+                    mostrarNotificacionVoz('Dirección actualizada');
+                }
+            } 
+            // 4. Líder
+            else if (texto.includes('líder') || texto.includes('lider de proyecto')) {
+                let valor = texto.replace('líder', '').replace('lider de proyecto', '').replace('nombre del líder', '').trim();
+                if (valor) {
+                    document.getElementById('nombre_lider').value = capitalizarPrimeraLetra(valor);
+                    mostrarNotificacionVoz('Líder actualizado');
+                }
+            } 
+            // 5. Teléfono (Pastor o general)
+            else if (texto.includes('teléfono') || texto.includes('celular') || texto.includes('número')) {
+                let numeros = texto.replace(/\D/g, ''); // Extraer solo dígitos
+                if (numeros.length >= 10) {
+                    document.getElementById('telefono_pastor').value = numeros.slice(0, 10);
+                    mostrarNotificacionVoz('Teléfono del pastor registrado');
+                }
+            } 
+            // 6. Cajas (50, 100, 150)
+            else if (texto.includes('cajas') || texto.includes('cajitas')) {
+                if (texto.includes('50')) {
+                    document.getElementById('num_cajas').value = '50';
+                    calcularMaestros();
+                    mostrarNotificacionVoz('Seleccionado: 50 Cajas');
+                } else if (texto.includes('100')) {
+                    document.getElementById('num_cajas').value = '100';
+                    calcularMaestros();
+                    mostrarNotificacionVoz('Seleccionado: 100 Cajas');
+                } else if (texto.includes('150')) {
+                    document.getElementById('num_cajas').value = '150';
+                    calcularMaestros();
+                    mostrarNotificacionVoz('Seleccionado: 150 Cajas');
+                }
+            }
+        }
+
+        function capitalizarPrimeraLetra(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        function mostrarNotificacionVoz(mensaje) {
+            const statusVoz = document.getElementById('statusVoz');
+            statusVoz.innerHTML = `<i class="fas fa-check-circle text-success me-1"></i> ¡${mensaje}!`;
         }
     </script>
 </body>
