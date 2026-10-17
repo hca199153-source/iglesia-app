@@ -50,7 +50,6 @@
         .semaforo-amarillo { background-color: #ffc107; color: #000; }
         .semaforo-rojo { background-color: #dc3545; color: white; }
 
-        /* ESTILO DEL BOTÓN DE DICTADO POR BOCINA DEBAJO DEL SEMÁFORO */
         .btn-audio-dictado {
             background-color: #0d6efd;
             color: white;
@@ -65,20 +64,9 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.15);
             transition: all 0.2s ease-in-out;
         }
-        .btn-audio-dictado:hover {
-            background-color: #0b5ed7;
-            color: white;
-            transform: scale(1.05);
-        }
-        .btn-audio-dictado.reproduciendo {
-            background-color: #dc3545;
-            animation: pulse-audio 1.2s infinite;
-        }
-        @keyframes pulse-audio {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-            100% { transform: scale(1); }
-        }
+        .btn-audio-dictado:hover { background-color: #0b5ed7; color: white; transform: scale(1.05); }
+        .btn-audio-dictado.reproduciendo { background-color: #dc3545; animation: pulse-audio 1.2s infinite; }
+        @keyframes pulse-audio { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
         @page { size: A4 landscape; margin: 8mm; }
         @media print {
@@ -101,24 +89,25 @@
                 <div class="text-center mb-4">
                     <img src="/images/logo.png" alt="Logo" style="height: 55px;" class="mb-2">
                     <h5 class="fw-bold text-success">Acceso a Panel por Zona</h5>
-                    <p class="small text-muted">Seleccione su zona e ingrese la contraseña asignada.</p>
+                    <p class="small text-muted">Seleccione su zona o módulo e ingrese la contraseña asignada[cite: 9, 10].</p>
                 </div>
                 <form action="/login" method="POST">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Área de Procedencia:</label>
+                        <label class="form-label small fw-bold">Área de Procedencia / Módulo:</label>
                         <select name="zona" class="form-select form-select-sm" required>
-                            <option value="">-- Seleccionar Zona --</option>
+                            <option value="">-- Seleccionar --</option>
                             <option value="san_andres">San Andrés Tuxtla</option>
                             <option value="veracruz">Veracruz</option>
                             <option value="cd_aleman">Ciudad Alemán</option>
                             <option value="xalapa">Xalapa</option>
+                            <option value="dev_console" style="background-color: #0b221a; color: #00ff66; font-weight: bold;">🛠️ Dev Console (Programador)</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Contraseña de Zona:</label>
+                        <label class="form-label small fw-bold">Contraseña:</label>
                         <input type="password" name="password" class="form-control form-control-sm" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn btn-success w-100 fw-bold py-2">Ingresar al Panel</button>
+                    <button type="submit" class="btn btn-success w-100 fw-bold py-2">Ingresar al Sistema</button>
                 </form>
             </div>
         </div>
@@ -135,6 +124,7 @@
                 </div>
             </div>
             <div class="d-flex gap-2 no-print">
+                <a href="/dev-admin" class="btn btn-dark btn-sm fw-bold border-success text-success"><i class="fas fa-terminal me-1"></i> Dev Console</a>
                 <button onclick="detenerDictadoGlobal()" class="btn btn-warning btn-sm fw-bold"><i class="fas fa-volume-mute me-1"></i> Detener Audio</button>
                 <a href="/exportar-excel" class="btn btn-excel btn-sm"><i class="fas fa-file-excel me-1"></i> Excel</a>
                 <button onclick="window.print()" class="btn btn-print btn-sm"><i class="fas fa-print me-1"></i> Imprimir / PDF</button>
@@ -143,46 +133,15 @@
         </div>
 
         <div class="row g-2 mb-3">
-            <div class="col-md-4 col-sm-6">
-                <div class="stat-card-green">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Iglesias</span><h2 class="fw-bold mb-0"><%= totalIglesias %></h2></div>
-                    <i class="fas fa-church fa-2x opacity-50 no-print"></i>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="stat-card-blue">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Cajitas</span><h2 class="fw-bold mb-0"><%= totalCajitas %></h2></div>
-                    <i class="fas fa-box-open fa-2x opacity-50 no-print"></i>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="stat-card-yellow">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Maestros</span><h2 class="fw-bold mb-0"><%= totalMaestros %></h2></div>
-                    <i class="fas fa-users fa-2x opacity-50 no-print"></i>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="stat-card-teal">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Pastores</span><h2 class="fw-bold mb-0"><%= totalPastores %></h2></div>
-                    <i class="fas fa-user-tie fa-2x opacity-50 no-print"></i>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="stat-card-purple">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Guerreritos</span><h2 class="fw-bold mb-0"><%= totalGuerreritos %></h2></div>
-                    <i class="fas fa-child fa-2x opacity-50 no-print"></i>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="stat-card-red">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Guerreros (Adultos)</span><h2 class="fw-bold mb-0"><%= totalGuerreros %></h2></div>
-                    <i class="fas fa-user-shield fa-2x opacity-50 no-print"></i>
-                </div>
-            </div>
+            <div class="col-md-4 col-sm-6"><div class="stat-card-green"><div><span class="small text-uppercase fw-bold opacity-75">Iglesias</span><h2 class="fw-bold mb-0"><%= totalIglesias %></h2></div><i class="fas fa-church fa-2x opacity-50 no-print"></i></div></div>
+            <div class="col-md-4 col-sm-6"><div class="stat-card-blue"><div><span class="small text-uppercase fw-bold opacity-75">Cajitas</span><h2 class="fw-bold mb-0"><%= totalCajitas %></h2></div><i class="fas fa-box-open fa-2x opacity-50 no-print"></i></div></div>
+            <div class="col-md-4 col-sm-6"><div class="stat-card-yellow"><div><span class="small text-uppercase fw-bold opacity-75">Maestros</span><h2 class="fw-bold mb-0"><%= totalMaestros %></h2></div><i class="fas fa-users fa-2x opacity-50 no-print"></i></div></div>
+            <div class="col-md-4 col-sm-6"><div class="stat-card-teal"><div><span class="small text-uppercase fw-bold opacity-75">Pastores</span><h2 class="fw-bold mb-0"><%= totalPastores %></h2></div><i class="fas fa-user-tie fa-2x opacity-50 no-print"></i></div></div>
+            <div class="col-md-4 col-sm-6"><div class="stat-card-purple"><div><span class="small text-uppercase fw-bold opacity-75">Guerreritos</span><h2 class="fw-bold mb-0"><%= totalGuerreritos %></h2></div><i class="fas fa-child fa-2x opacity-50 no-print"></i></div></div>
+            <div class="col-md-4 col-sm-6"><div class="stat-card-red"><div><span class="small text-uppercase fw-bold opacity-75">Guerreros (Adultos)</span><h2 class="fw-bold mb-0"><%= totalGuerreros %></h2></div><i class="fas fa-user-shield fa-2x opacity-50 no-print"></i></div></div>
         </div>
 
         <div class="table-section">
-            <!-- BUSCADOR PRINCIPAL -->
             <div class="d-flex justify-content-between align-items-center mb-2 no-print">
                 <h6 class="fw-bold text-success mb-0"><i class="fas fa-list me-2"></i> Registros de la Zona</h6>
                 <div class="input-group input-group-sm w-50">
@@ -191,21 +150,19 @@
                 </div>
             </div>
 
-            <!-- ZONA DE FILTRADO AVANZADO Y ORDENAMIENTO -->
             <div class="filter-box no-print">
                 <div class="row g-2 align-items-center">
                     <div class="col-md-3 col-6">
-                        <label class="form-label small fw-bold mb-1 text-secondary"><i class="fas fa-traffic-light me-1 text-warning"></i> Estado Semáforo:</label>
+                        <label class="form-label small fw-bold mb-1 text-secondary">Estado Semáforo:</label>
                         <select id="filterSemaforo" class="form-select form-select-sm" onchange="aplicarFiltrosYOrden()">
-                            <option value="">-- Todos los estados --</option>
+                            <option value="">-- Todos --</option>
                             <option value="verde">🟢 Verde (Completo)</option>
                             <option value="amarillo">🟡 Amarillo (Faltante Menor)</option>
                             <option value="rojo">🔴 Rojo (Faltante Crítico)</option>
                         </select>
                     </div>
-
                     <div class="col-md-2 col-6">
-                        <label class="form-label small fw-bold mb-1 text-secondary"><i class="fas fa-box me-1 text-primary"></i> Cantidad Cajas:</label>
+                        <label class="form-label small fw-bold mb-1 text-secondary">Cantidad Cajas:</label>
                         <select id="filterCajas" class="form-select form-select-sm" onchange="aplicarFiltrosYOrden()">
                             <option value="">-- Todas --</option>
                             <option value="50">50 Cajas</option>
@@ -213,14 +170,12 @@
                             <option value="150">150 Cajas</option>
                         </select>
                     </div>
-
                     <div class="col-md-3 col-6">
-                        <label class="form-label small fw-bold mb-1 text-secondary"><i class="fas fa-map-marker-alt me-1 text-danger"></i> Dirección / Localidad:</label>
+                        <label class="form-label small fw-bold mb-1 text-secondary">Dirección / Localidad:</label>
                         <input type="text" id="filterLocalidad" class="form-control form-control-sm" placeholder="Filtrar dirección..." onkeyup="aplicarFiltrosYOrden()">
                     </div>
-
                     <div class="col-md-3 col-6">
-                        <label class="form-label small fw-bold mb-1 text-secondary"><i class="fas fa-sort me-1 text-success"></i> Ordenar Por:</label>
+                        <label class="form-label small fw-bold mb-1 text-secondary">Ordenar Por:</label>
                         <select id="sortOption" class="form-select form-select-sm" onchange="aplicarFiltrosYOrden()">
                             <option value="num_asc"># Orden original</option>
                             <option value="iglesia_asc">Iglesia (A - Z)</option>
@@ -231,11 +186,8 @@
                             <option value="cajas_asc">Cajas (Menor a Mayor)</option>
                         </select>
                     </div>
-
                     <div class="col-md-1 col-12 text-end">
-                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="limpiarFiltros()" title="Restablecer filtros">
-                            <i class="fas fa-undo me-1"></i> Limpiar
-                        </button>
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="limpiarFiltros()"><i class="fas fa-undo"></i></button>
                     </div>
                 </div>
             </div>
@@ -244,14 +196,14 @@
                 <table class="table table-striped table-hover table-custom align-middle" id="tablaRegistros">
                     <thead>
                         <tr>
-                            <th class="col-num">#</th>
-                            <th class="col-iglesia">Iglesia / Dirección</th>
-                            <th class="col-pastor">Pastor</th>
-                            <th class="col-lider">Líder de Proyecto</th>
-                            <th class="col-cajas">Cajas</th>
-                            <th class="col-maestros">Maestros Asignados</th>
-                            <th class="col-guerreritos">Guerreritos de Oración</th>
-                            <th class="col-guerreros">Guerreros (Adultos)</th>
+                            <th>#</th>
+                            <th>Iglesia / Dirección</th>
+                            <th>Pastor</th>
+                            <th>Líder de Proyecto</th>
+                            <th>Cajas</th>
+                            <th>Maestros Asignados</th>
+                            <th>Guerreritos de Oración</th>
+                            <th>Guerreros (Adultos)</th>
                             <th class="no-print text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -270,7 +222,6 @@
                                     textoEstado = item.observacion_semaforo || 'Completo';
                                 }
 
-                                // FORMATEO DE TEXTOS PARA EL DICTADO DE VOZ
                                 let textoIglesia = `Iglesia ${item.nombre_iglesia}. Dirección: ${item.direccion}.`;
                                 let textoPastor = `Pastor ${item.nombre_pastor}. Teléfono: ${item.telefono_pastor || 'No registrado'}.`;
                                 let textoLider = `Líder de proyecto ${item.nombre_lider}. Teléfono: ${item.telefono_lider || 'No registrado'}.`;
@@ -298,8 +249,6 @@
                                     data-direccion="<%= (item.direccion || '').toLowerCase() %>"
                                     data-cajas="<%= item.num_cajas || 0 %>"
                                     data-semaforo="<%= item.estado_semaforo || 'verde' %>"
-                                    
-                                    /* ATRIBUTOS PARA LECTURA EN VOZ ALTA */
                                     data-dictado-iglesia="<%= textoIglesia %>"
                                     data-dictado-pastor="<%= textoPastor %>"
                                     data-dictado-lider="<%= textoLider %>"
@@ -308,42 +257,15 @@
                                     data-dictado-guerreritos="<%= textoGuerreritos %>"
                                     data-dictado-guerreros="<%= textoGuerreros %>">
                                     
-                                    <td class="fw-bold col-index"><%= index + 1 %></td>
-                                    <td>
-                                        <strong><%= item.nombre_iglesia %></strong><br>
-                                        <small class="text-muted"><i class="fas fa-map-marker-alt text-danger me-1 no-print"></i> <%= item.direccion %></small>
-                                    </td>
-                                    <td>
-                                        <strong><%= item.nombre_pastor %></strong><br>
-                                        <small class="text-muted"><i class="fas fa-phone me-1 no-print"></i> <%= item.telefono_pastor %></small><br>
-                                        <% if (item.correo_pastor) { %>
-                                            <small class="text-primary"><i class="fas fa-envelope me-1 no-print"></i> <%= item.correo_pastor %></small>
-                                        <% } else { %>
-                                            <small class="text-muted italic">Sin correo</small>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <strong><%= item.nombre_lider %></strong><br>
-                                        <small class="text-muted"><i class="fas fa-phone me-1 no-print"></i> <%= item.telefono_lider %></small><br>
-                                        <% if (item.correo_lider) { %>
-                                            <small class="text-primary"><i class="fas fa-envelope me-1 no-print"></i> <%= item.correo_lider %></small>
-                                        <% } else { %>
-                                            <small class="text-muted italic">Sin correo</small>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-success"><%= item.num_cajas %></span>
-                                    </td>
+                                    <td class="fw-bold"><%= index + 1 %></td>
+                                    <td><strong><%= item.nombre_iglesia %></strong><br><small class="text-muted"><%= item.direccion %></small></td>
+                                    <td><strong><%= item.nombre_pastor %></strong><br><small class="text-muted"><%= item.telefono_pastor %></small></td>
+                                    <td><strong><%= item.nombre_lider %></strong><br><small class="text-muted"><%= item.telefono_lider %></small></td>
+                                    <td><span class="badge bg-success"><%= item.num_cajas %></span></td>
                                     <td>
                                         <% if (item.maestros && item.maestros.length > 0) { %>
                                             <% item.maestros.forEach((m, mIdx) => { %>
-                                                <div class="small text-secondary mb-1" style="line-height: 1.2;">
-                                                    <strong>M<%= mIdx + 1 %>:</strong> <%= m.nombre %><br>
-                                                    <span class="text-muted" style="font-size: 0.7rem;"><i class="fas fa-phone me-1 no-print"></i><%= m.telefono %></span>
-                                                    <% if (m.correo) { %>
-                                                        <br><span class="text-primary" style="font-size: 0.7rem;"><i class="fas fa-envelope me-1 no-print"></i><%= m.correo %></span>
-                                                    <% } %>
-                                                </div>
+                                                <div class="small text-secondary mb-1"><strong>M<%= mIdx + 1 %>:</strong> <%= m.nombre %> (<%= m.telefono %>)</div>
                                             <% }) %>
                                         <% } else { %>
                                             <span class="small text-muted">Sin maestros</span>
@@ -352,10 +274,7 @@
                                     <td>
                                         <% if (item.guerreritos_oracion && item.guerreritos_oracion.length > 0) { %>
                                             <% item.guerreritos_oracion.forEach((g, gIdx) => { %>
-                                                <div class="small text-secondary mb-1" style="line-height: 1.2;">
-                                                    <strong>G<%= gIdx + 1 %>:</strong> <%= g.nombre_guerrerito %><br>
-                                                    <span class="text-muted" style="font-size: 0.7rem;">Tutor: <%= g.nombre_tutor %> (<%= g.telefono_tutor %>)</span>
-                                                </div>
+                                                <div class="small text-secondary mb-1"><strong>G<%= gIdx + 1 %>:</strong> <%= g.nombre_guerrerito %></div>
                                             <% }) %>
                                         <% } else { %>
                                             <span class="small text-muted">Sin guerreritos</span>
@@ -364,36 +283,22 @@
                                     <td>
                                         <% if (item.guerreros_oracion && item.guerreros_oracion.length > 0) { %>
                                             <% item.guerreros_oracion.forEach((gu, guIdx) => { %>
-                                                <div class="small text-secondary mb-1" style="line-height: 1.2;">
-                                                    <strong>A<%= guIdx + 1 %>:</strong> <%= gu.nombre_guerrero %><br>
-                                                    <span class="text-muted" style="font-size: 0.7rem;">Tel: <%= gu.telefono_guerrero %></span>
-                                                </div>
+                                                <div class="small text-secondary mb-1"><strong>A<%= guIdx + 1 %>:</strong> <%= gu.nombre_guerrero %></div>
                                             <% }) %>
                                         <% } else { %>
                                             <span class="small text-muted">Sin guerreros</span>
                                         <% } %>
                                     </td>
-                                    
                                     <td class="no-print text-center">
                                         <div class="d-flex flex-column gap-1 align-items-center">
-                                            <a href="/editar-registro/<%= item.id %>" class="btn btn-outline-primary btn-sm" title="Editar Registro">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="/eliminar-registro/<%= item.id %>" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este registro?');" style="display:inline;">
-                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                                            <a href="/editar-registro/<%= item.id %>" class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i></a>
+                                            <form action="/eliminar-registro/<%= item.id %>" method="POST" onsubmit="return confirm('¿Eliminar registro?');" style="display:inline;">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
                                             </form>
-
-                                            <!-- SEMÁFORO -->
-                                            <span class="badge-semaforo <%= colorClase %> mt-1" 
-                                                  onclick="abrirModalSemaforo('<%= item.id %>', '<%= item.estado_semaforo || 'verde' %>', '<%= item.observacion_semaforo || '' %>')" 
-                                                  title="Hacer clic para cambiar estado o ver faltantes">
+                                            <span class="badge-semaforo <%= colorClase %> mt-1" onclick="abrirModalSemaforo('<%= item.id %>', '<%= item.estado_semaforo || 'verde' %>', '<%= item.observacion_semaforo || '' %>')">
                                                 <i class="fas fa-circle"></i> <%= textoEstado %>
                                             </span>
-
-                                            <!-- BOTÓN DE BOCINA DE DICTADO (UBICADO DEBAJO DEL SEMÁFORO) -->
-                                            <button type="button" class="btn-audio-dictado mt-1" id="btnAudio_<%= item.id %>" 
-                                                    onclick="abrirModalDictado('<%= item.id %>')" 
-                                                    title="Dictar en voz alta">
+                                            <button type="button" class="btn-audio-dictado mt-1" id="btnAudio_<%= item.id %>" onclick="abrirModalDictado('<%= item.id %>')">
                                                 <i class="fas fa-volume-up"></i> Dictar
                                             </button>
                                         </div>
@@ -401,9 +306,7 @@
                                 </tr>
                             <% }) %>
                         <% } else { %>
-                            <tr>
-                                <td colspan="9" class="text-center text-muted py-4">No hay registros guardados en el sistema para esta zona.</td>
-                            </tr>
+                            <tr><td colspan="9" class="text-center text-muted py-4">No hay registros guardados.</td></tr>
                         <% } %>
                     </tbody>
                 </table>
@@ -412,76 +315,58 @@
     </div>
     <% } %>
 
-    <!-- MODAL DE DICTADO POR VOZ (OPCIONES DE VELOCIDAD Y SECCIÓN INICIAL) -->
+    <!-- MODALES DE DICTADO Y SEMÁFORO -->
     <div class="modal fade" id="modalDictado" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
-                <div class="modal-header py-2 bg-primary text-white">
-                    <h6 class="modal-title fw-bold"><i class="fas fa-volume-up me-1"></i> Dictado por Voz</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="detenerDictadoGlobal()"></button>
-                </div>
+                <div class="modal-header py-2 bg-primary text-white"><h6 class="modal-title fw-bold">Dictado por Voz</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="detenerDictadoGlobal()"></button></div>
                 <div class="modal-body">
                     <input type="hidden" id="dictadoActiveRowId">
-
-                    <div class="mb-2">
-                        <label class="form-label small fw-bold"><i class="fas fa-play me-1 text-primary"></i> Empezar lectura desde:</label>
+                    <div class="mb-2"><label class="form-label small fw-bold">Empezar desde:</label>
                         <select id="selectDictadoInicio" class="form-select form-select-sm">
-                            <option value="inicio">1. Desde el Inicio (Iglesia)</option>
+                            <option value="inicio">1. Desde el Inicio</option>
                             <option value="pastor">2. Pastor</option>
-                            <option value="lider">3. Líder de Proyecto</option>
-                            <option value="cajas">4. Cajas Solicitadas</option>
-                            <option value="maestros">5. Maestros Asignados</option>
-                            <option value="guerreritos">6. Guerreritos de Oración</option>
-                            <option value="guerreros">7. Guerreros (Adultos)</option>
+                            <option value="lider">3. Líder</option>
+                            <option value="cajas">4. Cajas</option>
+                            <option value="maestros">5. Maestros</option>
+                            <option value="guerreritos">6. Guerreritos</option>
+                            <option value="guerreros">7. Guerreros</option>
                         </select>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold"><i class="fas fa-tachometer-alt me-1 text-success"></i> Velocidad de Dictado:</label>
+                    <div class="mb-3"><label class="form-label small fw-bold">Velocidad:</label>
                         <select id="selectDictadoVelocidad" class="form-select form-select-sm">
-                            <option value="1">1.0x (Normal)</option>
-                            <option value="0.75" selected>0.75x (Lenta - Recomendada)</option>
-                            <option value="0.5">0.5x (Muy Lenta / Dictado)</option>
-                            <option value="1.25">1.25x (Rápida)</option>
+                            <option value="1">1.0x</option>
+                            <option value="0.75" selected>0.75x (Lenta)</option>
+                            <option value="0.5">0.5x</option>
                         </select>
                     </div>
-
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary btn-sm w-100 fw-bold" onclick="iniciarLecturaVoz()"><i class="fas fa-play me-1"></i> Iniciar Dictado</button>
-                        <button type="button" class="btn btn-danger btn-sm w-100 fw-bold" onclick="detenerDictadoGlobal()"><i class="fas fa-stop me-1"></i> Detener</button>
+                        <button type="button" class="btn btn-primary btn-sm w-100 fw-bold" onclick="iniciarLecturaVoz()">Iniciar</button>
+                        <button type="button" class="btn btn-danger btn-sm w-100 fw-bold" onclick="detenerDictadoGlobal()">Detener</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE CAMBIO RÁPIDO DE ESTADO DE SEMÁFORO -->
     <div class="modal fade" id="modalSemaforo" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
-                <div class="modal-header py-2 bg-success text-white">
-                    <h6 class="modal-title fw-bold"><i class="fas fa-traffic-light me-1"></i> Estado / Faltante</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+                <div class="modal-header py-2 bg-success text-white"><h6 class="modal-title fw-bold">Estado / Faltante</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <form id="formSemaforo" method="POST" action="">
                     <div class="modal-body">
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">Selecciona el Color:</label>
+                        <div class="mb-2"><label class="form-label small fw-bold">Color:</label>
                             <select name="estado_semaforo" id="selectEstadoSemaforo" class="form-select form-select-sm" onchange="actualizarTextoHelp()">
-                                <option value="verde">🟢 Verde (Completo)</option>
-                                <option value="amarillo">🟡 Amarillo (Faltante Menor)</option>
-                                <option value="rojo">🔴 Rojo (Faltante Crítico)</option>
+                                <option value="verde">🟢 Verde</option>
+                                <option value="amarillo">🟡 Amarillo</option>
+                                <option value="rojo">🔴 Rojo</option>
                             </select>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">Palabra o Faltante:</label>
-                            <input type="text" name="observacion_semaforo" id="inputObservacionSemaforo" class="form-control form-control-sm" placeholder="Ej: Maestro, Correo, Cajas..." required maxlength="30">
-                            <span class="text-muted" style="font-size: 0.68rem;" id="helpTextSemaforo">Escribe una palabra describiendo el faltante.</span>
+                        <div class="mb-2"><label class="form-label small fw-bold">Motivo:</label>
+                            <input type="text" name="observacion_semaforo" id="inputObservacionSemaforo" class="form-control form-control-sm" required maxlength="30">
                         </div>
                     </div>
-                    <div class="modal-footer py-1">
-                        <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Guardar Estado</button>
-                    </div>
+                    <div class="modal-footer py-1"><button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Guardar</button></div>
                 </form>
             </div>
         </div>
@@ -546,56 +431,39 @@
             aplicarFiltrosYOrden();
         }
 
-        // --- LÓGICA DE SEMÁFORO ---
         let modalSemaforoBs = null;
         function abrirModalSemaforo(id, estadoActual, observacionActual) {
-            const form = document.getElementById('formSemaforo');
-            form.action = '/actualizar-semaforo/' + id;
+            document.getElementById('formSemaforo').action = '/actualizar-semaforo/' + id;
             document.getElementById('selectEstadoSemaforo').value = estadoActual || 'verde';
-            document.getElementById('inputObservacionSemaforo').value = observacionActual || (estadoActual === 'verde' ? 'Completo' : '');
-            
-            if (!modalSemaforoBs) {
-                modalSemaforoBs = new bootstrap.Modal(document.getElementById('modalSemaforo'));
-            }
+            document.getElementById('inputObservacionSemaforo').value = observacionActual || 'Completo';
+            if (!modalSemaforoBs) modalSemaforoBs = new bootstrap.Modal(document.getElementById('modalSemaforo'));
             modalSemaforoBs.show();
         }
 
         function actualizarTextoHelp() {
-            const estado = document.getElementById('selectEstadoSemaforo').value;
-            const inputObs = document.getElementById('inputObservacionSemaforo');
-            if (estado === 'verde' && !inputObs.value) {
-                inputObs.value = 'Completo';
+            if (document.getElementById('selectEstadoSemaforo').value === 'verde') {
+                document.getElementById('inputObservacionSemaforo').value = 'Completo';
             }
         }
 
-        // --- LÓGICA DE DICTADO POR VOZ (SÍNTESIS DE VOZ) ---
         let modalDictadoBs = null;
         let currentBtnDictado = null;
-
         function abrirModalDictado(id) {
             detenerDictadoGlobal();
             document.getElementById('dictadoActiveRowId').value = id;
-            if (!modalDictadoBs) {
-                modalDictadoBs = new bootstrap.Modal(document.getElementById('modalDictado'));
-            }
+            if (!modalDictadoBs) modalDictadoBs = new bootstrap.Modal(document.getElementById('modalDictado'));
             modalDictadoBs.show();
         }
 
         function iniciarLecturaVoz() {
-            if (!('speechSynthesis' in window)) {
-                alert('Tu navegador no soporta la lectura por voz.');
-                return;
-            }
-
+            if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
-
             const rowId = document.getElementById('dictadoActiveRowId').value;
             const row = document.querySelector(`tr[data-id="${rowId}"]`);
             if (!row) return;
 
             const inicio = document.getElementById('selectDictadoInicio').value;
             const velocidad = parseFloat(document.getElementById('selectDictadoVelocidad').value) || 1;
-
             const partes = [
                 { id: 'inicio', texto: row.getAttribute('data-dictado-iglesia') },
                 { id: 'pastor', texto: row.getAttribute('data-dictado-pastor') },
@@ -606,15 +474,8 @@
                 { id: 'guerreros', texto: row.getAttribute('data-dictado-guerreros') }
             ];
 
-            let indexStart = 0;
-            if (inicio !== 'inicio') {
-                indexStart = partes.findIndex(p => p.id === inicio);
-                if (indexStart === -1) indexStart = 0;
-            }
-
-            const textoFinal = partes.slice(indexStart).map(p => p.texto).join(' ');
-
-            const utterance = new SpeechSynthesisUtterance(textoFinal);
+            let indexStart = inicio !== 'inicio' ? partes.findIndex(p => p.id === inicio) : 0;
+            const utterance = new SpeechSynthesisUtterance(partes.slice(indexStart !== -1 ? indexStart : 0).map(p => p.texto).join(' '));
             utterance.lang = 'es-MX';
             utterance.rate = velocidad;
 
@@ -624,22 +485,13 @@
                 currentBtnDictado.innerHTML = `<i class="fas fa-volume-up fa-spin"></i> Leyendo...`;
             }
 
-            utterance.onend = function () {
-                detenerDictadoGlobal();
-            };
-
-            utterance.onerror = function () {
-                detenerDictadoGlobal();
-            };
-
+            utterance.onend = utterance.onerror = () => detenerDictadoGlobal();
             window.speechSynthesis.speak(utterance);
             if (modalDictadoBs) modalDictadoBs.hide();
         }
 
         function detenerDictadoGlobal() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             if (currentBtnDictado) {
                 currentBtnDictado.classList.remove('reproduciendo');
                 currentBtnDictado.innerHTML = `<i class="fas fa-volume-up"></i> Dictar`;
