@@ -7,14 +7,14 @@ const supabase = require('./db.js');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Configuración de Multer para recibir la imagen de la solicitud en memoria
+// Configuración de Multer para la imagen en memoria
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
@@ -23,28 +23,105 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// Ruta Principal
+// ESTADO GLOBAL DE LA APLICACIÓN (MANTENIMIENTO Y PAUSA)
+let systemState = {
+    status: 'active', // 'active', 'mantenimiento', 'fuera_tiempo'
+    targetDate: null,  // Fecha/hora del cronómetro
+    customMessage: ''
+};
+
+// MIDDLEWARE DE CONTROL DE ESTADO PÚBLICO
+app.use((req, res, next) => {
+    // Permitir acceso siempre a rutas administrativas, estáticos y login de dev
+    if (
+        req.path.startsWith('/admin') ||
+        req.path.startsWith('/dev-admin') ||
+        req.path.startsWith('/login') ||
+        req.path.startsWith('/logout') ||
+        req.path.startsWith('/public') ||
+        req.path.startsWith('/images') ||
+        req.path.startsWith('/css')
+    ) {
+        return next();
+    }
+
+    // Redirección si la página está pausada
+    if (systemState.status === 'mantenimiento') {
+        return res.render('pausa', { 
+            tipo: 'mantenimiento', 
+            targetDate: systemState.targetDate,
+            mensaje: systemState.customMessage || "Estamos trabajando en darte la mejor experiencia posible..."
+        });
+    } else if (systemState.status === 'fuera_tiempo') {
+        return res.render('pausa', { 
+            tipo: 'fuera_tiempo', 
+            targetDate: systemState.targetDate,
+            mensaje: systemState.customMessage || "El periodo de registros ha finalizado. Agradecemos a todas las iglesias su participación."
+        });
+    }
+
+    next();
+});
+
+// Ruta Principal (Formulario Público)
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-// NUEVA RUTA: Procesar imagen mediante Google Cloud Vision API
+// PANEL DE PROGRAMADOR (DEV-ADMIN)
+app.get('/dev-admin', (req, res) => {
+    if (!req.session.isDev) {
+        return res.render('dev_login', { error: null });
+    }
+    res.render('dev_dashboard', { systemState });
+});
+
+// LOGIN DE PROGRAMADOR
+app.post('/dev-admin/login', (req, res) => {
+    const { password } = req.body;
+    if (password === 'dev2026') { // Contraseña del Programador
+        req.session.isDev = true;
+        res.redirect('/dev-admin');
+    } else {
+        res.render('dev_login', { error: 'Contraseña de desarrollador incorrecta.' });
+    }
+});
+
+// CAMBIO DE ESTADO DESDE EL PANEL DE PROGRAMADOR
+app.post('/dev-admin/cambiar-estado', (req, res) => {
+    if (!req.session.isDev) return res.status(403).send('No autorizado');
+
+    const { status, targetDate, customMessage } = req.body;
+    
+    systemState.status = status; // 'active', 'mantenimiento', 'fuera_tiempo'
+    systemState.targetDate = targetDate ? new Date(targetDate).getTime() : null;
+    systemState.customMessage = customMessage || '';
+
+    res.redirect('/dev-admin');
+});
+
+// CERRAR SESIÓN DE PROGRAMADOR
+app.get('/dev-admin/logout', (req, res) => {
+    req.session.isDev = false;
+    res.redirect('/dev-admin');
+});
+
+// RUTA VISION API (Mantener intacto)
 app.post('/escanear-vision', upload.single('imagenFormulario'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, error: 'No se subió ninguna imagen.' });
         }
 
-        // Convertir la imagen a Base64
         const imageBytes = req.file.buffer.toString('base64');
-        const apiKey = 'AIzaSyAQo6X3fv4gTWNks7w1jFN3LaldV5dWDE'; // Tu clave de Google Cloud API
+        const apiKey = 'AIzaSyAQo6X3fv4gTWNks7w1jFN3LaldV5dWDE';
         const url = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
 
         const body = {
             requests: [
                 {
                     image: { content: imageBytes },
-                    features: [{ type: 'DOCUMENT_TEXT_DETECTION' }] // Diseñado específicamente para manuscritos y documentos
+                    features: [{ type: 'DOCUMENT_TEXT_DETECTION' }]
                 }
             ]
         };
@@ -70,7 +147,7 @@ app.post('/escanear-vision', upload.single('imagenFormulario'), async (req, res)
     }
 });
 
-// Inicio de Sesión
+// Inicio de Sesión de Zonas
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
     const contrasenasZonas = {
@@ -93,14 +170,14 @@ app.post('/login', (req, res) => {
     }
 });
 
-// Cerrar Sesión
+// Cerrar Sesión Zona
 app.get('/logout', (req, res) => {
     req.session.destroy(() => {
         res.redirect('/admin');
     });
 });
 
-// Panel de Administración
+// Panel de Administración por Zona
 app.get('/admin', async (req, res) => {
     try {
         const zonaActual = req.session.zona;
@@ -361,79 +438,3 @@ app.post('/actualizar-semaforo/:id', async (req, res) => {
             .update({
                 estado_semaforo,
                 observacion_semaforo: observacion_semaforo || 'Sin observaciones'
-            })
-            .eq('id', id);
-
-        if (error) throw new Error(error.message);
-        res.redirect('/admin');
-    } catch (err) {
-        res.status(500).send('Error al actualizar semáforo: ' + err.message);
-    }
-});
-
-// Eliminar Registro
-app.post('/eliminar-registro/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        await supabase.from('iglesias').delete().eq('id', id);
-        res.redirect('/admin');
-    } catch (err) {
-        res.status(500).send('Error al eliminar: ' + err.message);
-    }
-});
-
-// Exportar a Excel
-app.get('/exportar-excel', async (req, res) => {
-    try {
-        const zonaActual = req.session.zona || 'GENERAL';
-        const { data: registros } = await supabase
-            .from('iglesias')
-            .select(`*, maestros(*), guerreritos_oracion(*), guerreros_oracion(*)`)
-            .eq('zona', zonaActual);
-
-        let htmlTabla = `
-            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-            <head><meta charset="UTF-8"></head>
-            <body>
-            <h3>Reporte de Zona: ${zonaActual}</h3>
-            <table border="1">
-                <tr style="background-color: #009639; color: #ffffff; font-weight: bold;">
-                    <th>#</th><th>Estado Semáforo</th><th>Observación / Faltante</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Correo Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Correo Líder</th><th>Cajitas</th><th>Maestros</th><th>Guerreritos</th><th>Guerreros</th>
-                </tr>`;
-
-        registros.forEach((reg, index) => {
-            let maestrosNombres = reg.maestros && reg.maestros.length > 0 ? reg.maestros.map(m => `${m.nombre} (${m.telefono})`).join('; ') : 'Sin maestros';
-            let guerreritosNombres = reg.guerreritos_oracion && reg.guerreritos_oracion.length > 0 ? reg.guerreritos_oracion.map((g, idx) => `G${idx+1}: ${g.nombre_guerrerito}`).join(' | ') : 'Sin guerreritos';
-            let guerrerosNombres = reg.guerreros_oracion && reg.guerreros_oracion.length > 0 ? reg.guerreros_oracion.map((gu, idx) => `A${idx+1}: ${gu.nombre_guerrero}`).join(' | ') : 'Sin guerreros';
-
-            htmlTabla += `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td>
-                    <td>${reg.observacion_semaforo || 'Completo'}</td>
-                    <td>${reg.nombre_iglesia}</td>
-                    <td>${reg.direccion}</td>
-                    <td>${reg.nombre_pastor}</td>
-                    <td>${reg.telefono_pastor}</td>
-                    <td>${reg.correo_pastor || 'Sin correo'}</td>
-                    <td>${reg.nombre_lider}</td>
-                    <td>${reg.telefono_lider}</td>
-                    <td>${reg.correo_lider || 'Sin correo'}</td>
-                    <td>${reg.num_cajas}</td>
-                    <td>${maestrosNombres}</td>
-                    <td>${guerreritosNombres}</td>
-                    <td>${guerrerosNombres}</td>
-                </tr>`;
-        });
-
-        htmlTabla += `</table></body></html>`;
-
-        res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename=Reporte_${zonaActual.replace(/\s+/g, '_')}.xls`);
-        res.status(200).send(htmlTabla);
-    } catch (err) {
-        res.status(500).send('Error al exportar a Excel');
-    }
-});
-
-app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
