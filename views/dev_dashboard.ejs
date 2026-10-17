@@ -1,1 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Console | Samaritan's Purse</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #071711; font-family: 'Segoe UI', Tahoma, sans-serif; color: #e0e0e0; margin: 0; padding: 20px; }
+        .dev-container { max-width: 1000px; margin: 0 auto; background: #0b221a; border: 2px solid #009639; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+        .dev-header { background: #05140f; border-bottom: 2px solid #009639; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .card-dev { background: #0e2b21; border: 1px solid #164e3b; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .status-badge { font-family: monospace; font-size: 1rem; padding: 6px 14px; border-radius: 20px; font-weight: bold; }
+        .badge-active { background-color: #198754; color: white; }
+        .badge-mantenimiento { background-color: #ffc107; color: #000; }
+        .badge-fuera_tiempo { background-color: #dc3545; color: white; }
+        .form-control, .form-select { background-color: #05140f; border: 1px solid #009639; color: #00ff66; }
+        .form-control:focus, .form-select:focus { background-color: #05140f; color: #00ff66; border-color: #00ff66; box-shadow: 0 0 10px rgba(0,255,102,0.3); }
+    </style>
+</head>
+<body>
 
+    <div class="dev-container">
+        <div class="dev-header">
+            <div class="d-flex align-items-center gap-3">
+                <i class="fas fa-code-branch fa-2x text-success"></i>
+                <div>
+                    <h4 class="fw-bold text-white mb-0">&lt;Programmer Console /&gt;</h4>
+                    <small class="text-success font-monospace">Samaritan's Purse Master System Control</small>
+                </div>
+            </div>
+            <div>
+                <a href="/dev-admin/logout" class="btn btn-outline-danger btn-sm fw-bold"><i class="fas fa-power-off me-1"></i> Logout</a>
+            </div>
+        </div>
+
+        <!-- ESTADO ACTUAL DEL SISTEMA -->
+        <div class="card-dev d-flex justify-content-between align-items-center">
+            <div>
+                <span class="text-muted small font-monospace d-block mb-1">&gt; Estado Actual del Formulario Público:</span>
+                <% if (systemState.status === 'active') { %>
+                    <span class="status-badge badge-active"><i class="fas fa-check-circle me-1"></i> ACTIVO (Aceptando Registros)</span>
+                <% } else if (systemState.status === 'mantenimiento') { %>
+                    <span class="status-badge badge-mantenimiento"><i class="fas fa-tools me-1"></i> PAUSADO (Corrección de Código)</span>
+                <% } else { %>
+                    <span class="status-badge badge-fuera_tiempo"><i class="fas fa-clock me-1"></i> PAUSADO (Periodo Finalizado)</span>
+                <% } %>
+            </div>
+            <a href="/" target="_blank" class="btn btn-outline-success btn-sm"><i class="fas fa-external-link-alt me-1"></i> Probar Vista Pública</a>
+        </div>
+
+        <!-- BOTONES DE CONTROL CON CONFIRMACIÓN -->
+        <div class="row g-3">
+            <!-- REANUDAR -->
+            <div class="col-md-4">
+                <div class="card-dev text-center h-100">
+                    <i class="fas fa-play-circle fa-2x text-success mb-2"></i>
+                    <h6 class="fw-bold text-white">1. Reanudar Sistema</h6>
+                    <p class="small text-muted">Abre el formulario público de registros.</p>
+                    <button class="btn btn-success btn-sm w-100 fw-bold mt-auto" onclick="confirmarCambio('active', '¿Estás seguro de REANUDAR las inscripciones públicas?')">
+                        <i class="fas fa-check me-1"></i> Reanudar Formulario
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAUSA CORRECCIONES -->
+            <div class="col-md-4">
+                <div class="card-dev text-center h-100 border-warning">
+                    <i class="fas fa-wrench fa-2x text-warning mb-2"></i>
+                    <h6 class="fw-bold text-white">2. Pausa Correcciones</h6>
+                    <p class="small text-muted">Pausa temporal mientras ajustas código.</p>
+                    <button class="btn btn-warning btn-sm w-100 fw-bold mt-auto" onclick="abrirModalPausa('mantenimiento')">
+                        <i class="fas fa-pause me-1"></i> Pausar por Código
+                    </button>
+                </div>
+            </div>
+
+            <!-- PAUSA FUERA DE TIEMPO -->
+            <div class="col-md-4">
+                <div class="card-dev text-center h-100 border-danger">
+                    <i class="fas fa-hourglass-end fa-2x text-danger mb-2"></i>
+                    <h6 class="fw-bold text-white">3. Pausa Cierre Final</h6>
+                    <p class="small text-muted">Bloqueo permanente por fin de tiempo.</p>
+                    <button class="btn btn-danger btn-sm w-100 fw-bold mt-auto" onclick="abrirModalPausa('fuera_tiempo')">
+                        <i class="fas fa-lock me-1"></i> Pausar por Tiempo Agotado
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN TRIPLE DE PAUSA -->
+    <div class="modal fade" id="modalPausa" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-success">
+                <div class="modal-header border-secondary">
+                    <h6 class="modal-title fw-bold text-success"><i class="fas fa-shield-alt me-1"></i> Confirmación de Seguridad de Pausa</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/dev-admin/cambiar-estado" method="POST" onsubmit="return validarConfirmacion()">
+                    <div class="modal-body">
+                        <input type="hidden" name="status" id="inputModalStatus">
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-success">&gt; Mensaje para los usuarios:</label>
+                            <input type="text" name="customMessage" id="inputCustomMessage" class="form-control form-control-sm" placeholder="Ej: Estamos trabajando en darte la mejor experiencia...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-success">&gt; Configurar Cronómetro Regresivo (Opcional):</label>
+                            <input type="datetime-local" name="targetDate" class="form-control form-control-sm">
+                            <small class="text-muted" style="font-size: 0.7rem;">Si lo dejas vacío no mostrará cuenta regresiva.</small>
+                        </div>
+
+                        <div class="p-2 border border-danger rounded bg-black mb-3">
+                            <p class="small text-danger fw-bold mb-1"><i class="fas fa-exclamation-triangle me-1"></i> Verificación de Seguridad:</p>
+                            <p class="small text-muted mb-2">Escribe la palabra <strong class="text-white">PAUSAR</strong> en mayúsculas para confirmar:</p>
+                            <input type="text" id="inputVerificacion" class="form-control form-control-sm" placeholder="PAUSAR" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold"><i class="fas fa-power-off me-1"></i> Confirmar y Aplicar Pausa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let modalPausaBs = null;
+
+        function abrirModalPausa(status) {
+            document.getElementById('inputModalStatus').value = status;
+            document.getElementById('inputVerificacion').value = '';
+            
+            const msgInput = document.getElementById('inputCustomMessage');
+            if (status === 'mantenimiento') {
+                msgInput.value = "Estamos trabajando en darte la mejor experiencia con el sistema...";
+            } else {
+                msgInput.value = "El periodo de recepción de registros ha finalizado oficialmente.";
+            }
+
+            if (!modalPausaBs) {
+                modalPausaBs = new bootstrap.Modal(document.getElementById('modalPausa'));
+            }
+            modalPausaBs.show();
+        }
+
+        function validarConfirmacion() {
+            const txt = document.getElementById('inputVerificacion').value.trim();
+            if (txt !== 'PAUSAR') {
+                alert('Debes escribir exactamente la palabra "PAUSAR" para activar el bloqueo.');
+                return false;
+            }
+            return true;
+        }
+
+        function confirmarCambio(status, mensaje) {
+            if (confirm(mensaje)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/dev-admin/cambiar-estado';
+                
+                const inputStatus = document.createElement('input');
+                inputStatus.type = 'hidden';
+                inputStatus.name = 'status';
+                inputStatus.value = status;
+                
+                form.appendChild(inputStatus);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</body>
+</html>
