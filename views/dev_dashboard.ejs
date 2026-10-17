@@ -20,7 +20,6 @@
     </style>
 </head>
 <body>
-
     <div class="dev-container">
         <div class="dev-header">
             <div class="d-flex align-items-center gap-3">
@@ -30,12 +29,12 @@
                     <small class="text-success font-monospace">Samaritan's Purse Master System Control</small>
                 </div>
             </div>
-            <div>
+            <div class="d-flex gap-2">
+                <a href="/admin" class="btn btn-outline-success btn-sm fw-bold"><i class="fas fa-users-cog me-1"></i> Panel Zonal</a>
                 <a href="/dev-admin/logout" class="btn btn-outline-danger btn-sm fw-bold"><i class="fas fa-power-off me-1"></i> Logout</a>
             </div>
         </div>
 
-        <!-- ESTADO ACTUAL DEL SISTEMA -->
         <div class="card-dev d-flex justify-content-between align-items-center">
             <div>
                 <span class="text-muted small font-monospace d-block mb-1">&gt; Estado Actual del Formulario Público:</span>
@@ -47,80 +46,63 @@
                     <span class="status-badge badge-fuera_tiempo"><i class="fas fa-clock me-1"></i> PAUSADO (Periodo Finalizado)</span>
                 <% } %>
             </div>
-            <a href="/" target="_blank" class="btn btn-outline-success btn-sm"><i class="fas fa-external-link-alt me-1"></i> Probar Vista Pública</a>
+            <a href="/" target="_blank" class="btn btn-outline-success btn-sm"><i class="fas fa-external-link-alt me-1"></i> Ver Formulario</a>
         </div>
 
-        <!-- BOTONES DE CONTROL CON CONFIRMACIÓN -->
         <div class="row g-3">
-            <!-- REANUDAR -->
             <div class="col-md-4">
                 <div class="card-dev text-center h-100">
                     <i class="fas fa-play-circle fa-2x text-success mb-2"></i>
                     <h6 class="fw-bold text-white">1. Reanudar Sistema</h6>
-                    <p class="small text-muted">Abre el formulario público de registros.</p>
-                    <button class="btn btn-success btn-sm w-100 fw-bold mt-auto" onclick="confirmarCambio('active', '¿Estás seguro de REANUDAR las inscripciones públicas?')">
-                        <i class="fas fa-check me-1"></i> Reanudar Formulario
-                    </button>
+                    <p class="small text-muted">Abre el formulario público.</p>
+                    <button class="btn btn-success btn-sm w-100 fw-bold mt-auto" onclick="confirmarCambio('active', '¿Estás seguro de REANUDAR las inscripciones?')">Reanudar</button>
                 </div>
             </div>
-
-            <!-- PAUSA CORRECCIONES -->
             <div class="col-md-4">
                 <div class="card-dev text-center h-100 border-warning">
                     <i class="fas fa-wrench fa-2x text-warning mb-2"></i>
                     <h6 class="fw-bold text-white">2. Pausa Correcciones</h6>
-                    <p class="small text-muted">Pausa temporal mientras ajustas código.</p>
-                    <button class="btn btn-warning btn-sm w-100 fw-bold mt-auto" onclick="abrirModalPausa('mantenimiento')">
-                        <i class="fas fa-pause me-1"></i> Pausar por Código
-                    </button>
+                    <p class="small text-muted">Pausa temporal por código.</p>
+                    <button class="btn btn-warning btn-sm w-100 fw-bold mt-auto" onclick="abrirModalPausa('mantenimiento')">Pausar Código</button>
                 </div>
             </div>
-
-            <!-- PAUSA FUERA DE TIEMPO -->
             <div class="col-md-4">
                 <div class="card-dev text-center h-100 border-danger">
                     <i class="fas fa-hourglass-end fa-2x text-danger mb-2"></i>
                     <h6 class="fw-bold text-white">3. Pausa Cierre Final</h6>
-                    <p class="small text-muted">Bloqueo permanente por fin de tiempo.</p>
-                    <button class="btn btn-danger btn-sm w-100 fw-bold mt-auto" onclick="abrirModalPausa('fuera_tiempo')">
-                        <i class="fas fa-lock me-1"></i> Pausar por Tiempo Agotado
-                    </button>
+                    <p class="small text-muted">Bloqueo por fin de tiempo.</p>
+                    <button class="btn btn-danger btn-sm w-100 fw-bold mt-auto" onclick="abrirModalPausa('fuera_tiempo')">Pausar Cierre</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL CONFIRMACIÓN TRIPLE DE PAUSA -->
+    <!-- MODAL CONFIRMACIÓN TRIPLE -->
     <div class="modal fade" id="modalPausa" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-dark text-white border-success">
                 <div class="modal-header border-secondary">
-                    <h6 class="modal-title fw-bold text-success"><i class="fas fa-shield-alt me-1"></i> Confirmación de Seguridad de Pausa</h6>
+                    <h6 class="modal-title fw-bold text-success"><i class="fas fa-shield-alt me-1"></i> Seguridad de Pausa</h6>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form action="/dev-admin/cambiar-estado" method="POST" onsubmit="return validarConfirmacion()">
                     <div class="modal-body">
                         <input type="hidden" name="status" id="inputModalStatus">
-
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-success">&gt; Mensaje para los usuarios:</label>
-                            <input type="text" name="customMessage" id="inputCustomMessage" class="form-control form-control-sm" placeholder="Ej: Estamos trabajando en darte la mejor experiencia...">
+                            <label class="form-label small fw-bold text-success">Mensaje:</label>
+                            <input type="text" name="customMessage" id="inputCustomMessage" class="form-control form-control-sm" required>
                         </div>
-
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-success">&gt; Configurar Cronómetro Regresivo (Opcional):</label>
+                            <label class="form-label small fw-bold text-success">Cronómetro Regresivo (Opcional):</label>
                             <input type="datetime-local" name="targetDate" class="form-control form-control-sm">
-                            <small class="text-muted" style="font-size: 0.7rem;">Si lo dejas vacío no mostrará cuenta regresiva.</small>
                         </div>
-
                         <div class="p-2 border border-danger rounded bg-black mb-3">
-                            <p class="small text-danger fw-bold mb-1"><i class="fas fa-exclamation-triangle me-1"></i> Verificación de Seguridad:</p>
-                            <p class="small text-muted mb-2">Escribe la palabra <strong class="text-white">PAUSAR</strong> en mayúsculas para confirmar:</p>
+                            <p class="small text-danger fw-bold mb-1">Escribe <strong class="text-white">PAUSAR</strong> para confirmar:</p>
                             <input type="text" id="inputVerificacion" class="form-control form-control-sm" placeholder="PAUSAR" required autocomplete="off">
                         </div>
                     </div>
                     <div class="modal-footer border-secondary">
-                        <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold"><i class="fas fa-power-off me-1"></i> Confirmar y Aplicar Pausa</button>
+                        <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold">Aplicar Bloqueo</button>
                     </div>
                 </form>
             </div>
@@ -130,47 +112,30 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let modalPausaBs = null;
-
         function abrirModalPausa(status) {
             document.getElementById('inputModalStatus').value = status;
             document.getElementById('inputVerificacion').value = '';
-            
-            const msgInput = document.getElementById('inputCustomMessage');
-            if (status === 'mantenimiento') {
-                msgInput.value = "Estamos trabajando en darte la mejor experiencia con el sistema...";
-            } else {
-                msgInput.value = "El periodo de recepción de registros ha finalizado oficialmente.";
-            }
-
-            if (!modalPausaBs) {
-                modalPausaBs = new bootstrap.Modal(document.getElementById('modalPausa'));
-            }
+            document.getElementById('inputCustomMessage').value = status === 'mantenimiento' 
+                ? "Estamos trabajando en darte la mejor experiencia con el sistema..." 
+                : "El periodo de recepción de registros ha finalizado oficialmente.";
+            if (!modalPausaBs) modalPausaBs = new bootstrap.Modal(document.getElementById('modalPausa'));
             modalPausaBs.show();
         }
-
         function validarConfirmacion() {
-            const txt = document.getElementById('inputVerificacion').value.trim();
-            if (txt !== 'PAUSAR') {
-                alert('Debes escribir exactamente la palabra "PAUSAR" para activar el bloqueo.');
+            if (document.getElementById('inputVerificacion').value.trim() !== 'PAUSAR') {
+                alert('Debes escribir exactamente la palabra "PAUSAR".');
                 return false;
             }
             return true;
         }
-
         function confirmarCambio(status, mensaje) {
             if (confirm(mensaje)) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/dev-admin/cambiar-estado';
-                
-                const inputStatus = document.createElement('input');
-                inputStatus.type = 'hidden';
-                inputStatus.name = 'status';
-                inputStatus.value = status;
-                
-                form.appendChild(inputStatus);
-                document.body.appendChild(form);
-                form.submit();
+                const input = document.createElement('input');
+                input.type = 'hidden'; input.name = 'status'; input.value = status;
+                form.appendChild(input); document.body.appendChild(form); form.submit();
             }
         }
     </script>
