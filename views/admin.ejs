@@ -11,7 +11,7 @@
         body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2b2b2b; margin: 0; padding: 0; }
         #authModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 34, 26, 0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .auth-card { background: #ffffff; padding: 30px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border-top: 6px solid #009639; }
-        .admin-container { max-width: 1600px; margin: 20px auto; background: #009639; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 20px; }
+        .admin-container { max-width: 1650px; margin: 20px auto; background: #009639; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 20px; }
         .admin-header { background: #ffffff; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .admin-header img { height: 45px; width: auto; }
         
@@ -23,8 +23,8 @@
         .stat-card-red { background-color: #dc2626; color: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
         
         .table-section { background: #ffffff; border-radius: 12px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
-        .table-custom th { background-color: #009639 !important; color: white !important; font-size: 0.78rem; text-transform: uppercase; }
-        .table-custom td { font-size: 0.78rem; vertical-align: top; }
+        .table-custom th { background-color: #009639 !important; color: white !important; font-size: 0.76rem; text-transform: uppercase; }
+        .table-custom td { font-size: 0.75rem; vertical-align: top; }
         
         .filter-box { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 12px 15px; margin-bottom: 15px; }
         
@@ -89,7 +89,7 @@
                 <div class="text-center mb-4">
                     <img src="/images/logo.png" alt="Logo" style="height: 55px;" class="mb-2">
                     <h5 class="fw-bold text-success">Acceso a Panel por Zona</h5>
-                    <p class="small text-muted">Seleccione su zona o módulo e ingrese la contraseña asignada[cite: 9, 10].</p>
+                    <p class="small text-muted">Seleccione su zona e ingrese la contraseña asignada.</p>
                 </div>
                 <form action="/login" method="POST">
                     <div class="mb-3">
@@ -202,7 +202,7 @@
                             <th>Líder de Proyecto</th>
                             <th>Cajas</th>
                             <th>Maestros Asignados</th>
-                            <th>Guerreritos de Oración</th>
+                            <th>Guerreritos (Niño / Papá / Tel)</th>
                             <th>Guerreros (Adultos)</th>
                             <th class="no-print text-center">Acciones</th>
                         </tr>
@@ -222,19 +222,20 @@
                                     textoEstado = item.observacion_semaforo || 'Completo';
                                 }
 
+                                // TEXTOS PARA LECTURA POR VOZ DE BOCINA
                                 let textoIglesia = `Iglesia ${item.nombre_iglesia}. Dirección: ${item.direccion}.`;
-                                let textoPastor = `Pastor ${item.nombre_pastor}. Teléfono: ${item.telefono_pastor || 'No registrado'}.`;
-                                let textoLider = `Líder de proyecto ${item.nombre_lider}. Teléfono: ${item.telefono_lider || 'No registrado'}.`;
+                                let textoPastor = `Pastor ${item.nombre_pastor}. Teléfono: ${item.telefono_pastor || 'No registrado'}. Correo: ${item.correo_pastor || 'No registrado'}.`;
+                                let textoLider = `Líder de proyecto ${item.nombre_lider}. Teléfono: ${item.telefono_lider || 'No registrado'}. Correo: ${item.correo_lider || 'No registrado'}.`;
                                 let textoCajas = `Cajitas solicitadas: ${item.num_cajas}.`;
                                 
                                 let textoMaestros = "Maestros asignados: ";
                                 if (item.maestros && item.maestros.length > 0) {
-                                    textoMaestros += item.maestros.map((m, i) => `Maestro ${i+1}: ${m.nombre}, teléfono ${m.telefono}`).join('. ');
+                                    textoMaestros += item.maestros.map((m, i) => `Maestro ${i+1}: ${m.nombre}, teléfono ${m.telefono}, correo ${m.correo || 'sin correo'}`).join('. ');
                                 } else { textoMaestros += "Sin maestros registrados."; }
 
                                 let textoGuerreritos = "Guerreritos de oración: ";
                                 if (item.guerreritos_oracion && item.guerreritos_oracion.length > 0) {
-                                    textoGuerreritos += item.guerreritos_oracion.map((g, i) => `Guerrerito ${i+1}: ${g.nombre_guerrerito}, tutor ${g.nombre_tutor}, teléfono ${g.telefono_tutor}`).join('. ');
+                                    textoGuerreritos += item.guerreritos_oracion.map((g, i) => `Guerrerito ${i+1}: ${g.nombre_guerrerito}, tutor o papá ${g.nombre_tutor}, teléfono ${g.telefono_tutor}`).join('. ');
                                 } else { textoGuerreritos += "Sin guerreritos registrados."; }
 
                                 let textoGuerreros = "Guerreros adultos: ";
@@ -258,14 +259,39 @@
                                     data-dictado-guerreros="<%= textoGuerreros %>">
                                     
                                     <td class="fw-bold"><%= index + 1 %></td>
-                                    <td><strong><%= item.nombre_iglesia %></strong><br><small class="text-muted"><%= item.direccion %></small></td>
-                                    <td><strong><%= item.nombre_pastor %></strong><br><small class="text-muted"><%= item.telefono_pastor %></small></td>
-                                    <td><strong><%= item.nombre_lider %></strong><br><small class="text-muted"><%= item.telefono_lider %></small></td>
+                                    <td>
+                                        <strong><%= item.nombre_iglesia %></strong><br>
+                                        <small class="text-muted"><i class="fas fa-map-marker-alt text-danger me-1"></i> <%= item.direccion %></small>
+                                    </td>
+                                    <td>
+                                        <strong><%= item.nombre_pastor %></strong><br>
+                                        <small class="text-muted"><i class="fas fa-phone me-1"></i> <%= item.telefono_pastor || 'Sin tel.' %></small><br>
+                                        <% if (item.correo_pastor) { %>
+                                            <small class="text-primary"><i class="fas fa-envelope me-1"></i> <%= item.correo_pastor %></small>
+                                        <% } else { %>
+                                            <small class="text-muted fst-italic">Sin correo</small>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <strong><%= item.nombre_lider %></strong><br>
+                                        <small class="text-muted"><i class="fas fa-phone me-1"></i> <%= item.telefono_lider || 'Sin tel.' %></small><br>
+                                        <% if (item.correo_lider) { %>
+                                            <small class="text-primary"><i class="fas fa-envelope me-1"></i> <%= item.correo_lider %></small>
+                                        <% } else { %>
+                                            <small class="text-muted fst-italic">Sin correo</small>
+                                        <% } %>
+                                    </td>
                                     <td><span class="badge bg-success"><%= item.num_cajas %></span></td>
                                     <td>
                                         <% if (item.maestros && item.maestros.length > 0) { %>
                                             <% item.maestros.forEach((m, mIdx) => { %>
-                                                <div class="small text-secondary mb-1"><strong>M<%= mIdx + 1 %>:</strong> <%= m.nombre %> (<%= m.telefono %>)</div>
+                                                <div class="small text-secondary mb-1">
+                                                    <strong>M<%= mIdx + 1 %>:</strong> <%= m.nombre %><br>
+                                                    <span class="text-muted" style="font-size: 0.7rem;"><i class="fas fa-phone me-1"></i> <%= m.telefono %></span>
+                                                    <% if (m.correo) { %>
+                                                        <br><span class="text-primary" style="font-size: 0.7rem;"><i class="fas fa-envelope me-1"></i> <%= m.correo %></span>
+                                                    <% } %>
+                                                </div>
                                             <% }) %>
                                         <% } else { %>
                                             <span class="small text-muted">Sin maestros</span>
@@ -274,7 +300,11 @@
                                     <td>
                                         <% if (item.guerreritos_oracion && item.guerreritos_oracion.length > 0) { %>
                                             <% item.guerreritos_oracion.forEach((g, gIdx) => { %>
-                                                <div class="small text-secondary mb-1"><strong>G<%= gIdx + 1 %>:</strong> <%= g.nombre_guerrerito %></div>
+                                                <div class="small text-secondary mb-1" style="line-height: 1.2;">
+                                                    <strong>G<%= gIdx + 1 %>:</strong> <%= g.nombre_guerrerito %><br>
+                                                    <span class="text-muted" style="font-size: 0.7rem;"><strong>Papá/Tutor:</strong> <%= g.nombre_tutor || 'No especificado' %></span><br>
+                                                    <span class="text-muted" style="font-size: 0.7rem;"><i class="fas fa-phone me-1"></i> <%= g.telefono_tutor %></span>
+                                                </div>
                                             <% }) %>
                                         <% } else { %>
                                             <span class="small text-muted">Sin guerreritos</span>
@@ -283,7 +313,10 @@
                                     <td>
                                         <% if (item.guerreros_oracion && item.guerreros_oracion.length > 0) { %>
                                             <% item.guerreros_oracion.forEach((gu, guIdx) => { %>
-                                                <div class="small text-secondary mb-1"><strong>A<%= guIdx + 1 %>:</strong> <%= gu.nombre_guerrero %></div>
+                                                <div class="small text-secondary mb-1">
+                                                    <strong>A<%= guIdx + 1 %>:</strong> <%= gu.nombre_guerrero %><br>
+                                                    <span class="text-muted" style="font-size: 0.7rem;"><i class="fas fa-phone me-1"></i> <%= gu.telefono_guerrero %></span>
+                                                </div>
                                             <% }) %>
                                         <% } else { %>
                                             <span class="small text-muted">Sin guerreros</span>
