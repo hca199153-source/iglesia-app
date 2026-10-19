@@ -17,12 +17,6 @@
         .form-section-box { background-color: #ffffff; border-radius: 12px; padding: 25px; margin-top: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
         .form-control, .form-select { background-color: #f8f9fa; border: 1px solid #ced4da; border-radius: 8px; padding: 10px; }
         .timer-box { background: #ffffff; border: 2px dashed #ffc107; color: #856404; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; margin-top: 20px; }
-        
-        /* ESTILOS PARA EL ASISTENTE DE VOZ INTELIGENTE */
-        .voice-assistant-box { background: linear-gradient(135deg, #072217, #0b221a); border: 2px solid #00ff66; border-radius: 12px; padding: 20px; color: white; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .btn-mic { background-color: #dc3545; color: white; border-radius: 50px; padding: 10px 20px; font-weight: bold; border: none; transition: all 0.3s; }
-        .btn-mic.escuchando { background-color: #ffc107; color: #000; animation: pulse-mic 1.2s infinite; }
-        @keyframes pulse-mic { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -61,23 +55,6 @@
         <div id="formContainer" style="display: none;" class="form-section-box shadow">
             <div class="text-center mb-4">
                 <h4 class="fw-bold mb-1 text-success"><i class="fas fa-file-alt me-2"></i> Formulario de Registro</h4>
-            </div>
-
-            <!-- MÓDULO DE ASISTENTE DE DICTADO POR VOZ INTELIGENTE -->
-            <div class="voice-assistant-box text-center">
-                <h5 class="fw-bold text-success mb-2">
-                    <i class="fas fa-microphone-alt me-2"></i> Relleno Inteligente por Voz
-                </h5>
-                <p class="small text-light mb-3">
-                    Presiona el botón y di comandos como: <br>
-                    <em>"Pastor Juan Pérez"</em>, <em>"Iglesia Bautista El Shaddai"</em>, <em>"Teléfono 2831002030"</em> o <em>"Cajas 100"</em>.
-                </p>
-
-                <button type="button" id="btnMic" class="btn btn-mic shadow" onclick="alternarDictadoVoz()">
-                    <i class="fas fa-microphone me-2"></i> <span id="txtMic">Iniciar Dictado por Voz</span>
-                </button>
-
-                <div id="statusVoz" class="small mt-2 font-monospace text-warning" style="min-height: 22px;"></div>
             </div>
             
             <form action="/guardar-registro" method="POST" id="registroForm">
@@ -138,9 +115,9 @@
                         <div class="border p-2 mb-2 rounded bg-light">
                             <span class="small fw-bold text-success">Guerrerito #<%= i %></span>
                             <div class="row g-1 mt-1">
-                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_guerrerito]" class="form-control form-control-sm input-guerrerito-nombre" placeholder="Nombre guerrerito" required></div>
-                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_tutor]" class="form-control form-control-sm input-guerrerito-tutor" placeholder="Nombre tutor" required></div>
-                                <div class="col-md-4"><input type="tel" name="guerreritos[<%= i-1 %>][telefono_tutor]" class="form-control form-control-sm input-guerrerito-tel" placeholder="Teléfono tutor" required></div>
+                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_guerrerito]" class="form-control form-control-sm" placeholder="Nombre guerrerito" required></div>
+                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_tutor]" class="form-control form-control-sm" placeholder="Nombre tutor" required></div>
+                                <div class="col-md-4"><input type="tel" name="guerreritos[<%= i-1 %>][telefono_tutor]" class="form-control form-control-sm" placeholder="Teléfono tutor" required></div>
                             </div>
                         </div>
                     <% } %>
@@ -153,8 +130,8 @@
                         <div class="border p-2 mb-2 rounded bg-light">
                             <span class="small fw-bold text-success">Guerrero Adulto #<%= i %></span>
                             <div class="row g-1 mt-1">
-                                <div class="col-md-7"><input type="text" name="guerreros[<%= i-1 %>][nombre_guerrero]" class="form-control form-control-sm input-guerrero-nombre" placeholder="Nombre completo del guerrero" required></div>
-                                <div class="col-md-5"><input type="tel" name="guerreros[<%= i-1 %>][telefono_guerrero]" class="form-control form-control-sm input-guerrero-tel" placeholder="Número de teléfono" required></div>
+                                <div class="col-md-7"><input type="text" name="guerreros[<%= i-1 %>][nombre_guerrero]" class="form-control form-control-sm" placeholder="Nombre completo del guerrero" required></div>
+                                <div class="col-md-5"><input type="tel" name="guerreros[<%= i-1 %>][telefono_guerrero]" class="form-control form-control-sm" placeholder="Número de teléfono" required></div>
                             </div>
                         </div>
                     <% } %>
@@ -199,128 +176,6 @@
                 }
                 container.innerHTML = html;
             } else { display.value = "Seleccione cajas"; }
-        }
-
-        // --- MOTOR DE DICTADO INTELIGENTE POR VOZ (NATIVO DEL NAVEGADOR) ---
-        let recognition = null;
-        let isListening = false;
-
-        function alternarDictadoVoz() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert('Tu navegador no soporta reconocimiento de voz. Usa Google Chrome.');
-                return;
-            }
-
-            const btnMic = document.getElementById('btnMic');
-            const txtMic = document.getElementById('txtMic');
-            const statusVoz = document.getElementById('statusVoz');
-
-            if (isListening) {
-                recognition.stop();
-                return;
-            }
-
-            recognition = new SpeechRecognition();
-            recognition.lang = 'es-MX';
-            recognition.continuous = true;
-            recognition.interimResults = false;
-
-            recognition.onstart = function() {
-                isListening = true;
-                btnMic.classList.add('escuchando');
-                txtMic.innerText = 'Escuchando... (Hable ahora)';
-                statusVoz.innerHTML = '<i class="fas fa-circle text-danger fa-spin me-1"></i> Escuchando comandos de voz...';
-            };
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
-                statusVoz.innerHTML = `Escuchado: "${transcript}"`;
-                procesarComandoInteligente(transcript);
-            };
-
-            recognition.onerror = function(event) {
-                console.error('Error de voz:', event.error);
-                statusVoz.innerText = 'Error al capturar voz. Intente de nuevo.';
-            };
-
-            recognition.onend = function() {
-                isListening = false;
-                btnMic.classList.remove('escuchando');
-                txtMic.innerText = 'Iniciar Dictado por Voz';
-                statusVoz.innerText = 'Dictado detenido.';
-            };
-
-            recognition.start();
-        }
-
-        // INTELIGENCIA PARA RELLENAR CAMPOS SEGÚN LO QUE PRONUNCIE EL USUARIO
-        function procesarComandoInteligente(texto) {
-            // 1. Pastor
-            if (texto.includes('pastor') || texto.includes('el pastor')) {
-                let valor = texto.replace('pastor', '').replace('el pastor', '').replace('nombre del pastor', '').trim();
-                if (valor) {
-                    document.getElementById('nombre_pastor').value = capitalizarPrimeraLetra(valor);
-                    mostrarNotificacionVoz('Pastor actualizado');
-                }
-            } 
-            // 2. Iglesia
-            else if (texto.includes('iglesia') || texto.includes('nombre de la iglesia')) {
-                let valor = texto.replace('iglesia', '').replace('nombre de la iglesia', '').trim();
-                if (valor) {
-                    document.getElementById('nombre_iglesia').value = capitalizarPrimeraLetra(valor);
-                    mostrarNotificacionVoz('Iglesia actualizada');
-                }
-            } 
-            // 3. Dirección / Localidad
-            else if (texto.includes('dirección') || texto.includes('calle') || texto.includes('ubicación')) {
-                let valor = texto.replace('dirección', '').replace('calle', '').replace('ubicación', '').trim();
-                if (valor) {
-                    document.getElementById('direccion').value = capitalizarPrimeraLetra(valor);
-                    mostrarNotificacionVoz('Dirección actualizada');
-                }
-            } 
-            // 4. Líder
-            else if (texto.includes('líder') || texto.includes('lider de proyecto')) {
-                let valor = texto.replace('líder', '').replace('lider de proyecto', '').replace('nombre del líder', '').trim();
-                if (valor) {
-                    document.getElementById('nombre_lider').value = capitalizarPrimeraLetra(valor);
-                    mostrarNotificacionVoz('Líder actualizado');
-                }
-            } 
-            // 5. Teléfono (Pastor o general)
-            else if (texto.includes('teléfono') || texto.includes('celular') || texto.includes('número')) {
-                let numeros = texto.replace(/\D/g, ''); // Extraer solo dígitos
-                if (numeros.length >= 10) {
-                    document.getElementById('telefono_pastor').value = numeros.slice(0, 10);
-                    mostrarNotificacionVoz('Teléfono del pastor registrado');
-                }
-            } 
-            // 6. Cajas (50, 100, 150)
-            else if (texto.includes('cajas') || texto.includes('cajitas')) {
-                if (texto.includes('50')) {
-                    document.getElementById('num_cajas').value = '50';
-                    calcularMaestros();
-                    mostrarNotificacionVoz('Seleccionado: 50 Cajas');
-                } else if (texto.includes('100')) {
-                    document.getElementById('num_cajas').value = '100';
-                    calcularMaestros();
-                    mostrarNotificacionVoz('Seleccionado: 100 Cajas');
-                } else if (texto.includes('150')) {
-                    document.getElementById('num_cajas').value = '150';
-                    calcularMaestros();
-                    mostrarNotificacionVoz('Seleccionado: 150 Cajas');
-                }
-            }
-        }
-
-        function capitalizarPrimeraLetra(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
-        }
-
-        function mostrarNotificacionVoz(mensaje) {
-            const statusVoz = document.getElementById('statusVoz');
-            statusVoz.innerHTML = `<i class="fas fa-check-circle text-success me-1"></i> ¡${mensaje}!`;
         }
     </script>
 </body>
