@@ -113,7 +113,7 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
 });
 
 // ==========================================
-// NUEVO PANEL DE ADMINISTRACIÓN EXCLUSIVO DE COMUNIDAD
+// PANEL DE ADMINISTRACIÓN EXCLUSIVO DE COMUNIDAD
 // ==========================================
 app.get('/admin-comunidad', async (req, res) => {
     try {
@@ -122,7 +122,6 @@ app.get('/admin-comunidad', async (req, res) => {
             return res.render('admin_comunidad', { iglesias: [], zona: null });
         }
 
-        // Consultamos todas las iglesias de la zona junto con los miembros registrados en la comunidad
         const { data: iglesias, error } = await supabase
             .from('iglesias')
             .select(`*, miembros_comunidad (*)`)
@@ -133,6 +132,36 @@ app.get('/admin-comunidad', async (req, res) => {
         res.render('admin_comunidad', { iglesias: iglesias || [], zona: zonaActual });
     } catch (err) {
         res.status(500).send('Error al cargar el panel de comunidad: ' + err.message);
+    }
+});
+
+// ACTUALIZAR INTEGRANTE DE WHATSAPP
+app.post('/admin-comunidad/editar/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const { nombre_completo, telefono, correo, rol } = req.body;
+
+        await supabase.from('miembros_comunidad').update({
+            nombre_completo,
+            telefono,
+            correo: correo || null,
+            rol
+        }).eq('id', id);
+
+        res.redirect('/admin-comunidad');
+    } catch (err) {
+        res.status(500).send('Error al editar integrante: ' + err.message);
+    }
+});
+
+// ELIMINAR INTEGRANTE DE WHATSAPP (PARA QUITAR DUPLICADOS)
+app.post('/admin-comunidad/eliminar/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        await supabase.from('miembros_comunidad').delete().eq('id', id);
+        res.redirect('/admin-comunidad');
+    } catch (err) {
+        res.status(500).send('Error al eliminar integrante: ' + err.message);
     }
 });
 
