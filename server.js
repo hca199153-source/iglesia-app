@@ -33,6 +33,8 @@ app.use((req, res, next) => {
         req.path.startsWith('/dev-admin') ||
         req.path.startsWith('/login') ||
         req.path.startsWith('/logout') ||
+        req.path.startsWith('/unirse-comunidad') ||
+        req.path.startsWith('/procesar-unirse-comunidad') ||
         req.path.startsWith('/public') ||
         req.path.startsWith('/images') ||
         req.path.startsWith('/css')
@@ -60,6 +62,54 @@ app.use((req, res, next) => {
 // Ruta Principal (Formulario Público)
 app.get('/', (req, res) => {
     res.render('index');
+});
+
+// RUTA DE LA 3ª SECCIÓN: UNIRSE A COMUNIDAD / GRUPOS DE WHATSAPP AUTOMÁTICOS
+app.get('/unirse-comunidad', async (req, res) => {
+    try {
+        const { data: iglesias } = await supabase.from('iglesias').select('id, nombre_iglesia, zona');
+        res.render('unirse_comunidad', { iglesias: iglesias || [], registroExitoso: false, linkGrupo: null, rolSeleccionado: null });
+    } catch (err) {
+        res.status(500).send('Error al cargar la sección de comunidad: ' + err.message);
+    }
+});
+
+// PROCESAR MINI-FORMULARIO Y GENERAR LINK AUTOMÁTICO DE WHATSAPP
+app.post('/procesar-unirse-comunidad', async (req, res) => {
+    try {
+        const { nombre_completo, telefono, correo, rol, iglesia_id } = req.body;
+
+        await supabase.from('miembros_comunidad').insert([{
+            nombre_completo,
+            telefono,
+            correo: correo || null,
+            rol,
+            iglesia_id: iglesia_id ? parseInt(iglesia_id) : null
+        }]);
+
+        // REEMPLAZA ESTOS LINKS CON TUS ENLACES REALES DE GRUPOS DE WHATSAPP
+        const linksGrupos = {
+            'pastor': 'https://chat.whatsapp.com/ENLACE_GRUPO_PASTORES_REAL',
+            'lider': 'https://chat.whatsapp.com/ENLACE_GRUPO_LIDERES_REAL',
+            'maestro': 'https://chat.whatsapp.com/ENLACE_GRUPO_MAESTROS_REAL',
+            'guerrero': 'https://chat.whatsapp.com/ENLACE_GRUPO_ORACION_REAL'
+        };
+
+        const linkCorrespondiente = linksGrupos[rol] || 'https://chat.whatsapp.com/ENLACE_GRUPO_GENERAL';
+
+        const { data: iglesias } = await supabase.from('iglesias').select('id, nombre_iglesia, zona');
+        res.render('unirse_comunidad', { 
+            iglesias: iglesias || [], 
+            registroExitoso: true, 
+            linkGrupo: linkCorrespondiente, 
+            rolSeleccionado: rol,
+            nombreUsuario: nombre_completo
+        });
+
+    } catch (err) {
+        console.error('Error al registrar en comunidad:', err);
+        res.status(500).send('Error al procesar el registro: ' + err.message);
+    }
 });
 
 // PANEL DE PROGRAMADOR (DEV-ADMIN)
@@ -102,7 +152,7 @@ app.post('/login', (req, res) => {
     if (zona === 'dev_console') {
         if (password === 'dev2026') {
             req.session.isDev = true;
-            return res.redirect('/dev-admin');
+            return res.redirect('/admin');
         } else {
             return res.send(`<script>alert('Contraseña de Desarrollador incorrecta.');window.location.href = '/admin';</script>`);
         }
