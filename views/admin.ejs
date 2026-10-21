@@ -123,13 +123,16 @@
                     <p class="small text-muted mb-0">Zona Activa: <span id="labelZonaActual" class="fw-bold text-uppercase text-danger"><%= zona %></span></p>
                 </div>
             </div>
-            <div class="d-flex gap-2 no-print">
-
+            <div class="d-flex gap-2 no-print flex-wrap">
+                <!-- BOTÓN DE NAVEGACIÓN DIRECTA AL ADMIN DE WHATSAPP -->
+                <a href="/admin-comunidad" class="btn btn-success btn-sm fw-bold shadow-sm" style="background-color: #25D366; border-color: #25D366; color: white;">
+                    <i class="fab fa-whatsapp me-1 fa-lg"></i> Admin Grupos WhatsApp
+                </a>
+                
                 <a href="/dev-admin" class="btn btn-dark btn-sm fw-bold border-success text-success"><i class="fas fa-terminal me-1"></i> Dev Console</a>
                 <button onclick="detenerDictadoGlobal()" class="btn btn-warning btn-sm fw-bold"><i class="fas fa-volume-mute me-1"></i> Detener Audio</button>
                 <a href="/exportar-excel" class="btn btn-excel btn-sm"><i class="fas fa-file-excel me-1"></i> Excel</a>
                 <button onclick="window.print()" class="btn btn-print btn-sm"><i class="fas fa-print me-1"></i> Imprimir / PDF</button>
-                <a href="/admin-comunidad" class="btn btn-outline-success btn-sm fw-bold border-white text-white"><i class="fab fa-whatsapp me-1"></i> Admin Grupos WA</a>
                 <a href="/logout" class="btn btn-outline-secondary btn-sm"><i class="fas fa-sign-out-alt"></i> Salir</a>
             </div>
         </div>
@@ -224,7 +227,6 @@
                                     textoEstado = item.observacion_semaforo || 'Completo';
                                 }
 
-                                // TEXTOS PARA LECTURA POR VOZ DE BOCINA
                                 let textoIglesia = `Iglesia ${item.nombre_iglesia}. Dirección: ${item.direccion}.`;
                                 let textoPastor = `Pastor ${item.nombre_pastor}. Teléfono: ${item.telefono_pastor || 'No registrado'}. Correo: ${item.correo_pastor || 'No registrado'}.`;
                                 let textoLider = `Líder de proyecto ${item.nombre_lider}. Teléfono: ${item.telefono_lider || 'No registrado'}. Correo: ${item.correo_lider || 'No registrado'}.`;
