@@ -64,7 +64,7 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
-// RUTA DE LA 3ª SECCIÓN: UNIRSE A COMUNIDAD / GRUPOS DE WHATSAPP AUTOMÁTICOS
+// 3ª SECCIÓN: UNIRSE A LA COMUNIDAD Y GRUPOS DE WHATSAPP
 app.get('/unirse-comunidad', async (req, res) => {
     try {
         const { data: iglesias } = await supabase.from('iglesias').select('id, nombre_iglesia, zona');
@@ -74,7 +74,6 @@ app.get('/unirse-comunidad', async (req, res) => {
     }
 });
 
-// PROCESAR MINI-FORMULARIO Y GENERAR LINK AUTOMÁTICO DE WHATSAPP
 app.post('/procesar-unirse-comunidad', async (req, res) => {
     try {
         const { nombre_completo, telefono, correo, rol, iglesia_id } = req.body;
@@ -87,15 +86,15 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             iglesia_id: iglesia_id ? parseInt(iglesia_id) : null
         }]);
 
-        // REEMPLAZA ESTOS LINKS CON TUS ENLACES REALES DE GRUPOS DE WHATSAPP
+        // Enlaces reales a tus grupos oficiales de WhatsApp
         const linksGrupos = {
-            'pastor': 'https://chat.whatsapp.com/ENLACE_GRUPO_PASTORES_REAL',
-            'lider': 'https://chat.whatsapp.com/ENLACE_GRUPO_LIDERES_REAL',
-            'maestro': 'https://chat.whatsapp.com/ENLACE_GRUPO_MAESTROS_REAL',
-            'guerrero': 'https://chat.whatsapp.com/ENLACE_GRUPO_ORACION_REAL'
+            'pastor': 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22',
+            'lider': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
+            'maestro': 'https://chat.whatsapp.com/Io6FzfaTXeA3soWMb59dnW',
+            'guerrero': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p' // Asignado a líderes por defecto o el que gustes
         };
 
-        const linkCorrespondiente = linksGrupos[rol] || 'https://chat.whatsapp.com/ENLACE_GRUPO_GENERAL';
+        const linkCorrespondiente = linksGrupos[rol] || 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22';
 
         const { data: iglesias } = await supabase.from('iglesias').select('id, nombre_iglesia, zona');
         res.render('unirse_comunidad', { 
