@@ -30,6 +30,7 @@ let systemState = {
 app.use((req, res, next) => {
     if (
         req.path.startsWith('/admin') ||
+        req.path.startsWith('/admin-comunidad') ||
         req.path.startsWith('/dev-admin') ||
         req.path.startsWith('/login') ||
         req.path.startsWith('/logout') ||
@@ -91,7 +92,7 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             'pastor': 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22',
             'lider': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
             'maestro': 'https://chat.whatsapp.com/Io6FzfaTXeA3soWMb59dnW',
-            'guerrero': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p' // Asignado a líderes por defecto o el que gustes
+            'guerrero': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p'
         };
 
         const linkCorrespondiente = linksGrupos[rol] || 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22';
@@ -108,6 +109,30 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
     } catch (err) {
         console.error('Error al registrar en comunidad:', err);
         res.status(500).send('Error al procesar el registro: ' + err.message);
+    }
+});
+
+// ==========================================
+// NUEVO PANEL DE ADMINISTRACIÓN EXCLUSIVO DE COMUNIDAD
+// ==========================================
+app.get('/admin-comunidad', async (req, res) => {
+    try {
+        const zonaActual = req.session.zona;
+        if (!zonaActual) {
+            return res.render('admin_comunidad', { iglesias: [], zona: null });
+        }
+
+        // Consultamos todas las iglesias de la zona junto con los miembros registrados en la comunidad
+        const { data: iglesias, error } = await supabase
+            .from('iglesias')
+            .select(`*, miembros_comunidad (*)`)
+            .eq('zona', zonaActual);
+
+        if (error) throw new Error(error.message);
+
+        res.render('admin_comunidad', { iglesias: iglesias || [], zona: zonaActual });
+    } catch (err) {
+        res.status(500).send('Error al cargar el panel de comunidad: ' + err.message);
     }
 });
 
