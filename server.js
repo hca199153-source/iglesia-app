@@ -66,14 +66,15 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// SECCIÓN: UNIRSE A LA COMUNIDAD (VINCULACIÓN POR TELÉFONO)
+// SECCIÓN: UNIRSE A LA COMUNIDAD (FILTRADO POR TELÉFONO)
 // ==========================================
 app.get('/unirse-comunidad', (req, res) => {
     res.render('unirse_comunidad', { 
         registroExitoso: false, 
         linkGrupo: null, 
         rolSeleccionado: null,
-        nombreUsuario: null 
+        nombreUsuario: null,
+        errorMensaje: null
     });
 });
 
@@ -81,12 +82,12 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
     try {
         const { nombre_completo, telefono, correo, rol } = req.body;
         
-        // Limpiamos el número de teléfono para comparar solo los dígitos
+        // Limpiamos el número de teléfono para comparar solo los 10 dígitos
         const telLimpio = (telefono || '').replace(/\D/g, '');
         let iglesiaIdEncontrada = null;
 
         if (telLimpio.length >= 10) {
-            // 1. Buscar coincidencia por teléfono del Pastor o del Líder
+            // 1. Buscar coincidencia por teléfono del Pastor o del Líder en la tabla 'iglesias'
             const { data: iglesiasMatch } = await supabase
                 .from('iglesias')
                 .select('id, telefono_pastor, telefono_lider');
@@ -103,7 +104,7 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
                 }
             }
 
-            // 2. Si no fue pastor o líder, buscar coincidencia en la tabla de Maestros
+            // 2. Si no fue pastor o líder, buscar coincidencia en la tabla de 'maestros'
             if (!iglesiaIdEncontrada) {
                 const { data: maestrosMatch } = await supabase
                     .from('maestros')
@@ -122,7 +123,18 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             }
         }
 
-        // Insertar en miembros_comunidad asociando automáticamente la iglesia si el teléfono coincidió
+        // VALIDACIÓN ESTRICTA: Si no se encontró el teléfono en la base de datos, rechazamos el acceso
+        if (!iglesiaIdEncontrada) {
+            return res.render('unirse_comunidad', { 
+                registroExitoso: false, 
+                linkGrupo: null, 
+                rolSeleccionado: rol,
+                nombreUsuario: null,
+                errorMensaje: 'Número no válido o no registrado. El teléfono ingresado no coincide con ningún registro previo en el sistema.'
+            });
+        }
+
+        // Si pasó el filtro de seguridad, guardamos el registro en la comunidad vinculado a su iglesia
         await supabase.from('miembros_comunidad').insert([{
             nombre_completo,
             telefono: telLimpio,
@@ -145,7 +157,8 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             registroExitoso: true, 
             linkGrupo: linkCorrespondiente, 
             rolSeleccionado: rol,
-            nombreUsuario: nombre_completo
+            nombreUsuario: nombre_completo,
+            errorMensaje: null
         });
 
     } catch (err) {
