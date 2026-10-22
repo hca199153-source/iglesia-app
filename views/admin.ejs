@@ -68,6 +68,22 @@
         .btn-audio-dictado.reproduciendo { background-color: #dc3545; animation: pulse-audio 1.2s infinite; }
         @keyframes pulse-audio { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
+        .btn-notif-wa {
+            background-color: #25D366;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-notif-wa:hover { background-color: #1eb857; color: white; transform: scale(1.05); }
+
         @page { size: A4 landscape; margin: 8mm; }
         @media print {
             body { background: white !important; color: #000 !important; font-size: 10px !important; margin: 0 !important; padding: 0 !important; }
@@ -124,7 +140,6 @@
                 </div>
             </div>
             <div class="d-flex gap-2 no-print flex-wrap">
-                <!-- BOTÓN DE NAVEGACIÓN DIRECTA AL ADMIN DE WHATSAPP -->
                 <a href="/admin-comunidad" class="btn btn-success btn-sm fw-bold shadow-sm" style="background-color: #25D366; border-color: #25D366; color: white;">
                     <i class="fab fa-whatsapp me-1 fa-lg"></i> Admin Grupos WhatsApp
                 </a>
@@ -254,6 +269,11 @@
                                     data-direccion="<%= (item.direccion || '').toLowerCase() %>"
                                     data-cajas="<%= item.num_cajas || 0 %>"
                                     data-semaforo="<%= item.estado_semaforo || 'verde' %>"
+                                    data-nombre-iglesia-raw="<%= item.nombre_iglesia %>"
+                                    data-nombre-pastor-raw="<%= item.nombre_pastor %>"
+                                    data-tel-pastor-raw="<%= item.telefono_pastor || '' %>"
+                                    data-nombre-lider-raw="<%= item.nombre_lider %>"
+                                    data-tel-lider-raw="<%= item.telefono_lider || '' %>"
                                     data-dictado-iglesia="<%= textoIglesia %>"
                                     data-dictado-pastor="<%= textoPastor %>"
                                     data-dictado-lider="<%= textoLider %>"
@@ -328,14 +348,23 @@
                                     </td>
                                     <td class="no-print text-center">
                                         <div class="d-flex flex-column gap-1 align-items-center">
-                                            <a href="/editar-registro/<%= item.id %>" class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i></a>
-                                            <form action="/eliminar-registro/<%= item.id %>" method="POST" onsubmit="return confirm('¿Eliminar registro?');" style="display:inline;">
-                                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
-                                            </form>
-                                            <span class="badge-semaforo <%= colorClase %> mt-1" onclick="abrirModalSemaforo('<%= item.id %>', '<%= item.estado_semaforo || 'verde' %>', '<%= item.observacion_semaforo || '' %>')">
+                                            <div class="d-flex gap-1">
+                                                <a href="/editar-registro/<%= item.id %>" class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i></a>
+                                                <form action="/eliminar-registro/<%= item.id %>" method="POST" onsubmit="return confirm('¿Eliminar registro?');" style="display:inline;">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
+                                                </form>
+                                            </div>
+                                            
+                                            <!-- BOTÓN MENSAJE DE FALTANTE POR WHATSAPP -->
+                                            <button type="button" class="btn-notif-wa" onclick="abrirModalNotifWhatsApp('<%= item.id %>')">
+                                                <i class="fab fa-whatsapp"></i> Notificar
+                                            </button>
+
+                                            <span class="badge-semaforo <%= colorClase %>" onclick="abrirModalSemaforo('<%= item.id %>', '<%= item.estado_semaforo || 'verde' %>', '<%= item.observacion_semaforo || '' %>')">
                                                 <i class="fas fa-circle"></i> <%= textoEstado %>
                                             </span>
-                                            <button type="button" class="btn-audio-dictado mt-1" id="btnAudio_<%= item.id %>" onclick="abrirModalDictado('<%= item.id %>')">
+                                            
+                                            <button type="button" class="btn-audio-dictado" id="btnAudio_<%= item.id %>" onclick="abrirModalDictado('<%= item.id %>')">
                                                 <i class="fas fa-volume-up"></i> Dictar
                                             </button>
                                         </div>
@@ -352,7 +381,71 @@
     </div>
     <% } %>
 
-    <!-- MODALES DE DICTADO Y SEMÁFORO -->
+    <!-- MODAL NOTIFICAR FALTANTE POR WHATSAPP -->
+    <div class="modal fade" id="modalNotifWhatsApp" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white py-2">
+                    <h6 class="modal-title fw-bold"><i class="fab fa-whatsapp me-2"></i> Notificar Faltante por WhatsApp</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <input type="hidden" id="notifRowId">
+                    
+                    <!-- DESTINATARIO -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">1. Enviar mensaje a:</label>
+                        <select id="selectDestinatarioWa" class="form-select form-select-sm" onchange="actualizarPrevisualizacionMensaje()">
+                            <!-- Se llena dinámicamente -->
+                        </select>
+                    </div>
+
+                    <!-- CASILLAS DE VERIFICACIÓN DE FALTANTES -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary mb-1">2. Selecciona qué información falta:</label>
+                        <div class="bg-light p-2 border rounded">
+                            <div class="form-check form-check-inline me-3">
+                                <input class="form-check-input" type="checkbox" id="chkFaltaCajas" value="Cantidad de cajitas solicitadas" onchange="actualizarPrevisualizacionMensaje()">
+                                <label class="form-check-label small" for="chkFaltaCajas">📦 Cajas</label>
+                            </div>
+                            <div class="form-check form-check-inline me-3">
+                                <input class="form-check-input" type="checkbox" id="chkFaltaMaestros" value="Datos de los maestros asignados" onchange="actualizarPrevisualizacionMensaje()">
+                                <label class="form-check-label small" for="chkFaltaMaestros">👥 Maestros</label>
+                            </div>
+                            <div class="form-check form-check-inline me-3">
+                                <input class="form-check-input" type="checkbox" id="chkFaltaGuerreritos" value="Datos de los Guerreritos de Oración (Niños/Tutores)" onchange="actualizarPrevisualizacionMensaje()">
+                                <label class="form-check-label small" for="chkFaltaGuerreritos">👶 Guerreritos</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="chkFaltaGuerreros" value="Datos de los Guerreros Adultos" onchange="actualizarPrevisualizacionMensaje()">
+                                <label class="form-check-label small" for="chkFaltaGuerreros">🛡️ Guerreros Adultos</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NOTA O MENSAJE ADICIONAL OPCIONAL -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">3. Nota adicional (Opcional):</label>
+                        <input type="text" id="txtNotaExtraWa" class="form-control form-control-sm" placeholder="Ej. Por favor enviar antes del viernes..." onkeyup="actualizarPrevisualizacionMensaje()">
+                    </div>
+
+                    <!-- VISTA PREVIA DEL MENSAJE -->
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-secondary">Vista previa del mensaje:</label>
+                        <div id="boxPreviewMensajeWa" class="p-2 border rounded bg-white text-muted small" style="white-space: pre-wrap; max-height: 140px; overflow-y: auto; font-size: 0.75rem;">
+                            Selecciona las casillas correspondientes...
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success btn-sm fw-bold" onclick="enviarMensajeWhatsAppPersonalizado()"><i class="fab fa-whatsapp me-1"></i> Abrir en WhatsApp</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES EXISTENTES DE DICTADO Y SEMÁFORO -->
     <div class="modal fade" id="modalDictado" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
@@ -466,6 +559,103 @@
             document.getElementById('filterLocalidad').value = '';
             document.getElementById('sortOption').value = 'num_asc';
             aplicarFiltrosYOrden();
+        }
+
+        /* LÓGICA DE NOTIFICACIÓN DE FALTANTE POR WHATSAPP */
+        let modalNotifWaBs = null;
+
+        function abrirModalNotifWhatsApp(id) {
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            if (!row) return;
+
+            document.getElementById('notifRowId').value = id;
+            
+            const nombrePastor = row.getAttribute('data-nombre-pastor-raw');
+            const telPastor = row.getAttribute('data-tel-pastor-raw').replace(/\D/g, '');
+            const nombreLider = row.getAttribute('data-nombre-lider-raw');
+            const telLider = row.getAttribute('data-tel-lider-raw').replace(/\D/g, '');
+
+            const selectDest = document.getElementById('selectDestinatarioWa');
+            selectDest.innerHTML = '';
+
+            if (telPastor) {
+                selectDest.innerHTML += `<option value="${telPastor}|Pastor|${nombrePastor}">Pastor: ${nombrePastor} (${telPastor})</option>`;
+            }
+            if (telLider) {
+                selectDest.innerHTML += `<option value="${telLider}|Líder|${nombreLider}">Líder: ${nombreLider} (${telLider})</option>`;
+            }
+
+            if (!telPastor && !telLider) {
+                selectDest.innerHTML = `<option value="">⚠️ Sin teléfono registrado para esta iglesia</option>`;
+            }
+
+            // Desmarcar casillas
+            document.getElementById('chkFaltaCajas').checked = false;
+            document.getElementById('chkFaltaMaestros').checked = false;
+            document.getElementById('chkFaltaGuerreritos').checked = false;
+            document.getElementById('chkFaltaGuerreros').checked = false;
+            document.getElementById('txtNotaExtraWa').value = '';
+
+            actualizarPrevisualizacionMensaje();
+
+            if (!modalNotifWaBs) modalNotifWaBs = new bootstrap.Modal(document.getElementById('modalNotifWhatsApp'));
+            modalNotifWaBs.show();
+        }
+
+        function actualizarPrevisualizacionMensaje() {
+            const rowId = document.getElementById('notifRowId').value;
+            const row = document.querySelector(`tr[data-id="${rowId}"]`);
+            if (!row) return;
+
+            const nombreIglesia = row.getAttribute('data-nombre-iglesia-raw');
+            const valDest = document.getElementById('selectDestinatarioWa').value;
+            
+            if (!valDest) {
+                document.getElementById('boxPreviewMensajeWa').innerText = 'No hay número registrado para notificar.';
+                return;
+            }
+
+            const [tel, cargo, nombre] = valDest.split('|');
+
+            let faltantes = [];
+            if (document.getElementById('chkFaltaCajas').checked) faltantes.push('• Cantidad de cajitas solicitadas');
+            if (document.getElementById('chkFaltaMaestros').checked) faltantes.push('• Datos de los maestros asignados');
+            if (document.getElementById('chkFaltaGuerreritos').checked) faltantes.push('• Registro de Guerreritos de Oración (Niños / Tutores)');
+            if (document.getElementById('chkFaltaGuerreros').checked) faltantes.push('• Registro de Guerreros Adultos');
+
+            const notaExtra = document.getElementById('txtNotaExtraWa').value.trim();
+
+            let msg = `¡Dios le bendiga ${cargo} ${nombre}!\nLe saludamos de Operación Niño de la Navidad (Samaritan's Purse).\n\nLe escribimos para solicitar respetuosamente complementar la información de su iglesia *${nombreIglesia}*.\n\nActualmente nos falta la siguiente información:\n`;
+
+            if (faltantes.length > 0) {
+                msg += faltantes.join('\n') + '\n';
+            } else {
+                msg += '• (Por favor seleccione las casillas correspondientes)\n';
+            }
+
+            if (notaExtra) {
+                msg += `\nNota: ${notaExtra}\n`;
+            }
+
+            msg += `\nAgradecemos mucho su valioso apoyo para continuar con el proceso. ¡Bendiciones!`;
+
+            document.getElementById('boxPreviewMensajeWa').innerText = msg;
+        }
+
+        function enviarMensajeWhatsAppPersonalizado() {
+            const valDest = document.getElementById('selectDestinatarioWa').value;
+            if (!valDest) {
+                alert('No hay un número válido seleccionado.');
+                return;
+            }
+
+            const [tel] = valDest.split('|');
+            const texto = document.getElementById('boxPreviewMensajeWa').innerText;
+
+            const link = `https://wa.me/52${tel}?text=${encodeURIComponent(texto)}`;
+            window.open(link, '_blank');
+            
+            if (modalNotifWaBs) modalNotifWaBs.hide();
         }
 
         let modalSemaforoBs = null;
