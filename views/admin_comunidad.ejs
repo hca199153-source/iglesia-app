@@ -17,6 +17,9 @@
         .border-completo { border-left: 8px solid #198754 !important; }
         .border-parcial { border-left: 8px solid #ffc107 !important; }
         .border-pendiente { border-left: 8px solid #dc3545 !important; }
+        
+        .box-notificado { background-color: #f8f9fa; border: 1px border #ced4da; border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; font-weight: bold; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .form-check-input:checked { background-color: #198754; border-color: #198754; }
     </style>
 </head>
 <body>
@@ -60,6 +63,8 @@
                             <option value="completo">🟢 Completo (Todos dentro)</option>
                             <option value="parcial">🟡 Parcial (En proceso)</option>
                             <option value="pendiente">🔴 Pendiente (Sin registros)</option>
+                            <option value="notificado">☑️ Notificados</option>
+                            <option value="no_notificado">🔳 Sin Notificar</option>
                         </select>
                     </div>
                     <div class="col-md-2 text-end">
@@ -93,21 +98,53 @@
                             badgeTexto = `🟡 Parcial (${miembros.length} Integrantes)`;
                             badgeClase = 'bg-warning text-dark';
                         }
+
+                        // LIMPIAR TELÉFONO DEL PASTOR
+                        let telPastorClean = (iglesia.telefono_pastor || '').replace(/\D/g, '');
+                        // MENSAJE PREDEFINIDO DE WHATSAPP
+                        let mensajeWa = encodeURIComponent(`¡Dios le bendiga Pastor ${iglesia.nombre_pastor}! Le escribimos de Operación Niño de la Navidad (Samaritan's Purse). Le compartimos el enlace para que usted y su equipo (líderes y maestros) de la iglesia ${iglesia.nombre_iglesia} se unan a los grupos oficiales de WhatsApp: https://iglesia-app-jxv7.onrender.com/unirse-comunidad`);
+                        let linkWaPastor = telPastorClean ? `https://wa.me/52${telPastorClean}?text=${mensajeWa}` : '#';
+                        let esNotificado = iglesia.notificado_whatsapp ? true : false;
                     %>
                         <div class="col-lg-4 col-md-6 item-tarjeta-iglesia" 
                              data-iglesia="<%= (iglesia.nombre_iglesia || '').toLowerCase() %>" 
                              data-pastor="<%= (iglesia.nombre_pastor || '').toLowerCase() %>"
-                             data-estado="<%= estadoCodigo %>">
+                             data-estado="<%= estadoCodigo %>"
+                             data-notificado="<%= esNotificado ? 'true' : 'false' %>">
                             <div class="card card-preview h-100 shadow-sm <%= claseEstado %>">
                                 <div class="card-body p-3 d-flex flex-column justify-content-between">
                                     <div>
                                         <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h6 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 65%;"><%= iglesia.nombre_iglesia %></h6>
+                                            <h6 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 60%;"><%= iglesia.nombre_iglesia %></h6>
                                             <span class="badge <%= badgeClase %>" style="font-size: 0.7rem;"><%= badgeTexto %></span>
                                         </div>
 
                                         <p class="small text-muted mb-1"><i class="fas fa-user-tie me-1 text-success"></i> <strong>Pastor:</strong> <%= iglesia.nombre_pastor %></p>
+                                        
+                                        <!-- TELÉFONO DE CONTACTO CON ACCIÓN DIRECTA DE WHATSAPP -->
+                                        <p class="small mb-2">
+                                            <i class="fab fa-whatsapp text-success me-1"></i> <strong>Contacto Pastor:</strong> 
+                                            <% if (telPastorClean) { %>
+                                                <a href="<%= linkWaPastor %>" target="_blank" class="btn btn-outline-success btn-sm py-0 px-2 fw-bold font-monospace" style="font-size: 0.75rem;">
+                                                    <%= iglesia.telefono_pastor %> <i class="fas fa-paper-plane ms-1"></i>
+                                                </a>
+                                            <% } else { %>
+                                                <span class="text-muted fst-italic">Sin teléfono</span>
+                                            <% } %>
+                                        </p>
+
                                         <p class="small text-muted mb-2"><i class="fas fa-map-marker-alt me-1 text-danger"></i> <%= iglesia.direccion %></p>
+
+                                        <!-- CASILLA DE VERIFICACIÓN (PALOMITA NOTIFICADO) -->
+                                        <div class="box-notificado">
+                                            <span class="text-secondary"><i class="fas fa-check-double text-success me-1"></i> ¿Aviso enviado al pastor?</span>
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox" id="checkNotif_<%= iglesia.id %>" <%= esNotificado ? 'checked' : '' %> onchange="marcarNotificado('<%= iglesia.id %>', this.checked)">
+                                                <label class="form-check-label small" for="checkNotif_<%= iglesia.id %>" id="lblNotif_<%= iglesia.id %>">
+                                                    <%= esNotificado ? 'Sí' : 'No' %>
+                                                </label>
+                                            </div>
+                                        </div>
 
                                         <!-- ROLES REGISTRADOS -->
                                         <div class="d-flex flex-wrap gap-1 mb-3">
@@ -140,7 +177,7 @@
         <% } %>
     </div>
 
-    <!-- MODAL DE DESGLOSE COMPLETO CON EDICIÓN Y BORRADO -->
+    <!-- MODAL DE DESGLOSE COMPLETO -->
     <div class="modal fade" id="modalDetalleComunidad" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -161,9 +198,7 @@
                                     <th class="text-center">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="tablaCuerpoIntegrantes">
-                                <!-- Se llena dinámicamente con JS -->
-                            </tbody>
+                            <tbody id="tablaCuerpoIntegrantes"></tbody>
                         </table>
                     </div>
                 </div>
@@ -216,6 +251,18 @@
         let modalDetalleBs = null;
         let modalEditarBs = null;
 
+        function marcarNotificado(id, checked) {
+            document.getElementById(`lblNotif_${id}`).innerText = checked ? 'Sí' : 'No';
+            const tarjeta = document.getElementById(`checkNotif_${id}`).closest('.item-tarjeta-iglesia');
+            if (tarjeta) tarjeta.setAttribute('data-notificado', checked ? 'true' : 'false');
+
+            fetch(`/admin-comunidad/notificado/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notificado: checked })
+            }).catch(err => console.error('Error al guardar notificado:', err));
+        }
+
         function filtrarTarjetasComunidad() {
             const busqueda = document.getElementById('inputBuscarComunidad').value.toLowerCase().trim();
             const estado = document.getElementById('selectFiltroEstado').value;
@@ -225,9 +272,13 @@
                 const iglesia = t.getAttribute('data-iglesia');
                 const pastor = t.getAttribute('data-pastor');
                 const estadoVal = t.getAttribute('data-estado');
+                const notificadoVal = t.getAttribute('data-notificado');
 
                 const coincideBusqueda = !busqueda || iglesia.includes(busqueda) || pastor.includes(busqueda);
-                const coincideEstado = !estado || estadoVal === estado;
+                let coincideEstado = !estado || estadoVal === estado;
+
+                if (estado === 'notificado') coincideEstado = notificadoVal === 'true';
+                if (estado === 'no_notificado') coincideEstado = notificadoVal === 'false';
 
                 t.style.display = (coincideBusqueda && coincideEstado) ? '' : 'none';
             });
