@@ -81,13 +81,10 @@ app.get('/unirse-comunidad', (req, res) => {
 app.post('/procesar-unirse-comunidad', async (req, res) => {
     try {
         const { nombre_completo, telefono, correo, rol } = req.body;
-        
-        // Limpiamos el número de teléfono para comparar solo los 10 dígitos
         const telLimpio = (telefono || '').replace(/\D/g, '');
         let iglesiaIdEncontrada = null;
 
         if (telLimpio.length >= 10) {
-            // 1. Buscar coincidencia por teléfono del Pastor o del Líder en la tabla 'iglesias'
             const { data: iglesiasMatch } = await supabase
                 .from('iglesias')
                 .select('id, telefono_pastor, telefono_lider');
@@ -104,7 +101,6 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
                 }
             }
 
-            // 2. Si no fue pastor o líder, buscar coincidencia en la tabla de 'maestros'
             if (!iglesiaIdEncontrada) {
                 const { data: maestrosMatch } = await supabase
                     .from('maestros')
@@ -123,7 +119,6 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             }
         }
 
-        // VALIDACIÓN ESTRICTA: Si no se encontró el teléfono en la base de datos, rechazamos el acceso
         if (!iglesiaIdEncontrada) {
             return res.render('unirse_comunidad', { 
                 registroExitoso: false, 
@@ -134,7 +129,6 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             });
         }
 
-        // Si pasó el filtro de seguridad, guardamos el registro en la comunidad vinculado a su iglesia
         await supabase.from('miembros_comunidad').insert([{
             nombre_completo,
             telefono: telLimpio,
@@ -143,7 +137,6 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             iglesia_id: iglesiaIdEncontrada
         }]);
 
-        // Enlaces oficiales a los grupos de WhatsApp
         const linksGrupos = {
             'pastor': 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22',
             'lider': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
@@ -190,7 +183,6 @@ app.get('/admin-comunidad', async (req, res) => {
     }
 });
 
-// ACTUALIZAR ESTADO DE NOTIFICACIÓN AL PASTOR (CHECKBOX)
 app.post('/admin-comunidad/notificado/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
@@ -206,7 +198,6 @@ app.post('/admin-comunidad/notificado/:id', async (req, res) => {
     }
 });
 
-// ACTUALIZAR INTEGRANTE DE WHATSAPP
 app.post('/admin-comunidad/editar/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
@@ -225,7 +216,6 @@ app.post('/admin-comunidad/editar/:id', async (req, res) => {
     }
 });
 
-// ELIMINAR INTEGRANTE DE WHATSAPP (DUPLICADOS)
 app.post('/admin-comunidad/eliminar/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
@@ -236,7 +226,9 @@ app.post('/admin-comunidad/eliminar/:id', async (req, res) => {
     }
 });
 
+// ==========================================
 // PANEL DE PROGRAMADOR (DEV-ADMIN)
+// ==========================================
 app.get('/dev-admin', (req, res) => {
     if (!req.session.isDev) {
         return res.render('dev_login', { error: null });
@@ -244,7 +236,6 @@ app.get('/dev-admin', (req, res) => {
     res.render('dev_dashboard', { systemState });
 });
 
-// LOGIN DE PROGRAMADOR
 app.post('/dev-admin/login', (req, res) => {
     const { password } = req.body;
     if (password === 'dev2026') { 
@@ -269,7 +260,9 @@ app.get('/dev-admin/logout', (req, res) => {
     res.redirect('/dev-admin');
 });
 
-// Inicio de Sesión (Zonas o Dev Console)
+// ==========================================
+// INICIO DE SESIÓN DE ZONAS (ACTUALIZADO CON LAS NUEVAS ZONAS)
+// ==========================================
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
 
@@ -282,9 +275,12 @@ app.post('/login', (req, res) => {
         }
     }
 
+    // Contraseñas asignadas para cada zona
     const contrasenasZonas = {
         "san_andres": "sanandres2026",
-        "veracruz": "veracruz2026",
+        "medellin": "medellin2026",
+        "manlio": "manlio2026",
+        "orizaba": "orizaba2026",
         "cd_aleman": "cdaleman2026",
         "xalapa": "xalapa2026"
     };
