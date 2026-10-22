@@ -87,7 +87,7 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             iglesia_id: iglesia_id ? parseInt(iglesia_id) : null
         }]);
 
-        // Enlaces reales a tus grupos oficiales de WhatsApp
+        // Enlaces oficiales a los grupos de WhatsApp
         const linksGrupos = {
             'pastor': 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22',
             'lider': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
@@ -135,6 +135,22 @@ app.get('/admin-comunidad', async (req, res) => {
     }
 });
 
+// ACTUALIZAR ESTADO DE NOTIFICACIÓN AL PASTOR (CHECKBOX)
+app.post('/admin-comunidad/notificado/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const { notificado } = req.body;
+        
+        await supabase.from('iglesias').update({
+            notificado_whatsapp: notificado === true || notificado === 'true'
+        }).eq('id', id);
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 // ACTUALIZAR INTEGRANTE DE WHATSAPP
 app.post('/admin-comunidad/editar/:id', async (req, res) => {
     try {
@@ -154,7 +170,7 @@ app.post('/admin-comunidad/editar/:id', async (req, res) => {
     }
 });
 
-// ELIMINAR INTEGRANTE DE WHATSAPP (PARA QUITAR DUPLICADOS)
+// ELIMINAR INTEGRANTE DE WHATSAPP (DUPLICADOS)
 app.post('/admin-comunidad/eliminar/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
@@ -267,7 +283,8 @@ app.post('/guardar-registro', async (req, res) => {
                 zona, nombre_pastor, telefono_pastor, correo_pastor: correo_pastor || null,
                 nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider: correo_lider || null,
                 num_cajas: parseInt(num_cajas) || 0, num_maestros: maestros ? Object.keys(maestros).length : 0,
-                estado_semaforo: 'verde', observacion_semaforo: 'Completo'
+                estado_semaforo: 'verde', observacion_semaforo: 'Completo',
+                notificado_whatsapp: false
             }])
             .select().single();
 
@@ -291,82 +308,4 @@ app.post('/guardar-registro', async (req, res) => {
             if (guerrerosArray.length > 0) await supabase.from('guerreros_oracion').insert(guerrerosArray);
         }
 
-        res.send(`<!DOCTYPE html><html lang="es"><head><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light d-flex align-items-center justify-content-center vh-100"><div class="card p-4 text-center shadow-sm" style="max-width: 450px;"><h3 class="text-success mb-3">¡Registro Exitoso!</h3><p class="text-muted">Los datos se han guardado correctamente.</p><a href="/" class="btn btn-success mt-2">Regresar</a></div></body></html>`);
-    } catch (err) {
-        res.status(500).send('Error al procesar: ' + err.message);
-    }
-});
-
-app.get('/editar-registro/:id', async (req, res) => {
-    try {
-        const id = parseInt(req.params.id, 10);
-        const { data: iglesia, error } = await supabase.from('iglesias').select(`*, maestros (*), guerreritos_oracion (*), guerreros_oracion (*)`).eq('id', id).maybeSingle();
-        if (error || !iglesia) return res.status(404).send('Registro no encontrado.');
-        res.render('editar', { iglesia });
-    } catch (err) { res.status(500).send('Error interno: ' + err.message); }
-});
-
-app.post('/actualizar-registro/:id', async (req, res) => {
-    try {
-        const id = parseInt(req.params.id, 10);
-        const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, estado_semaforo, observacion_semaforo, maestros, guerreritos, guerreros } = req.body;
-
-        await supabase.from('iglesias').update({ zona, nombre_pastor, telefono_pastor, correo_pastor: correo_pastor || null, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider: correo_lider || null, num_cajas: parseInt(num_cajas) || 0, estado_semaforo: estado_semaforo || 'verde', observacion_semaforo: observacion_semaforo || 'Completo' }).eq('id', id);
-
-        if (maestros || guerreritos || guerreros) {
-            await supabase.from('maestros').delete().eq('iglesia_id', id);
-            await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
-            await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
-
-            if (maestros) {
-                const arr = Object.values(maestros).filter(m => m.nombre && m.nombre.trim() !== '').map(m => ({ iglesia_id: id, nombre: m.nombre, telefono: m.telefono, correo: m.correo || null }));
-                if (arr.length > 0) await supabase.from('maestros').insert(arr);
-            }
-            if (guerreritos) {
-                const arr = (Array.isArray(guerreritos) ? guerreritos : Object.values(guerreritos)).filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '').map(g => ({ iglesia_id: id, nombre_guerrerito: g.nombre_guerrerito, nombre_tutor: g.nombre_tutor, telefono_tutor: g.telefono_tutor }));
-                if (arr.length > 0) await supabase.from('guerreritos_oracion').insert(arr);
-            }
-            if (guerreros) {
-                const arr = (Array.isArray(guerreros) ? guerreros : Object.values(guerreros)).filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '').map(gu => ({ iglesia_id: id, nombre_guerrero: gu.nombre_guerrero, telefono_guerrero: gu.telefono_guerrero }));
-                if (arr.length > 0) await supabase.from('guerreros_oracion').insert(arr);
-            }
-        }
-        res.redirect('/admin');
-    } catch (err) { res.status(500).send('Error al actualizar: ' + err.message); }
-});
-
-app.post('/actualizar-semaforo/:id', async (req, res) => {
-    try {
-        const id = parseInt(req.params.id, 10);
-        const { estado_semaforo, observacion_semaforo } = req.body;
-        await supabase.from('iglesias').update({ estado_semaforo, observacion_semaforo: observacion_semaforo || 'Sin observaciones' }).eq('id', id);
-        res.redirect('/admin');
-    } catch (err) { res.status(500).send('Error al actualizar semáforo: ' + err.message); }
-});
-
-app.post('/eliminar-registro/:id', async (req, res) => {
-    try {
-        await supabase.from('iglesias').delete().eq('id', req.params.id);
-        res.redirect('/admin');
-    } catch (err) { res.status(500).send('Error al eliminar: ' + err.message); }
-});
-
-app.get('/exportar-excel', async (req, res) => {
-    try {
-        const zonaActual = req.session.zona || 'GENERAL';
-        const { data: registros } = await supabase.from('iglesias').select(`*, maestros(*), guerreritos_oracion(*), guerreros_oracion(*)`).eq('zona', zonaActual);
-
-        let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${zonaActual}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th></tr>`;
-
-        registros.forEach((reg, index) => {
-            htmlTabla += `<tr><td>${index + 1}</td><td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td><td>${reg.observacion_semaforo || 'Completo'}</td><td>${reg.nombre_iglesia}</td><td>${reg.direccion}</td><td>${reg.nombre_pastor}</td><td>${reg.telefono_pastor}</td><td>${reg.nombre_lider}</td><td>${reg.telefono_lider}</td><td>${reg.num_cajas}</td></tr>`;
-        });
-
-        htmlTabla += `</table></body></html>`;
-        res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename=Reporte_${zonaActual}.xls`);
-        res.status(200).send(htmlTabla);
-    } catch (err) { res.status(500).send('Error al exportar'); }
-});
-
-app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
+        res.send(`<!DOCTYPE html><html lang="es"><head><link
