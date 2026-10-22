@@ -65,26 +65,70 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
-// 3ª SECCIÓN: UNIRSE A LA COMUNIDAD Y GRUPOS DE WHATSAPP
-app.get('/unirse-comunidad', async (req, res) => {
-    try {
-        const { data: iglesias } = await supabase.from('iglesias').select('id, nombre_iglesia, zona');
-        res.render('unirse_comunidad', { iglesias: iglesias || [], registroExitoso: false, linkGrupo: null, rolSeleccionado: null });
-    } catch (err) {
-        res.status(500).send('Error al cargar la sección de comunidad: ' + err.message);
-    }
+// ==========================================
+// SECCIÓN: UNIRSE A LA COMUNIDAD (VINCULACIÓN POR TELÉFONO)
+// ==========================================
+app.get('/unirse-comunidad', (req, res) => {
+    res.render('unirse_comunidad', { 
+        registroExitoso: false, 
+        linkGrupo: null, 
+        rolSeleccionado: null,
+        nombreUsuario: null 
+    });
 });
 
 app.post('/procesar-unirse-comunidad', async (req, res) => {
     try {
-        const { nombre_completo, telefono, correo, rol, iglesia_id } = req.body;
+        const { nombre_completo, telefono, correo, rol } = req.body;
+        
+        // Limpiamos el número de teléfono para comparar solo los dígitos
+        const telLimpio = (telefono || '').replace(/\D/g, '');
+        let iglesiaIdEncontrada = null;
 
+        if (telLimpio.length >= 10) {
+            // 1. Buscar coincidencia por teléfono del Pastor o del Líder
+            const { data: iglesiasMatch } = await supabase
+                .from('iglesias')
+                .select('id, telefono_pastor, telefono_lider');
+
+            if (iglesiasMatch && iglesiasMatch.length > 0) {
+                const encontrada = iglesiasMatch.find(i => {
+                    const telP = (i.telefono_pastor || '').replace(/\D/g, '');
+                    const telL = (i.telefono_lider || '').replace(/\D/g, '');
+                    return (telP && telP.endsWith(telLimpio.slice(-10))) || (telL && telL.endsWith(telLimpio.slice(-10)));
+                });
+
+                if (encontrada) {
+                    iglesiaIdEncontrada = encontrada.id;
+                }
+            }
+
+            // 2. Si no fue pastor o líder, buscar coincidencia en la tabla de Maestros
+            if (!iglesiaIdEncontrada) {
+                const { data: maestrosMatch } = await supabase
+                    .from('maestros')
+                    .select('iglesia_id, telefono');
+
+                if (maestrosMatch && maestrosMatch.length > 0) {
+                    const maestroEncontrado = maestrosMatch.find(m => {
+                        const telM = (m.telefono || '').replace(/\D/g, '');
+                        return telM && telM.endsWith(telLimpio.slice(-10));
+                    });
+
+                    if (maestroEncontrado) {
+                        iglesiaIdEncontrada = maestroEncontrado.iglesia_id;
+                    }
+                }
+            }
+        }
+
+        // Insertar en miembros_comunidad asociando automáticamente la iglesia si el teléfono coincidió
         await supabase.from('miembros_comunidad').insert([{
             nombre_completo,
-            telefono,
+            telefono: telLimpio,
             correo: correo || null,
             rol,
-            iglesia_id: iglesia_id ? parseInt(iglesia_id) : null
+            iglesia_id: iglesiaIdEncontrada
         }]);
 
         // Enlaces oficiales a los grupos de WhatsApp
@@ -97,9 +141,7 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
 
         const linkCorrespondiente = linksGrupos[rol] || 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22';
 
-        const { data: iglesias } = await supabase.from('iglesias').select('id, nombre_iglesia, zona');
         res.render('unirse_comunidad', { 
-            iglesias: iglesias || [], 
             registroExitoso: true, 
             linkGrupo: linkCorrespondiente, 
             rolSeleccionado: rol,
