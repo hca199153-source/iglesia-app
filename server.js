@@ -141,13 +141,12 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             iglesia_id: iglesiaIdEncontrada
         }]);
 
-        // Enlaces oficiales a los grupos de WhatsApp
+        // Enlaces oficiales definitivos
         const linksGrupos = {
             'pastor': 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22',
             'lider': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
             'maestro': 'https://chat.whatsapp.com/Io6FzfaTXeA3soWMb59dnW',
-            'guerrero': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
-            'guerrerito': 'https://chat.whatsapp.com/DFETFvqOMHLCDLIuTag7AT'
+            'guerrero': 'https://chat.whatsapp.com/DFETFvqOMHLCDLIuTag7AT'
         };
 
         const linkCorrespondiente = linksGrupos[rol] || 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22';
