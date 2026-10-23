@@ -66,7 +66,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// SECCIÓN: UNIRSE A LA COMUNIDAD (FILTRADO POR TELÉFONO)
+// SECCIÓN: UNIRSE A LA COMUNIDAD (FILTRADO ESTRICTO POR TELÉFONO)
 // ==========================================
 app.get('/unirse-comunidad', (req, res) => {
     res.render('unirse_comunidad', { 
@@ -81,10 +81,12 @@ app.get('/unirse-comunidad', (req, res) => {
 app.post('/procesar-unirse-comunidad', async (req, res) => {
     try {
         const { nombre_completo, telefono, correo, rol } = req.body;
+        
         const telLimpio = (telefono || '').replace(/\D/g, '');
         let iglesiaIdEncontrada = null;
 
         if (telLimpio.length >= 10) {
+            // 1. Buscar coincidencia por teléfono del Pastor o del Líder en la tabla 'iglesias'
             const { data: iglesiasMatch } = await supabase
                 .from('iglesias')
                 .select('id, telefono_pastor, telefono_lider');
@@ -101,6 +103,7 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
                 }
             }
 
+            // 2. Si no fue pastor o líder, buscar coincidencia en la tabla de 'maestros'
             if (!iglesiaIdEncontrada) {
                 const { data: maestrosMatch } = await supabase
                     .from('maestros')
@@ -119,6 +122,7 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             }
         }
 
+        // VALIDACIÓN ESTRICTA: Rechazar si el teléfono no existe en la base de datos previa
         if (!iglesiaIdEncontrada) {
             return res.render('unirse_comunidad', { 
                 registroExitoso: false, 
@@ -137,11 +141,13 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             iglesia_id: iglesiaIdEncontrada
         }]);
 
+        // Enlaces oficiales a los grupos de WhatsApp
         const linksGrupos = {
             'pastor': 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22',
             'lider': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
             'maestro': 'https://chat.whatsapp.com/Io6FzfaTXeA3soWMb59dnW',
-            'guerrero': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p'
+            'guerrero': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
+            'guerrerito': 'https://chat.whatsapp.com/DFETFvqOMHLCDLIuTag7AT'
         };
 
         const linkCorrespondiente = linksGrupos[rol] || 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22';
@@ -261,7 +267,7 @@ app.get('/dev-admin/logout', (req, res) => {
 });
 
 // ==========================================
-// INICIO DE SESIÓN DE ZONAS (ACTUALIZADO CON LAS NUEVAS ZONAS)
+// INICIO DE SESIÓN DE ZONAS (INCLUYENDO NUEVAS ZONAS)
 // ==========================================
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
@@ -275,7 +281,6 @@ app.post('/login', (req, res) => {
         }
     }
 
-    // Contraseñas asignadas para cada zona
     const contrasenasZonas = {
         "san_andres": "sanandres2026",
         "medellin": "medellin2026",
