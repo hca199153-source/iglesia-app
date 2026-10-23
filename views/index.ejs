@@ -8,174 +8,216 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2b2b2b; margin: 0; padding: 0; }
-        .main-container { max-width: 720px; margin: 30px auto; background: #009639; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 20px; }
-        .header-top-box, .title-bar-box { background: #ffffff; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .hero-banner { background: linear-gradient(135deg, #007a2e, #005a22); color: white; padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 20px; }
-        .card-custom { border: none; border-radius: 10px; background-color: #ffffff; margin-bottom: 15px; border-left: 5px solid #d32f2f; }
-        .card-header-custom { background-color: #f8f9fa; color: #005a22; font-weight: bold; padding: 10px 15px; border-radius: 0 10px 0 0; }
-        .form-section-box { background-color: #ffffff; border-radius: 12px; padding: 25px; margin-top: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
-        .form-control, .form-select { background-color: #f8f9fa; border: 1px solid #ced4da; border-radius: 8px; padding: 10px; }
-        .timer-box { background: #ffffff; border: 2px dashed #ffc107; color: #856404; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; margin-top: 20px; }
+        body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; padding: 20px 10px; color: #2b2b2b; }
+        .form-container { max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); border-top: 6px solid #009639; overflow: hidden; padding: 25px; }
+        .header-logo { text-align: center; background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e9ecef; }
+        .header-logo img { height: 65px; }
+        .title-banner { background: #009639; color: white; text-align: center; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .section-title { background-color: #f1f8f4; color: #009639; font-weight: bold; padding: 10px 15px; border-radius: 8px; margin-top: 25px; margin-bottom: 15px; border-left: 4px solid #009639; }
+        .dynamic-item { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 10px; padding: 15px; margin-bottom: 12px; position: relative; }
+        .btn-remove { position: absolute; top: 10px; right: 10px; color: #dc3545; cursor: pointer; font-size: 1.1rem; }
+        .btn-remove:hover { color: #a71d2a; }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <div class="header-top-box">
-            <img src="/images/logo.png" alt="Logo Samaritan's Purse" style="height: 55px;">
+    <div class="form-container">
+        
+        <div class="header-logo">
+            <img src="/images/logo.png" alt="Samaritan's Purse">
+            <h5 class="fw-bold text-success mt-2 mb-0">Operación Samaritan's Purse - Operación Niño de la Navidad</h5>
         </div>
 
-        <div class="title-bar-box">
-            <h5 class="fw-bold text-dark m-0">Operación Samaritan's Purse - Operación Niño de la Navidad</h5>
-        </div>
-
-        <div class="hero-banner shadow-sm">
+        <div class="title-banner">
             <h4 class="fw-bold mb-1">Modelo de Crecimiento y Multiplicación</h4>
-            <p class="small mb-0 text-light">De Números a Vidas Transformadas</p>
+            <p class="small mb-0 opacity-75">De Números a Vidas Transformadas</p>
         </div>
 
-        <div class="card card-custom mb-3">
-            <div class="card-header-custom"><i class="fas fa-bullseye me-2 text-danger"></i> 3. De Porcentajes a Números Reales</div>
-            <div class="card-body small">
-                <p class="mb-2">Metas claras y alcanzables a través de un proceso intencional de discipulado.</p>
-                <ul class="ps-3 mb-0 text-muted">
+        <div class="card mb-4 border-0 bg-light shadow-sm">
+            <div class="card-body p-3">
+                <h6 class="fw-bold text-danger mb-2"><i class="fas fa-bullseye me-2"></i> 3. De Porcentajes a Números Reales</h6>
+                <p class="small text-muted mb-1">Metas claras y alcanzables a través de un proceso intencional de discipulado.</p>
+                <ul class="small text-muted mb-0 ps-3">
                     <li><strong>Inscripción Esperada:</strong> Cuidar que cada cajita entregada llegue a un niño.</li>
                     <li><strong>Graduación Esperada:</strong> Lograr que los niños completen su discipulado.</li>
                 </ul>
             </div>
         </div>
 
-        <!-- Temporizador Obligatorio -->
-        <div id="timerContainer" class="timer-box small shadow-sm">
-            <i class="fas fa-hourglass-half fa-spin me-2"></i> Tiempo de lectura obligatorio: <span id="countdown" class="fs-5 text-dark">10</span>s
-        </div>
+        <h5 class="text-center fw-bold text-success mb-4"><i class="fas fa-file-signature me-2"></i> Formulario de Registro</h5>
 
-        <!-- Formulario Oculto hasta terminar lectura -->
-        <div id="formContainer" style="display: none;" class="form-section-box shadow">
-            <div class="text-center mb-4">
-                <h4 class="fw-bold mb-1 text-success"><i class="fas fa-file-alt me-2"></i> Formulario de Registro</h4>
-            </div>
+        <form action="/guardar-registro" method="POST">
             
-            <form action="/guardar-registro" method="POST" id="registroForm">
-                <div class="mb-3">
-                    <label class="form-label fw-bold small">Zona de Captura: <span class="text-danger">*</span></label>
-                    <select name="zona" id="input_zona" class="form-select form-select-sm" required>
-                        <option value="">-- Seleccione una zona --</option>
-                        <option value="san_andres">San Andrés Tuxtla</option>
-                        <option value="veracruz">Veracruz</option>
-                        <option value="cd_aleman">Ciudad Alemán</option>
-                        <option value="xalapa">Xalapa</option>
-                    </select>
-                </div>
+            <!-- SELECCIÓN DE ZONA ACTUALIZADA -->
+            <div class="mb-4 p-3 bg-light rounded border">
+                <label class="form-label fw-bold text-secondary">Zona de Captura: <span class="text-danger">*</span></label>
+                <select name="zona" class="form-select form-select-lg" required>
+                    <option value="">-- Seleccione una zona --</option>
+                    <option value="san_andres">San Andrés Tuxtla</option>
+                    <option value="medellin">Medellín</option>
+                    <option value="manlio">Manlio Fabio</option>
+                    <option value="orizaba">Orizaba</option>
+                    <option value="cd_aleman">Ciudad Alemán</option>
+                    <option value="xalapa">Xalapa</option>
+                </select>
+                <div class="form-text text-muted small">Selecciona la zona geográfica que corresponde a tu iglesia o proyecto.</div>
+            </div>
 
-                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-user-tie me-1"></i> 1. Datos del Pastor</h6>
-                <div class="mb-2">
-                    <label class="form-label small text-muted">Nombre del Pastor *</label>
-                    <input type="text" name="nombre_pastor" id="nombre_pastor" class="form-control form-control-sm" required>
+            <!-- DATOS DE LA IGLESIA -->
+            <div class="section-title"><i class="fas fa-church me-2"></i> 1. Datos de la Iglesia</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Nombre de la Iglesia *</label>
+                    <input type="text" name="nombre_iglesia" class="form-control form-control-sm" required placeholder="Ej. Lirio de los Valles">
                 </div>
-                <div class="row g-2 mb-3">
-                    <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_pastor" id="telefono_pastor" class="form-control form-control-sm" required></div>
-                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_pastor" id="correo_pastor" class="form-control form-control-sm"></div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Dirección Completa *</label>
+                    <input type="text" name="direccion" class="form-control form-control-sm" required placeholder="Calle, número, colonia, municipio">
                 </div>
-
-                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-church me-1"></i> 2. Datos de la Iglesia</h6>
-                <div class="mb-2"><label class="form-label small text-muted">Nombre de la Iglesia *</label><input type="text" name="nombre_iglesia" id="nombre_iglesia" class="form-control form-control-sm" required></div>
-                <div class="mb-3"><label class="form-label small text-muted">Dirección *</label><input type="text" name="direccion" id="direccion" class="form-control form-control-sm" required></div>
-
-                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-users me-1"></i> 3. Datos del Líder</h6>
-                <div class="mb-2"><label class="form-label small text-muted">Nombre del Líder *</label><input type="text" name="nombre_lider" id="nombre_lider" class="form-control form-control-sm" required></div>
-                <div class="row g-2 mb-3">
-                    <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_lider" id="telefono_lider" class="form-control form-control-sm" required></div>
-                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_lider" id="correo_lider" class="form-control form-control-sm"></div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Cantidad de Cajitas Solicitadas *</label>
+                    <input type="number" name="num_cajas" class="form-control form-control-sm" required min="1" placeholder="Ej. 100">
                 </div>
+            </div>
 
-                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-box-open me-1"></i> 4. Solicitud de Cajas y Maestros</h6>
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <label class="form-label small text-muted">Cajitas Solicitadas *</label>
-                        <select name="num_cajas" id="num_cajas" class="form-select form-select-sm" required onchange="calcularMaestros()">
-                            <option value="">-- Seleccionar --</option>
-                            <option value="50">50 Cajas (2 Maestros)</option>
-                            <option value="100">100 Cajas (3 Maestros)</option>
-                            <option value="150">150 Cajas (4 Maestros)</option>
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small text-muted">Maestros Mínimos</label>
-                        <input type="text" id="num_maestros_display" class="form-control form-control-sm bg-light fw-bold text-success" readonly value="Seleccione cajas">
-                    </div>
+            <!-- DATOS DEL PASTOR -->
+            <div class="section-title"><i class="fas fa-user-tie me-2"></i> 2. Datos del Pastor(a)</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Nombre del Pastor(a) *</label>
+                    <input type="text" name="nombre_pastor" class="form-control form-control-sm" required placeholder="Nombre completo">
                 </div>
-                <div id="maestros-container" class="mb-3"></div>
-
-                <!-- 5. RED DE APOYO ESPIRITUAL (7 GUERRERITOS - NIÑOS) -->
-                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-child me-1"></i> 5. Red de Apoyo Espiritual (7 Guerreritos - Niños)</h6>
-                <div id="guerreritos-container">
-                    <% for(let i = 1; i <= 7; i++) { %>
-                        <div class="border p-2 mb-2 rounded bg-light">
-                            <span class="small fw-bold text-success">Guerrerito #<%= i %></span>
-                            <div class="row g-1 mt-1">
-                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_guerrerito]" class="form-control form-control-sm" placeholder="Nombre guerrerito" required></div>
-                                <div class="col-md-4"><input type="text" name="guerreritos[<%= i-1 %>][nombre_tutor]" class="form-control form-control-sm" placeholder="Nombre tutor" required></div>
-                                <div class="col-md-4"><input type="tel" name="guerreritos[<%= i-1 %>][telefono_tutor]" class="form-control form-control-sm" placeholder="Teléfono tutor" required></div>
-                            </div>
-                        </div>
-                    <% } %>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Teléfono del Pastor(a) *</label>
+                    <input type="tel" name="telefono_pastor" class="form-control form-control-sm" required pattern="[0-9]{10}" placeholder="10 dígitos">
                 </div>
-
-                <!-- 6. RED DE APOYO ESPIRITUAL (7 GUERREROS - ADULTOS) -->
-                <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success mt-4"><i class="fas fa-user-shield me-1"></i> 6. Red de Apoyo Espiritual (7 Guerreros - Adultos)</h6>
-                <div id="guerreros-container">
-                    <% for(let i = 1; i <= 7; i++) { %>
-                        <div class="border p-2 mb-2 rounded bg-light">
-                            <span class="small fw-bold text-success">Guerrero Adulto #<%= i %></span>
-                            <div class="row g-1 mt-1">
-                                <div class="col-md-7"><input type="text" name="guerreros[<%= i-1 %>][nombre_guerrero]" class="form-control form-control-sm" placeholder="Nombre completo del guerrero" required></div>
-                                <div class="col-md-5"><input type="tel" name="guerreros[<%= i-1 %>][telefono_guerrero]" class="form-control form-control-sm" placeholder="Número de teléfono" required></div>
-                            </div>
-                        </div>
-                    <% } %>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Correo Electrónico (Opcional)</label>
+                    <input type="email" name="correo_pastor" class="form-control form-control-sm" placeholder="correo@ejemplo.com">
                 </div>
+            </div>
 
-                <button type="submit" class="btn btn-danger w-100 fw-bold py-2 mt-3 shadow-sm"><i class="fas fa-paper-plane me-2"></i> Enviar Registro Oficial</button>
-            </form>
-        </div>
+            <!-- DATOS DEL LÍDER DE PROYECTO -->
+            <div class="section-title"><i class="fas fa-user-shield me-2"></i> 3. Datos del Líder de Proyecto</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Nombre del Líder *</label>
+                    <input type="text" name="nombre_lider" class="form-control form-control-sm" required placeholder="Nombre completo">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Teléfono del Líder *</label>
+                    <input type="tel" name="telefono_lider" class="form-control form-control-sm" required pattern="[0-9]{10}" placeholder="10 dígitos">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Correo Electrónico (Opcional)</label>
+                    <input type="email" name="correo_lider" class="form-control form-control-sm" placeholder="correo@ejemplo.com">
+                </div>
+            </div>
+
+            <!-- MAESTROS ASIGNADOS -->
+            <div class="section-title d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-users me-2"></i> 4. Maestros Asignados</span>
+                <button type="button" class="btn btn-success btn-sm" onclick="agregarMaestro()"><i class="fas fa-plus me-1"></i> Agregar Maestro</button>
+            </div>
+            <div id="containerMaestros"></div>
+
+            <!-- GUERRERITOS DE ORACIÓN -->
+            <div class="section-title d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-child me-2"></i> 5. Guerreritos de Oración (Niños / Tutores)</span>
+                <button type="button" class="btn btn-primary btn-sm" onclick="agregarGuerrerito()"><i class="fas fa-plus me-1"></i> Agregar Guerrerito</button>
+            </div>
+            <div id="containerGuerreritos"></div>
+
+            <!-- GUERREROS ADULTOS -->
+            <div class="section-title d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-user-shield me-2"></i> 6. Guerreros de Oración (Adultos)</span>
+                <button type="button" class="btn btn-danger btn-sm" onclick="agregarGuerrero()"><i class="fas fa-plus me-1"></i> Agregar Guerrero Adulto</button>
+            </div>
+            <div id="containerGuerreros"></div>
+
+            <div class="mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow-sm py-3">
+                    <i class="fas fa-paper-plane me-2"></i> Guardar Registro de Iglesia
+                </button>
+            </div>
+        </form>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let timeLeft = 10;
-        const timerInterval = setInterval(() => {
-            timeLeft--;
-            document.getElementById('countdown').innerText = timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                document.getElementById('timerContainer').style.display = 'none';
-                document.getElementById('formContainer').style.display = 'block';
-            }
-        }, 1000);
+        let countMaestros = 0;
+        let countGuerreritos = 0;
+        let countGuerreros = 0;
 
-        function calcularMaestros() {
-            const cajas = document.getElementById('num_cajas').value;
-            const display = document.getElementById('num_maestros_display');
-            const container = document.getElementById('maestros-container');
-            container.innerHTML = '';
-            let count = cajas === "100" ? 3 : (cajas === "150" ? 4 : 2);
-            if (cajas) {
-                display.value = count + " Requeridos";
-                let html = '<p class="small text-success fw-bold mb-2">Maestros Asignados:</p>';
-                for (let i = 1; i <= count; i++) {
-                    html += `
-                        <div class="p-2 border border-success rounded bg-light mb-2">
-                            <input type="text" name="maestros[${i}][nombre]" class="form-control form-control-sm mb-1" placeholder="Maestro ${i} - Nombre completo" required>
-                            <div class="row g-1">
-                                <div class="col-6"><input type="tel" name="maestros[${i}][telefono]" class="form-control form-control-sm" placeholder="Teléfono" required></div>
-                                <div class="col-6"><input type="email" name="maestros[${i}][correo]" class="form-control form-control-sm" placeholder="Correo (opcional)"></div>
-                            </div>
-                        </div>`;
-                }
-                container.innerHTML = html;
-            } else { display.value = "Seleccione cajas"; }
+        function agregarMaestro() {
+            countMaestros++;
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.id = `maestro_${countMaestros}`;
+            div.innerHTML = `
+                <i class="fas fa-trash btn-remove" onclick="eliminarItem('maestro_${countMaestros}')" title="Eliminar"></i>
+                <h6 class="fw-bold text-success mb-2">Maestro ${countMaestros}</h6>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <input type="text" name="maestros[m${countMaestros}][nombre]" class="form-control form-control-sm" placeholder="Nombre completo *" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="tel" name="maestros[m${countMaestros}][telefono]" class="form-control form-control-sm" placeholder="Teléfono *" required pattern="[0-9]{10}">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="email" name="maestros[m${countMaestros}][correo]" class="form-control form-control-sm" placeholder="Correo (Opcional)">
+                    </div>
+                </div>
+            `;
+            document.getElementById('containerMaestros').appendChild(div);
+        }
+
+        function agregarGuerrerito() {
+            countGuerreritos++;
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.id = `guerrerito_${countGuerreritos}`;
+            div.innerHTML = `
+                <i class="fas fa-trash btn-remove" onclick="eliminarItem('guerrerito_${countGuerreritos}')" title="Eliminar"></i>
+                <h6 class="fw-bold text-primary mb-2">Guerrerito ${countGuerreritos}</h6>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <input type="text" name="guerreritos[g${countGuerreritos}][nombre_guerrerito]" class="form-control form-control-sm" placeholder="Nombre del niño/niña *" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="guerreritos[g${countGuerreritos}][nombre_tutor]" class="form-control form-control-sm" placeholder="Nombre del Papá/Tutor *" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="tel" name="guerreritos[g${countGuerreritos}][telefono_tutor]" class="form-control form-control-sm" placeholder="Teléfono Tutor *" required pattern="[0-9]{10}">
+                    </div>
+                </div>
+            `;
+            document.getElementById('containerGuerreritos').appendChild(div);
+        }
+
+        function agregarGuerrero() {
+            countGuerreros++;
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.id = `guerrero_${countGuerreros}`;
+            div.innerHTML = `
+                <i class="fas fa-trash btn-remove" onclick="eliminarItem('guerrero_${countGuerreros}')" title="Eliminar"></i>
+                <h6 class="fw-bold text-danger mb-2">Guerrero Adulto ${countGuerreros}</h6>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <input type="text" name="guerreros[gu${countGuerreros}][nombre_guerrero]" class="form-control form-control-sm" placeholder="Nombre completo *" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="tel" name="guerreros[gu${countGuerreros}][telefono_guerrero]" class="form-control form-control-sm" placeholder="Teléfono *" required pattern="[0-9]{10}">
+                    </div>
+                </div>
+            `;
+            document.getElementById('containerGuerreros').appendChild(div);
+        }
+
+        function eliminarItem(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
         }
     </script>
 </body>
