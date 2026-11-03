@@ -110,7 +110,7 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
         await supabase.from('miembros_comunidad').insert([{
             nombre_completo: (nombre_completo || '').trim(),
             telefono: telLimpio,
-            correo: (correo || '').trim() || 'sin-correo@sistema.com',
+            correo: (correo && correo.trim() !== '') ? correo.trim() : 'Sin correo registrado',
             rol,
             iglesia_id: iglesiaIdEncontrada
         }]);
@@ -168,7 +168,7 @@ app.post('/admin-comunidad/editar/:id', async (req, res) => {
         await supabase.from('miembros_comunidad').update({
             nombre_completo: (nombre_completo || '').trim(),
             telefono: (telefono || '').replace(/\D/g, ''),
-            correo: (correo || '').trim() || 'sin-correo@sistema.com',
+            correo: (correo && correo.trim() !== '') ? correo.trim() : 'Sin correo registrado',
             rol
         }).eq('id', id);
         res.redirect('/admin-comunidad');
@@ -278,26 +278,23 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// GUARDAR REGISTRO (CON MANEJO DE CORREOS VACÍOS PARA EVITAR ERROR DE SUPABASE)
+// GUARDAR REGISTRO (SOLO PASTOR Y TELÉFONO OBLIGATORIOS; LO DEMÁS OPCIONAL CON MENSAJES POR DEFECTO)
 app.post('/guardar-registro', async (req, res) => {
     try {
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, maestros, guerreritos, guerreros } = req.body;
 
-        const emailPastorLimpio = (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'sin-correo@sistema.com';
-        const emailLiderLimpio = (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'sin-correo@sistema.com';
-
         const { data: iglesiaData, error: iglesiaError } = await supabase
             .from('iglesias')
             .insert([{
-                zona, 
+                zona: zona || 'san_andres', 
                 nombre_pastor: (nombre_pastor || '').trim(), 
                 telefono_pastor: (telefono_pastor || '').trim(), 
-                correo_pastor: emailPastorLimpio,
-                nombre_iglesia: (nombre_iglesia || '').trim(), 
-                direccion: (direccion || '').trim(), 
-                nombre_lider: (nombre_lider || '').trim(), 
-                telefono_lider: (telefono_lider || '').trim(), 
-                correo_lider: emailLiderLimpio,
+                correo_pastor: (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'Sin correo registrado',
+                nombre_iglesia: (nombre_iglesia && nombre_iglesia.trim() !== '') ? nombre_iglesia.trim() : 'Iglesia pendiente de asignar', 
+                direccion: (direccion && direccion.trim() !== '') ? direccion.trim() : 'Dirección pendiente de registrar', 
+                nombre_lider: (nombre_lider && nombre_lider.trim() !== '') ? nombre_lider.trim() : 'Sin líder registrado', 
+                telefono_lider: (telefono_lider && telefono_lider.trim() !== '') ? telefono_lider.trim() : 'Sin teléfono', 
+                correo_lider: (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'Sin correo registrado',
                 num_cajas: parseInt(num_cajas) || 0, 
                 num_maestros: maestros ? Object.keys(maestros).length : 0,
                 estado_semaforo: 'verde', 
@@ -315,8 +312,8 @@ app.post('/guardar-registro', async (req, res) => {
                 .map(m => ({ 
                     iglesia_id: iglesiaId, 
                     nombre: m.nombre.trim(), 
-                    telefono: (m.telefono || '').trim(), 
-                    correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'sin-correo@sistema.com' 
+                    telefono: (m.telefono && m.telefono.trim() !== '') ? m.telefono.trim() : 'Sin teléfono', 
+                    correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'Sin correo registrado' 
                 }));
             if (maestrosArray.length > 0) await supabase.from('maestros').insert(maestrosArray);
         }
@@ -326,8 +323,8 @@ app.post('/guardar-registro', async (req, res) => {
             const arr = lista.filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '').map(g => ({
                 iglesia_id: iglesiaId,
                 nombre_guerrerito: g.nombre_guerrerito.trim(),
-                nombre_tutor: (g.nombre_tutor || '').trim(),
-                telefono_tutor: (g.telefono_tutor || '').trim()
+                nombre_tutor: (g.nombre_tutor && g.nombre_tutor.trim() !== '') ? g.nombre_tutor.trim() : 'Sin tutor registrado',
+                telefono_tutor: (g.telefono_tutor && g.telefono_tutor.trim() !== '') ? g.telefono_tutor.trim() : 'Sin teléfono'
             }));
             if (arr.length > 0) await supabase.from('guerreritos_oracion').insert(arr);
         }
@@ -337,7 +334,7 @@ app.post('/guardar-registro', async (req, res) => {
             const arr = lista.filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '').map(gu => ({
                 iglesia_id: iglesiaId,
                 nombre_guerrero: gu.nombre_guerrero.trim(),
-                telefono_guerrero: (gu.telefono_guerrero || '').trim()
+                telefono_guerrero: (gu.telefono_guerrero && gu.telefono_guerrero.trim() !== '') ? gu.telefono_guerrero.trim() : 'Sin teléfono'
             }));
             if (arr.length > 0) await supabase.from('guerreros_oracion').insert(arr);
         }
@@ -359,25 +356,22 @@ app.get('/editar-registro/:id', async (req, res) => {
     }
 });
 
-// ACTUALIZAR REGISTRO SIN ELIMINAR NI ROMPER RELACIONES
+// ACTUALIZAR REGISTRO
 app.post('/actualizar-registro/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, estado_semaforo, observacion_semaforo, maestros, guerreritos, guerreros } = req.body;
 
-        const emailPastorLimpio = (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'sin-correo@sistema.com';
-        const emailLiderLimpio = (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'sin-correo@sistema.com';
-
         await supabase.from('iglesias').update({ 
             zona, 
             nombre_pastor: (nombre_pastor || '').trim(), 
             telefono_pastor: (telefono_pastor || '').trim(), 
-            correo_pastor: emailPastorLimpio, 
-            nombre_iglesia: (nombre_iglesia || '').trim(), 
-            direccion: (direccion || '').trim(), 
-            nombre_lider: (nombre_lider || '').trim(), 
-            telefono_lider: (telefono_lider || '').trim(), 
-            correo_lider: emailLiderLimpio, 
+            correo_pastor: (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'Sin correo registrado', 
+            nombre_iglesia: (nombre_iglesia && nombre_iglesia.trim() !== '') ? nombre_iglesia.trim() : 'Iglesia pendiente de asignar', 
+            direccion: (direccion && direccion.trim() !== '') ? direccion.trim() : 'Dirección pendiente de registrar', 
+            nombre_lider: (nombre_lider && nombre_lider.trim() !== '') ? nombre_lider.trim() : 'Sin líder registrado', 
+            telefono_lider: (telefono_lider && telefono_lider.trim() !== '') ? telefono_lider.trim() : 'Sin teléfono', 
+            correo_lider: (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'Sin correo registrado', 
             num_cajas: parseInt(num_cajas) || 0, 
             estado_semaforo: estado_semaforo || 'verde', 
             observacion_semaforo: (observacion_semaforo || '').trim() || 'Completo' 
@@ -391,8 +385,8 @@ app.post('/actualizar-registro/:id', async (req, res) => {
             const arr = Object.values(maestros).filter(m => m.nombre && m.nombre.trim() !== '').map(m => ({ 
                 iglesia_id: id, 
                 nombre: m.nombre.trim(), 
-                telefono: (m.telefono || '').trim(), 
-                correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'sin-correo@sistema.com' 
+                telefono: (m.telefono && m.telefono.trim() !== '') ? m.telefono.trim() : 'Sin teléfono', 
+                correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'Sin correo registrado' 
             }));
             if (arr.length > 0) await supabase.from('maestros').insert(arr);
         }
@@ -402,8 +396,8 @@ app.post('/actualizar-registro/:id', async (req, res) => {
             const arr = lista.filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '').map(g => ({ 
                 iglesia_id: id, 
                 nombre_guerrerito: g.nombre_guerrerito.trim(), 
-                nombre_tutor: (g.nombre_tutor || '').trim(), 
-                telefono_tutor: (g.telefono_tutor || '').trim() 
+                nombre_tutor: (g.nombre_tutor && g.nombre_tutor.trim() !== '') ? g.nombre_tutor.trim() : 'Sin tutor registrado', 
+                telefono_tutor: (g.telefono_tutor && g.telefono_tutor.trim() !== '') ? g.telefono_tutor.trim() : 'Sin teléfono' 
             }));
             if (arr.length > 0) await supabase.from('guerreritos_oracion').insert(arr);
         }
@@ -413,7 +407,7 @@ app.post('/actualizar-registro/:id', async (req, res) => {
             const arr = lista.filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '').map(gu => ({ 
                 iglesia_id: id, 
                 nombre_guerrero: gu.nombre_guerrero.trim(), 
-                telefono_guerrero: (gu.telefono_guerrero || '').trim() 
+                telefono_guerrero: (gu.telefono_guerrero && gu.telefono_guerrero.trim() !== '') ? gu.telefono_guerrero.trim() : 'Sin teléfono' 
             }));
             if (arr.length > 0) await supabase.from('guerreros_oracion').insert(arr);
         }
