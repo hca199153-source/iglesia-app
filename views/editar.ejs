@@ -28,7 +28,9 @@
                         <label class="form-label fw-bold small">Zona de Captura:</label>
                         <select name="zona" class="form-select form-select-sm" required>
                             <option value="san_andres" <%= iglesia.zona === 'san_andres' ? 'selected' : '' %>>San Andrés Tuxtla</option>
-                            <option value="veracruz" <%= iglesia.zona === 'veracruz' ? 'selected' : '' %>>Veracruz</option>
+                            <option value="medellin" <%= iglesia.zona === 'medellin' ? 'selected' : '' %>>Medellín</option>
+                            <option value="manlio" <%= iglesia.zona === 'manlio' ? 'selected' : '' %>>Manlio Fabio</option>
+                            <option value="orizaba" <%= iglesia.zona === 'orizaba' ? 'selected' : '' %>>Orizaba</option>
                             <option value="cd_aleman" <%= iglesia.zona === 'cd_aleman' ? 'selected' : '' %>>Ciudad Alemán</option>
                             <option value="xalapa" <%= iglesia.zona === 'xalapa' ? 'selected' : '' %>>Xalapa</option>
                         </select>
@@ -55,7 +57,7 @@
                 </div>
                 <div class="row g-2 mb-3">
                     <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_pastor" class="form-control form-control-sm" value="<%= iglesia.telefono_pastor %>" required></div>
-                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_pastor" class="form-control form-control-sm" value="<%= iglesia.correo_pastor || '' %>"></div>
+                    <div class="col-6"><label class="form-label small text-muted">Correo (Opcional)</label><input type="email" name="correo_pastor" class="form-control form-control-sm" value="<%= iglesia.correo_pastor || '' %>"></div>
                 </div>
 
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-church me-1"></i> 2. Datos de la Iglesia</h6>
@@ -66,7 +68,7 @@
                 <div class="mb-2"><label class="form-label small text-muted">Nombre del Líder *</label><input type="text" name="nombre_lider" class="form-control form-control-sm" value="<%= iglesia.nombre_lider %>" required></div>
                 <div class="row g-2 mb-3">
                     <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_lider" class="form-control form-control-sm" value="<%= iglesia.telefono_lider %>" required></div>
-                    <div class="col-6"><label class="form-label small text-muted">Correo</label><input type="email" name="correo_lider" class="form-control form-control-sm" value="<%= iglesia.correo_lider || '' %>"></div>
+                    <div class="col-6"><label class="form-label small text-muted">Correo (Opcional)</label><input type="email" name="correo_lider" class="form-control form-control-sm" value="<%= iglesia.correo_lider || '' %>"></div>
                 </div>
 
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-box-open me-1"></i> 4. Solicitud de Cajas</h6>
@@ -79,17 +81,17 @@
                     </select>
                 </div>
 
-                <!-- Maestros Asignados -->
+                <!-- Maestros Asignados (Opcionales sin required estricto) -->
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-users me-1"></i> Maestros Asignados</h6>
                 <% for(let i = 0; i < 4; i++) { 
                     let m = (iglesia.maestros && iglesia.maestros[i]) ? iglesia.maestros[i] : {};
                 %>
                     <div class="p-2 border border-success rounded bg-light mb-2">
                         <span class="small fw-bold text-success">Maestro <%= i+1 %></span>
-                        <input type="text" name="maestros[<%= i+1 %>][nombre]" class="form-control form-control-sm mb-1 mt-1" placeholder="Nombre completo" value="<%= m.nombre || '' %>">
+                        <input type="text" name="maestros[<%= i+1 %>][nombre]" class="form-control form-control-sm mb-1 mt-1" placeholder="Nombre completo (Opcional)" value="<%= m.nombre || '' %>">
                         <div class="row g-1">
                             <div class="col-6"><input type="tel" name="maestros[<%= i+1 %>][telefono]" class="form-control form-control-sm" placeholder="Teléfono" value="<%= m.telefono || '' %>"></div>
-                            <div class="col-6"><input type="email" name="maestros[<%= i+1 %>][correo]" class="form-control form-control-sm" placeholder="Correo" value="<%= m.correo || '' %>"></div>
+                            <div class="col-6"><input type="email" name="maestros[<%= i+1 %>][correo]" class="form-control form-control-sm" placeholder="Correo (Opcional)" value="<%= m.correo || '' %>"></div>
                         </div>
                     </div>
                 <% } %>
