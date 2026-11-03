@@ -110,7 +110,7 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
         await supabase.from('miembros_comunidad').insert([{
             nombre_completo: (nombre_completo || '').trim(),
             telefono: telLimpio,
-            correo: (correo || '').trim() || null,
+            correo: (correo || '').trim() || 'sin-correo@sistema.com',
             rol,
             iglesia_id: iglesiaIdEncontrada
         }]);
@@ -168,7 +168,7 @@ app.post('/admin-comunidad/editar/:id', async (req, res) => {
         await supabase.from('miembros_comunidad').update({
             nombre_completo: (nombre_completo || '').trim(),
             telefono: (telefono || '').replace(/\D/g, ''),
-            correo: (correo || '').trim() || null,
+            correo: (correo || '').trim() || 'sin-correo@sistema.com',
             rol
         }).eq('id', id);
         res.redirect('/admin-comunidad');
@@ -278,10 +278,13 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// GUARDAR REGISTRO (CAMPOS NO OBLIGATORIOS CORREGIDOS)
+// GUARDAR REGISTRO (CON MANEJO DE CORREOS VACÍOS PARA EVITAR ERROR DE SUPABASE)
 app.post('/guardar-registro', async (req, res) => {
     try {
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, maestros, guerreritos, guerreros } = req.body;
+
+        const emailPastorLimpio = (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'sin-correo@sistema.com';
+        const emailLiderLimpio = (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'sin-correo@sistema.com';
 
         const { data: iglesiaData, error: iglesiaError } = await supabase
             .from('iglesias')
@@ -289,12 +292,12 @@ app.post('/guardar-registro', async (req, res) => {
                 zona, 
                 nombre_pastor: (nombre_pastor || '').trim(), 
                 telefono_pastor: (telefono_pastor || '').trim(), 
-                correo_pastor: (correo_pastor || '').trim() || null,
+                correo_pastor: emailPastorLimpio,
                 nombre_iglesia: (nombre_iglesia || '').trim(), 
                 direccion: (direccion || '').trim(), 
                 nombre_lider: (nombre_lider || '').trim(), 
                 telefono_lider: (telefono_lider || '').trim(), 
-                correo_lider: (correo_lider || '').trim() || null,
+                correo_lider: emailLiderLimpio,
                 num_cajas: parseInt(num_cajas) || 0, 
                 num_maestros: maestros ? Object.keys(maestros).length : 0,
                 estado_semaforo: 'verde', 
@@ -309,7 +312,12 @@ app.post('/guardar-registro', async (req, res) => {
         if (maestros) {
             const maestrosArray = Object.values(maestros)
                 .filter(m => m.nombre && m.nombre.trim() !== '')
-                .map(m => ({ iglesia_id: iglesiaId, nombre: m.nombre.trim(), telefono: (m.telefono || '').trim(), correo: (m.correo || '').trim() || null }));
+                .map(m => ({ 
+                    iglesia_id: iglesiaId, 
+                    nombre: m.nombre.trim(), 
+                    telefono: (m.telefono || '').trim(), 
+                    correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'sin-correo@sistema.com' 
+                }));
             if (maestrosArray.length > 0) await supabase.from('maestros').insert(maestrosArray);
         }
 
@@ -351,29 +359,30 @@ app.get('/editar-registro/:id', async (req, res) => {
     }
 });
 
-// ACTUALIZAR REGISTRO SIN ELIMINAR NI ROMPER LAS RELACIONES
+// ACTUALIZAR REGISTRO SIN ELIMINAR NI ROMPER RELACIONES
 app.post('/actualizar-registro/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, estado_semaforo, observacion_semaforo, maestros, guerreritos, guerreros } = req.body;
 
-        // 1. Actualizar datos principales de la iglesia
+        const emailPastorLimpio = (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'sin-correo@sistema.com';
+        const emailLiderLimpio = (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'sin-correo@sistema.com';
+
         await supabase.from('iglesias').update({ 
             zona, 
             nombre_pastor: (nombre_pastor || '').trim(), 
             telefono_pastor: (telefono_pastor || '').trim(), 
-            correo_pastor: (correo_pastor || '').trim() || null, 
+            correo_pastor: emailPastorLimpio, 
             nombre_iglesia: (nombre_iglesia || '').trim(), 
             direccion: (direccion || '').trim(), 
             nombre_lider: (nombre_lider || '').trim(), 
             telefono_lider: (telefono_lider || '').trim(), 
-            correo_lider: (correo_lider || '').trim() || null, 
+            correo_lider: emailLiderLimpio, 
             num_cajas: parseInt(num_cajas) || 0, 
             estado_semaforo: estado_semaforo || 'verde', 
             observacion_semaforo: (observacion_semaforo || '').trim() || 'Completo' 
         }).eq('id', id);
 
-        // 2. Sincronización segura de sub-tablas (Eliminar anteriores e insertar nuevas limpias)
         await supabase.from('maestros').delete().eq('iglesia_id', id);
         await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
         await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
@@ -383,7 +392,7 @@ app.post('/actualizar-registro/:id', async (req, res) => {
                 iglesia_id: id, 
                 nombre: m.nombre.trim(), 
                 telefono: (m.telefono || '').trim(), 
-                correo: (m.correo || '').trim() || null 
+                correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'sin-correo@sistema.com' 
             }));
             if (arr.length > 0) await supabase.from('maestros').insert(arr);
         }
