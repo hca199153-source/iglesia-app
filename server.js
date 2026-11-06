@@ -220,7 +220,7 @@ app.get('/dev-admin/logout', (req, res) => {
 });
 
 // ==========================================
-// SESIÓN Y ADMINISTRACIÓN ZONAL
+// SESIÓN Y ADMINISTRACIÓN ZONAL (INCLUYE TEZONAPA)
 // ==========================================
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
@@ -241,7 +241,8 @@ app.post('/login', (req, res) => {
         "orizaba": "orizaba2026",
         "cd_aleman": "cdaleman2026",
         "xalapa": "xalapa2026",
-        "carlos_a_carrillo": "carlos2026"
+        "carlos_a_carrillo": "carlos2026",
+        "tezonapa": "tezonapa2026" // 👈 NUEVA ZONA
     };
 
     if (contrasenasZonas[zona] && contrasenasZonas[zona] === password) {
@@ -279,7 +280,7 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// GUARDAR REGISTRO (CON MANEJO SEGURO DE CAMPOS OPCIONALES)
+// GUARDAR REGISTRO (CAMPOS OPCIONALES CON VALORES POR DEFECTO)
 app.post('/guardar-registro', async (req, res) => {
     try {
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, maestros, guerreritos, guerreros } = req.body;
