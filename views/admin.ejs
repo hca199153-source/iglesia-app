@@ -118,7 +118,8 @@
                             <option value="orizaba">Orizaba</option>
                             <option value="cd_aleman">Ciudad Alemán</option>
                             <option value="xalapa">Xalapa</option>
-                            <option value="carlos_a_carrillo">Carlos A. Carrillo</option> <!-- 👈 ZONA AÑADIDA -->
+                            <option value="carlos_a_carrillo">Carlos A. Carrillo</option>
+                            <option value="tezonapa">Tezonapa</option> <!-- 👈 ZONA AÑADIDA -->
                             <option value="dev_console" style="background-color: #0b221a; color: #00ff66; font-weight: bold;">🛠️ Dev Console (Programador)</option>
                         </select>
                     </div>
@@ -358,7 +359,6 @@
                                                 </form>
                                             </div>
                                             
-                                            <!-- BOTÓN MENSAJE DE FALTANTE POR WHATSAPP -->
                                             <button type="button" class="btn-notif-wa" onclick="abrirModalNotifWhatsApp('<%= item.id %>')">
                                                 <i class="fab fa-whatsapp"></i> Notificar
                                             </button>
@@ -384,7 +384,7 @@
     </div>
     <% } %>
 
-    <!-- MODAL NOTIFICAR FALTANTE POR WHATSAPP -->
+    <!-- MODALES DE ADMINISTRACIÓN -->
     <div class="modal fade" id="modalNotifWhatsApp" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -394,50 +394,26 @@
                 </div>
                 <div class="modal-body p-3">
                     <input type="hidden" id="notifRowId">
-                    
-                    <!-- DESTINATARIO -->
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">1. Enviar mensaje a:</label>
-                        <select id="selectDestinatarioWa" class="form-select form-select-sm" onchange="actualizarPrevisualizacionMensaje()">
-                            <!-- Se llena dinámicamente -->
-                        </select>
+                        <select id="selectDestinatarioWa" class="form-select form-select-sm" onchange="actualizarPrevisualizacionMensaje()"></select>
                     </div>
-
-                    <!-- CASILLAS DE VERIFICACIÓN DE FALTANTES -->
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary mb-1">2. Selecciona qué información falta:</label>
                         <div class="bg-light p-2 border rounded">
-                            <div class="form-check form-check-inline me-3">
-                                <input class="form-check-input" type="checkbox" id="chkFaltaCajas" value="Cantidad de cajitas solicitadas" onchange="actualizarPrevisualizacionMensaje()">
-                                <label class="form-check-label small" for="chkFaltaCajas">📦 Cajas</label>
-                            </div>
-                            <div class="form-check form-check-inline me-3">
-                                <input class="form-check-input" type="checkbox" id="chkFaltaMaestros" value="Datos de los maestros asignados" onchange="actualizarPrevisualizacionMensaje()">
-                                <label class="form-check-label small" for="chkFaltaMaestros">👥 Maestros</label>
-                            </div>
-                            <div class="form-check form-check-inline me-3">
-                                <input class="form-check-input" type="checkbox" id="chkFaltaGuerreritos" value="Datos de los Guerreritos de Oración (Niños/Tutores)" onchange="actualizarPrevisualizacionMensaje()">
-                                <label class="form-check-label small" for="chkFaltaGuerreritos">👶 Guerreritos</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="chkFaltaGuerreros" value="Datos de los Guerreros Adultos" onchange="actualizarPrevisualizacionMensaje()">
-                                <label class="form-check-label small" for="chkFaltaGuerreros">🛡️ Guerreros Adultos</label>
-                            </div>
+                            <div class="form-check form-check-inline me-3"><input class="form-check-input" type="checkbox" id="chkFaltaCajas" value="Cantidad de cajitas solicitadas" onchange="actualizarPrevisualizacionMensaje()"><label class="form-check-label small" for="chkFaltaCajas">📦 Cajas</label></div>
+                            <div class="form-check form-check-inline me-3"><input class="form-check-input" type="checkbox" id="chkFaltaMaestros" value="Datos de los maestros asignados" onchange="actualizarPrevisualizacionMensaje()"><label class="form-check-label small" for="chkFaltaMaestros">👥 Maestros</label></div>
+                            <div class="form-check form-check-inline me-3"><input class="form-check-input" type="checkbox" id="chkFaltaGuerreritos" value="Datos de los Guerreritos de Oración (Niños/Tutores)" onchange="actualizarPrevisualizacionMensaje()"><label class="form-check-label small" for="chkFaltaGuerreritos">👶 Guerreritos</label></div>
+                            <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="chkFaltaGuerreros" value="Datos de los Guerreros Adultos" onchange="actualizarPrevisualizacionMensaje()"><label class="form-check-label small" for="chkFaltaGuerreros">🛡️ Guerreros Adultos</label></div>
                         </div>
                     </div>
-
-                    <!-- NOTA O MENSAJE ADICIONAL OPCIONAL -->
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">3. Nota adicional (Opcional):</label>
                         <input type="text" id="txtNotaExtraWa" class="form-control form-control-sm" placeholder="Ej. Por favor enviar antes del viernes..." onkeyup="actualizarPrevisualizacionMensaje()">
                     </div>
-
-                    <!-- VISTA PREVIA DEL MENSAJE -->
                     <div class="mb-2">
                         <label class="form-label small fw-bold text-secondary">Vista previa del mensaje:</label>
-                        <div id="boxPreviewMensajeWa" class="p-2 border rounded bg-white text-muted small" style="white-space: pre-wrap; max-height: 140px; overflow-y: auto; font-size: 0.75rem;">
-                            Selecciona las casillas correspondientes...
-                        </div>
+                        <div id="boxPreviewMensajeWa" class="p-2 border rounded bg-white text-muted small" style="white-space: pre-wrap; max-height: 140px; overflow-y: auto; font-size: 0.75rem;">Selecciona las casillas correspondientes...</div>
                     </div>
                 </div>
                 <div class="modal-footer py-2">
@@ -448,7 +424,6 @@
         </div>
     </div>
 
-    <!-- MODALES EXISTENTES DE DICTADO Y SEMÁFORO -->
     <div class="modal fade" id="modalDictado" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
@@ -564,15 +539,12 @@
             aplicarFiltrosYOrden();
         }
 
-        /* LÓGICA DE NOTIFICACIÓN DE FALTANTE POR WHATSAPP */
         let modalNotifWaBs = null;
-
         function abrirModalNotifWhatsApp(id) {
             const row = document.querySelector(`tr[data-id="${id}"]`);
             if (!row) return;
 
             document.getElementById('notifRowId').value = id;
-            
             const nombrePastor = row.getAttribute('data-nombre-pastor-raw');
             const telPastor = row.getAttribute('data-tel-pastor-raw').replace(/\D/g, '');
             const nombreLider = row.getAttribute('data-nombre-lider-raw');
@@ -581,18 +553,10 @@
             const selectDest = document.getElementById('selectDestinatarioWa');
             selectDest.innerHTML = '';
 
-            if (telPastor) {
-                selectDest.innerHTML += `<option value="${telPastor}|Pastor|${nombrePastor}">Pastor: ${nombrePastor} (${telPastor})</option>`;
-            }
-            if (telLider) {
-                selectDest.innerHTML += `<option value="${telLider}|Líder|${nombreLider}">Líder: ${nombreLider} (${telLider})</option>`;
-            }
+            if (telPastor) selectDest.innerHTML += `<option value="${telPastor}|Pastor|${nombrePastor}">Pastor: ${nombrePastor} (${telPastor})</option>`;
+            if (telLider) selectDest.innerHTML += `<option value="${telLider}|Líder|${nombreLider}">Líder: ${nombreLider} (${telLider})</option>`;
+            if (!telPastor && !telLider) selectDest.innerHTML = `<option value="">⚠️ Sin teléfono registrado para esta iglesia</option>`;
 
-            if (!telPastor && !telLider) {
-                selectDest.innerHTML = `<option value="">⚠️ Sin teléfono registrado para esta iglesia</option>`;
-            }
-
-            // Desmarcar casillas
             document.getElementById('chkFaltaCajas').checked = false;
             document.getElementById('chkFaltaMaestros').checked = false;
             document.getElementById('chkFaltaGuerreritos').checked = false;
@@ -600,7 +564,6 @@
             document.getElementById('txtNotaExtraWa').value = '';
 
             actualizarPrevisualizacionMensaje();
-
             if (!modalNotifWaBs) modalNotifWaBs = new bootstrap.Modal(document.getElementById('modalNotifWhatsApp'));
             modalNotifWaBs.show();
         }
@@ -612,14 +575,12 @@
 
             const nombreIglesia = row.getAttribute('data-nombre-iglesia-raw');
             const valDest = document.getElementById('selectDestinatarioWa').value;
-            
             if (!valDest) {
                 document.getElementById('boxPreviewMensajeWa').innerText = 'No hay número registrado para notificar.';
                 return;
             }
 
             const [tel, cargo, nombre] = valDest.split('|');
-
             let faltantes = [];
             if (document.getElementById('chkFaltaCajas').checked) faltantes.push('• Cantidad de cajitas solicitadas');
             if (document.getElementById('chkFaltaMaestros').checked) faltantes.push('• Datos de los maestros asignados');
@@ -627,19 +588,12 @@
             if (document.getElementById('chkFaltaGuerreros').checked) faltantes.push('• Registro de Guerreros Adultos');
 
             const notaExtra = document.getElementById('txtNotaExtraWa').value.trim();
-
             let msg = `¡Dios le bendiga ${cargo} ${nombre}!\nLe saludamos de Operación Niño de la Navidad (Samaritan's Purse).\n\nLe escribimos para solicitar respetuosamente complementar la información de su iglesia *${nombreIglesia}*.\n\nActualmente nos falta la siguiente información:\n`;
 
-            if (faltantes.length > 0) {
-                msg += faltantes.join('\n') + '\n';
-            } else {
-                msg += '• (Por favor seleccione las casillas correspondientes)\n';
-            }
+            if (faltantes.length > 0) msg += faltantes.join('\n') + '\n';
+            else msg += '• (Por favor seleccione las casillas correspondientes)\n';
 
-            if (notaExtra) {
-                msg += `\nNota: ${notaExtra}\n`;
-            }
-
+            if (notaExtra) msg += `\nNota: ${notaExtra}\n`;
             msg += `\nAgradecemos mucho su valioso apoyo para continuar con el proceso. ¡Bendiciones!`;
 
             document.getElementById('boxPreviewMensajeWa').innerText = msg;
@@ -647,17 +601,10 @@
 
         function enviarMensajeWhatsAppPersonalizado() {
             const valDest = document.getElementById('selectDestinatarioWa').value;
-            if (!valDest) {
-                alert('No hay un número válido seleccionado.');
-                return;
-            }
-
+            if (!valDest) { alert('No hay un número válido seleccionado.'); return; }
             const [tel] = valDest.split('|');
             const texto = document.getElementById('boxPreviewMensajeWa').innerText;
-
-            const link = `https://wa.me/52${tel}?text=${encodeURIComponent(texto)}`;
-            window.open(link, '_blank');
-            
+            window.open(`https://wa.me/52${tel}?text=${encodeURIComponent(texto)}`, '_blank');
             if (modalNotifWaBs) modalNotifWaBs.hide();
         }
 
