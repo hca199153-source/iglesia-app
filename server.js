@@ -14,23 +14,32 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-    secret: 'secreto_super_seguro_iglesia_2026_x_key',
+    secret: 'secreto_super_seguro_iglesia',
     resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }
+    saveUninitialized: false
 }));
 
-// ESTADO GLOBAL DE LA APLICACIÓN
+// ESTADO GLOBAL DE LA APLICACIÓN (MANTENIMIENTO Y PAUSA)
 let systemState = {
     status: 'active', // 'active', 'mantenimiento', 'fuera_tiempo'
     targetDate: null,  
     customMessage: ''
 };
 
-// MIDDLEWARE DE CONTROL DE ESTADO PÚBLICO Y SEGURIDAD
+// MIDDLEWARE DE CONTROL DE ESTADO PÚBLICO
 app.use((req, res, next) => {
-    const rutasLibres = ['/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login', '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad', '/public', '/images', '/css'];
-    if (rutasLibres.some(r => req.path.startsWith(r))) {
+    if (
+        req.path.startsWith('/admin') ||
+        req.path.startsWith('/admin-comunidad') ||
+        req.path.startsWith('/dev-admin') ||
+        req.path.startsWith('/login') ||
+        req.path.startsWith('/logout') ||
+        req.path.startsWith('/unirse-comunidad') ||
+        req.path.startsWith('/procesar-unirse-comunidad') ||
+        req.path.startsWith('/public') ||
+        req.path.startsWith('/images') ||
+        req.path.startsWith('/css')
+    ) {
         return next();
     }
 
@@ -51,150 +60,136 @@ app.use((req, res, next) => {
     next();
 });
 
+// Ruta Principal (Formulario Público)
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-// ==========================================
-// SECCIÓN: UNIRSE A LA COMUNIDAD
-// ==========================================
-app.get('/unirse-comunidad', (req, res) => {
-    res.render('unirse_comunidad', { 
-        registroExitoso: false, 
-        linkGrupo: null, 
-        rolSeleccionado: null,
-        nombreUsuario: null,
-        errorMensaje: null
-    });
+// 3ª SECCIÓN: UNIRSE A LA COMUNIDAD Y GRUPOS DE WHATSAPP
+app.get('/unirse-comunidad', async (req, res) => {
+    try {
+        const { data: iglesias } = await supabase.from('iglesias').select('id, nombre_iglesia, zona');
+        res.render('unirse_comunidad', { iglesias: iglesias || [], registroExitoso: false, linkGrupo: null, rolSeleccionado: null });
+    } catch (err) {
+        res.status(500).send('Error al cargar la sección de comunidad: ' + err.message);
+    }
 });
 
 app.post('/procesar-unirse-comunidad', async (req, res) => {
     try {
-        const { nombre_completo, telefono, correo, rol } = req.body;
-        const telLimpio = (telefono || '').replace(/\D/g, '');
-        let iglesiaIdEncontrada = null;
-
-        if (telLimpio.length >= 10) {
-            const { data: iglesiasMatch } = await supabase.from('iglesias').select('id, telefono_pastor, telefono_lider');
-            if (iglesiasMatch) {
-                const encontrada = iglesiasMatch.find(i => {
-                    const telP = (i.telefono_pastor || '').replace(/\D/g, '');
-                    const telL = (i.telefono_lider || '').replace(/\D/g, '');
-                    return (telP && telP.endsWith(telLimpio.slice(-10))) || (telL && telL.endsWith(telLimpio.slice(-10)));
-                });
-                if (encontrada) iglesiaIdEncontrada = encontrada.id;
-            }
-
-            if (!iglesiaIdEncontrada) {
-                const { data: maestrosMatch } = await supabase.from('maestros').select('iglesia_id, telefono');
-                if (maestrosMatch) {
-                    const maestroEncontrado = maestrosMatch.find(m => {
-                        const telM = (m.telefono || '').replace(/\D/g, '');
-                        return telM && telM.endsWith(telLimpio.slice(-10));
-                    });
-                    if (maestroEncontrado) iglesiaIdEncontrada = maestroEncontrado.iglesia_id;
-                }
-            }
-        }
-
-        if (!iglesiaIdEncontrada) {
-            return res.render('unirse_comunidad', { 
-                registroExitoso: false, 
-                linkGrupo: null, 
-                rolSeleccionado: rol,
-                nombreUsuario: null,
-                errorMensaje: 'Número no válido o no registrado en el sistema previo.'
-            });
-        }
+        const { nombre_completo, telefono, correo, rol, iglesia_id } = req.body;
 
         await supabase.from('miembros_comunidad').insert([{
-            nombre_completo: (nombre_completo || '').trim(),
-            telefono: telLimpio,
-            correo: (correo && correo.trim() !== '') ? correo.trim() : 'Sin correo registrado',
+            nombre_completo,
+            telefono,
+            correo: correo || null,
             rol,
-            iglesia_id: iglesiaIdEncontrada
+            iglesia_id: iglesia_id ? parseInt(iglesia_id) : null
         }]);
 
+        // Enlaces oficiales a los grupos de WhatsApp
         const linksGrupos = {
             'pastor': 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22',
             'lider': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
             'maestro': 'https://chat.whatsapp.com/Io6FzfaTXeA3soWMb59dnW',
-            'guerrero': 'https://chat.whatsapp.com/DFETFvqOMHLCDLIuTag7AT'
+            'guerrero': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p'
         };
 
+        const linkCorrespondiente = linksGrupos[rol] || 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22';
+
+        const { data: iglesias } = await supabase.from('iglesias').select('id, nombre_iglesia, zona');
         res.render('unirse_comunidad', { 
+            iglesias: iglesias || [], 
             registroExitoso: true, 
-            linkGrupo: linksGrupos[rol] || linksGrupos['pastor'], 
+            linkGrupo: linkCorrespondiente, 
             rolSeleccionado: rol,
-            nombreUsuario: nombre_completo,
-            errorMensaje: null
+            nombreUsuario: nombre_completo
         });
+
     } catch (err) {
         console.error('Error al registrar en comunidad:', err);
-        res.status(500).send('Error al procesar el registro.');
+        res.status(500).send('Error al procesar el registro: ' + err.message);
     }
 });
 
 // ==========================================
-// PANEL DE COMUNIDAD
+// PANEL DE ADMINISTRACIÓN EXCLUSIVO DE COMUNIDAD
 // ==========================================
 app.get('/admin-comunidad', async (req, res) => {
     try {
         const zonaActual = req.session.zona;
-        if (!zonaActual) return res.render('admin_comunidad', { iglesias: [], zona: null });
+        if (!zonaActual) {
+            return res.render('admin_comunidad', { iglesias: [], zona: null });
+        }
 
-        const { data: iglesias } = await supabase.from('iglesias').select(`*, miembros_comunidad (*)`).eq('zona', zonaActual);
+        const { data: iglesias, error } = await supabase
+            .from('iglesias')
+            .select(`*, miembros_comunidad (*)`)
+            .eq('zona', zonaActual);
+
+        if (error) throw new Error(error.message);
+
         res.render('admin_comunidad', { iglesias: iglesias || [], zona: zonaActual });
     } catch (err) {
-        res.status(500).send('Error al cargar panel de comunidad.');
+        res.status(500).send('Error al cargar el panel de comunidad: ' + err.message);
     }
 });
 
+// ACTUALIZAR ESTADO DE NOTIFICACIÓN AL PASTOR (CHECKBOX)
 app.post('/admin-comunidad/notificado/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const { notificado } = req.body;
-        await supabase.from('iglesias').update({ notificado_whatsapp: notificado === true || notificado === 'true' }).eq('id', id);
+        
+        await supabase.from('iglesias').update({
+            notificado_whatsapp: notificado === true || notificado === 'true'
+        }).eq('id', id);
+
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ success: false });
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
+// ACTUALIZAR INTEGRANTE DE WHATSAPP
 app.post('/admin-comunidad/editar/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const { nombre_completo, telefono, correo, rol } = req.body;
+
         await supabase.from('miembros_comunidad').update({
-            nombre_completo: (nombre_completo || '').trim(),
-            telefono: (telefono || '').replace(/\D/g, ''),
-            correo: (correo && correo.trim() !== '') ? correo.trim() : 'Sin correo registrado',
+            nombre_completo,
+            telefono,
+            correo: correo || null,
             rol
         }).eq('id', id);
+
         res.redirect('/admin-comunidad');
     } catch (err) {
-        res.status(500).send('Error al editar integrante.');
+        res.status(500).send('Error al editar integrante: ' + err.message);
     }
 });
 
+// ELIMINAR INTEGRANTE DE WHATSAPP (DUPLICADOS)
 app.post('/admin-comunidad/eliminar/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         await supabase.from('miembros_comunidad').delete().eq('id', id);
         res.redirect('/admin-comunidad');
     } catch (err) {
-        res.status(500).send('Error al eliminar integrante.');
+        res.status(500).send('Error al eliminar integrante: ' + err.message);
     }
 });
 
-// ==========================================
 // PANEL DE PROGRAMADOR (DEV-ADMIN)
-// ==========================================
 app.get('/dev-admin', (req, res) => {
-    if (!req.session.isDev) return res.render('dev_login', { error: null });
+    if (!req.session.isDev) {
+        return res.render('dev_login', { error: null });
+    }
     res.render('dev_dashboard', { systemState });
 });
 
+// LOGIN DE PROGRAMADOR
 app.post('/dev-admin/login', (req, res) => {
     const { password } = req.body;
     if (password === 'dev2026') { 
@@ -210,7 +205,7 @@ app.post('/dev-admin/cambiar-estado', (req, res) => {
     const { status, targetDate, customMessage } = req.body;
     systemState.status = status;
     systemState.targetDate = targetDate ? new Date(targetDate).getTime() : null;
-    systemState.customMessage = (customMessage || '').trim();
+    systemState.customMessage = customMessage || '';
     res.redirect('/dev-admin');
 });
 
@@ -219,29 +214,24 @@ app.get('/dev-admin/logout', (req, res) => {
     res.redirect('/dev-admin');
 });
 
-// ==========================================
-// SESIÓN Y ADMINISTRACIÓN ZONAL (INCLUYE CARLOS A. CARRILLO)
-// ==========================================
+// Inicio de Sesión (Zonas o Dev Console)
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
 
     if (zona === 'dev_console') {
         if (password === 'dev2026') {
             req.session.isDev = true;
-            return res.redirect('/dev-admin');
+            return res.redirect('/admin');
         } else {
-            return res.send(`<script>alert('Contraseña incorrecta.');window.location.href = '/admin';</script>`);
+            return res.send(`<script>alert('Contraseña de Desarrollador incorrecta.');window.location.href = '/admin';</script>`);
         }
     }
 
     const contrasenasZonas = {
         "san_andres": "sanandres2026",
-        "medellin": "medellin2026",
-        "manlio": "manlio2026",
-        "orizaba": "orizaba2026",
+        "veracruz": "veracruz2026",
         "cd_aleman": "cdaleman2026",
-        "xalapa": "xalapa2026",
-        "carlos_a_carrillo": "carlos2026"
+        "xalapa": "xalapa2026"
     };
 
     if (contrasenasZonas[zona] && contrasenasZonas[zona] === password) {
@@ -259,27 +249,30 @@ app.get('/logout', (req, res) => {
 app.get('/admin', async (req, res) => {
     try {
         const zonaActual = req.session.zona;
-        if (!zonaActual) return res.render('admin', { registros: [], zona: null, totalIglesias: 0, totalCajitas: 0, totalMaestros: 0, totalPastores: 0, totalGuerreritos: 0, totalGuerreros: 0 });
+        if (!zonaActual) {
+            return res.render('admin', { registros: [], zona: null, totalIglesias: 0, totalCajitas: 0, totalMaestros: 0, totalPastores: 0, totalGuerreritos: 0, totalGuerreros: 0 });
+        }
 
-        const { data: registros } = await supabase.from('iglesias').select(`*, maestros (*), guerreritos_oracion (*), guerreros_oracion (*)`).eq('zona', zonaActual);
+        const { data: registros, error } = await supabase
+            .from('iglesias')
+            .select(`*, maestros (*), guerreritos_oracion (*), guerreros_oracion (*)`)
+            .eq('zona', zonaActual);
 
-        const regs = registros || [];
-        res.render('admin', { 
-            registros: regs, 
-            zona: zonaActual, 
-            totalIglesias: regs.length, 
-            totalCajitas: regs.reduce((a, c) => a + (parseInt(c.num_cajas) || 0), 0), 
-            totalMaestros: regs.reduce((a, c) => a + (c.maestros ? c.maestros.length : 0), 0), 
-            totalPastores: regs.filter(r => r.nombre_pastor).length, 
-            totalGuerreritos: regs.reduce((a, c) => a + (c.guerreritos_oracion ? c.guerreritos_oracion.length : 0), 0), 
-            totalGuerreros: regs.reduce((a, c) => a + (c.guerreros_oracion ? c.guerreros_oracion.length : 0), 0) 
-        });
+        if (error) throw new Error(error.message);
+
+        const totalIglesias = registros.length;
+        const totalCajitas = registros.reduce((acc, curr) => acc + (parseInt(curr.num_cajas) || 0), 0);
+        const totalMaestros = registros.reduce((acc, curr) => acc + (curr.maestros ? curr.maestros.length : 0), 0);
+        const totalPastores = registros.filter(r => r.nombre_pastor && r.nombre_pastor.trim() !== '').length;
+        const totalGuerreritos = registros.reduce((acc, curr) => acc + (curr.guerreritos_oracion ? curr.guerreritos_oracion.length : 0), 0);
+        const totalGuerreros = registros.reduce((acc, curr) => acc + (curr.guerreros_oracion ? curr.guerreros_oracion.length : 0), 0);
+
+        res.render('admin', { registros: registros || [], zona: zonaActual, totalIglesias, totalCajitas, totalMaestros, totalPastores, totalGuerreritos, totalGuerreros });
     } catch (err) {
-        res.status(500).send('Error al cargar panel.');
+        res.status(500).send('Error al cargar el panel: ' + err.message);
     }
 });
 
-// GUARDAR REGISTRO (SOLO PASTOR Y TELÉFONO OBLIGATORIOS)
 app.post('/guardar-registro', async (req, res) => {
     try {
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, maestros, guerreritos, guerreros } = req.body;
@@ -287,158 +280,92 @@ app.post('/guardar-registro', async (req, res) => {
         const { data: iglesiaData, error: iglesiaError } = await supabase
             .from('iglesias')
             .insert([{
-                zona: zona || 'san_andres', 
-                nombre_pastor: (nombre_pastor || '').trim(), 
-                telefono_pastor: (telefono_pastor || '').trim(), 
-                correo_pastor: (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'Sin correo registrado',
-                nombre_iglesia: (nombre_iglesia && nombre_iglesia.trim() !== '') ? nombre_iglesia.trim() : 'Iglesia pendiente de asignar', 
-                direccion: (direccion && direccion.trim() !== '') ? direccion.trim() : 'Dirección pendiente de registrar', 
-                nombre_lider: (nombre_lider && nombre_lider.trim() !== '') ? nombre_lider.trim() : 'Sin líder registrado', 
-                telefono_lider: (telefono_lider && telefono_lider.trim() !== '') ? telefono_lider.trim() : 'Sin teléfono', 
-                correo_lider: (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'Sin correo registrado',
-                num_cajas: parseInt(num_cajas) || 0, 
-                num_maestros: maestros ? Object.keys(maestros).length : 0,
-                estado_semaforo: 'verde', 
-                observacion_semaforo: 'Completo',
+                zona, nombre_pastor, telefono_pastor, correo_pastor: correo_pastor || null,
+                nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider: correo_lider || null,
+                num_cajas: parseInt(num_cajas) || 0, num_maestros: maestros ? Object.keys(maestros).length : 0,
+                estado_semaforo: 'verde', observacion_semaforo: 'Completo',
                 notificado_whatsapp: false
             }])
             .select().single();
 
-        if (iglesiaError) throw new Error(iglesiaError.message);
+        if (iglesiaError) throw new Error('Error al guardar iglesia: ' + iglesiaError.message);
         const iglesiaId = iglesiaData.id;
 
         if (maestros) {
-            const maestrosArray = Object.values(maestros)
-                .filter(m => m.nombre && m.nombre.trim() !== '')
-                .map(m => ({ 
-                    iglesia_id: iglesiaId, 
-                    nombre: m.nombre.trim(), 
-                    telefono: (m.telefono && m.telefono.trim() !== '') ? m.telefono.trim() : 'Sin teléfono', 
-                    correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'Sin correo registrado' 
-                }));
-            if (maestrosArray.length > 0) await supabase.from('maestros').insert(maestrosArray);
+            const maestrosArray = Object.values(maestros).map(m => ({ iglesia_id: iglesiaId, nombre: m.nombre, telefono: m.telefono, correo: m.correo || null }));
+            await supabase.from('maestros').insert(maestrosArray);
         }
 
         if (guerreritos) {
-            const lista = Array.isArray(guerreritos) ? guerreritos : Object.values(guerreritos);
-            const arr = lista.filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '').map(g => ({
-                iglesia_id: iglesiaId,
-                nombre_guerrerito: g.nombre_guerrerito.trim(),
-                nombre_tutor: (g.nombre_tutor && g.nombre_tutor.trim() !== '') ? g.nombre_tutor.trim() : 'Sin tutor registrado',
-                telefono_tutor: (g.telefono_tutor && g.telefono_tutor.trim() !== '') ? g.telefono_tutor.trim() : 'Sin teléfono'
-            }));
-            if (arr.length > 0) await supabase.from('guerreritos_oracion').insert(arr);
+            const listaGuerreritos = Array.isArray(guerreritos) ? guerreritos : Object.values(guerreritos);
+            const guerreritosArray = listaGuerreritos.map(g => ({ iglesia_id: iglesiaId, nombre_guerrerito: g.nombre_guerrerito, nombre_tutor: g.nombre_tutor, telefono_tutor: g.telefono_tutor })).filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '');
+            if (guerreritosArray.length > 0) await supabase.from('guerreritos_oracion').insert(guerreritosArray);
         }
 
         if (guerreros) {
-            const lista = Array.isArray(guerreros) ? guerreros : Object.values(guerreros);
-            const arr = lista.filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '').map(gu => ({
-                iglesia_id: iglesiaId,
-                nombre_guerrero: gu.nombre_guerrero.trim(),
-                telefono_guerrero: (gu.telefono_guerrero && gu.telefono_guerrero.trim() !== '') ? gu.telefono_guerrero.trim() : 'Sin teléfono'
-            }));
-            if (arr.length > 0) await supabase.from('guerreros_oracion').insert(arr);
+            const listaGuerreros = Array.isArray(guerreros) ? guerreros : Object.values(guerreros);
+            const guerrerosArray = listaGuerreros.map(gu => ({ iglesia_id: iglesiaId, nombre_guerrero: gu.nombre_guerrero, telefono_guerrero: gu.telefono_guerrero })).filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '');
+            if (guerrerosArray.length > 0) await supabase.from('guerreros_oracion').insert(guerrerosArray);
         }
 
         res.send(`<!DOCTYPE html><html lang="es"><head><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light d-flex align-items-center justify-content-center vh-100"><div class="card p-4 text-center shadow-sm" style="max-width: 450px;"><h3 class="text-success mb-3">¡Registro Exitoso!</h3><p class="text-muted">Los datos se han guardado correctamente.</p><a href="/" class="btn btn-success mt-2">Regresar</a></div></body></html>`);
     } catch (err) {
-        res.status(500).send('Error al procesar registro: ' + err.message);
+        res.status(500).send('Error al procesar: ' + err.message);
     }
 });
 
 app.get('/editar-registro/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
-        const { data: iglesia } = await supabase.from('iglesias').select(`*, maestros (*), guerreritos_oracion (*), guerreros_oracion (*)`).eq('id', id).maybeSingle();
-        if (!iglesia) return res.status(404).send('Registro no encontrado.');
+        const { data: iglesia, error } = await supabase.from('iglesias').select(`*, maestros (*), guerreritos_oracion (*), guerreros_oracion (*)`).eq('id', id).maybeSingle();
+        if (error || !iglesia) return res.status(404).send('Registro no encontrado.');
         res.render('editar', { iglesia });
-    } catch (err) { 
-        res.status(500).send('Error interno.'); 
-    }
+    } catch (err) { res.status(500).send('Error interno: ' + err.message); }
 });
 
-// ACTUALIZAR REGISTRO
 app.post('/actualizar-registro/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, estado_semaforo, observacion_semaforo, maestros, guerreritos, guerreros } = req.body;
 
-        await supabase.from('iglesias').update({ 
-            zona, 
-            nombre_pastor: (nombre_pastor || '').trim(), 
-            telefono_pastor: (telefono_pastor || '').trim(), 
-            correo_pastor: (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'Sin correo registrado', 
-            nombre_iglesia: (nombre_iglesia && nombre_iglesia.trim() !== '') ? nombre_iglesia.trim() : 'Iglesia pendiente de asignar', 
-            direccion: (direccion && direccion.trim() !== '') ? direccion.trim() : 'Dirección pendiente de registrar', 
-            nombre_lider: (nombre_lider && nombre_lider.trim() !== '') ? nombre_lider.trim() : 'Sin líder registrado', 
-            telefono_lider: (telefono_lider && telefono_lider.trim() !== '') ? telefono_lider.trim() : 'Sin teléfono', 
-            correo_lider: (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'Sin correo registrado', 
-            num_cajas: parseInt(num_cajas) || 0, 
-            estado_semaforo: estado_semaforo || 'verde', 
-            observacion_semaforo: (observacion_semaforo || '').trim() || 'Completo' 
-        }).eq('id', id);
+        await supabase.from('iglesias').update({ zona, nombre_pastor, telefono_pastor, correo_pastor: correo_pastor || null, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider: correo_lider || null, num_cajas: parseInt(num_cajas) || 0, estado_semaforo: estado_semaforo || 'verde', observacion_semaforo: observacion_semaforo || 'Completo' }).eq('id', id);
 
-        await supabase.from('maestros').delete().eq('iglesia_id', id);
-        await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
-        await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
+        if (maestros || guerreritos || guerreros) {
+            await supabase.from('maestros').delete().eq('iglesia_id', id);
+            await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
+            await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
 
-        if (maestros) {
-            const arr = Object.values(maestros).filter(m => m.nombre && m.nombre.trim() !== '').map(m => ({ 
-                iglesia_id: id, 
-                nombre: m.nombre.trim(), 
-                telefono: (m.telefono && m.telefono.trim() !== '') ? m.telefono.trim() : 'Sin teléfono', 
-                correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'Sin correo registrado' 
-            }));
-            if (arr.length > 0) await supabase.from('maestros').insert(arr);
+            if (maestros) {
+                const arr = Object.values(maestros).filter(m => m.nombre && m.nombre.trim() !== '').map(m => ({ iglesia_id: id, nombre: m.nombre, telefono: m.telefono, correo: m.correo || null }));
+                if (arr.length > 0) await supabase.from('maestros').insert(arr);
+            }
+            if (guerreritos) {
+                const arr = (Array.isArray(guerreritos) ? guerreritos : Object.values(guerreritos)).filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '').map(g => ({ iglesia_id: id, nombre_guerrerito: g.nombre_guerrerito, nombre_tutor: g.nombre_tutor, telefono_tutor: g.telefono_tutor }));
+                if (arr.length > 0) await supabase.from('guerreritos_oracion').insert(arr);
+            }
+            if (guerreros) {
+                const arr = (Array.isArray(guerreros) ? guerreros : Object.values(guerreros)).filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '').map(gu => ({ iglesia_id: id, nombre_guerrero: gu.nombre_guerrero, telefono_guerrero: gu.telefono_guerrero }));
+                if (arr.length > 0) await supabase.from('guerreros_oracion').insert(arr);
+            }
         }
-
-        if (guerreritos) {
-            const lista = Array.isArray(guerreritos) ? guerreritos : Object.values(guerreritos);
-            const arr = lista.filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '').map(g => ({ 
-                iglesia_id: id, 
-                nombre_guerrerito: g.nombre_guerrerito.trim(), 
-                nombre_tutor: (g.nombre_tutor && g.nombre_tutor.trim() !== '') ? g.nombre_tutor.trim() : 'Sin tutor registrado', 
-                telefono_tutor: (g.telefono_tutor && g.telefono_tutor.trim() !== '') ? g.telefono_tutor.trim() : 'Sin teléfono' 
-            }));
-            if (arr.length > 0) await supabase.from('guerreritos_oracion').insert(arr);
-        }
-
-        if (guerreros) {
-            const lista = Array.isArray(guerreros) ? guerreros : Object.values(guerreros);
-            const arr = lista.filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '').map(gu => ({ 
-                iglesia_id: id, 
-                nombre_guerrero: gu.nombre_guerrero.trim(), 
-                telefono_guerrero: (gu.telefono_guerrero && gu.telefono_guerrero.trim() !== '') ? gu.telefono_guerrero.trim() : 'Sin teléfono' 
-            }));
-            if (arr.length > 0) await supabase.from('guerreros_oracion').insert(arr);
-        }
-
         res.redirect('/admin');
-    } catch (err) { 
-        console.error("Error al actualizar:", err);
-        res.status(500).send('Error al actualizar el registro.'); 
-    }
+    } catch (err) { res.status(500).send('Error al actualizar: ' + err.message); }
 });
 
 app.post('/actualizar-semaforo/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const { estado_semaforo, observacion_semaforo } = req.body;
-        await supabase.from('iglesias').update({ estado_semaforo, observacion_semaforo: (observacion_semaforo || '').trim() || 'Sin observaciones' }).eq('id', id);
+        await supabase.from('iglesias').update({ estado_semaforo, observacion_semaforo: observacion_semaforo || 'Sin observaciones' }).eq('id', id);
         res.redirect('/admin');
-    } catch (err) { res.status(500).send('Error'); }
+    } catch (err) { res.status(500).send('Error al actualizar semáforo: ' + err.message); }
 });
 
 app.post('/eliminar-registro/:id', async (req, res) => {
     try {
-        const id = parseInt(req.params.id, 10);
-        await supabase.from('maestros').delete().eq('iglesia_id', id);
-        await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
-        await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
-        await supabase.from('miembros_comunidad').delete().eq('iglesia_id', id);
-        await supabase.from('iglesias').delete().eq('id', id);
+        await supabase.from('iglesias').delete().eq('id', req.params.id);
         res.redirect('/admin');
-    } catch (err) { res.status(500).send('Error al eliminar'); }
+    } catch (err) { res.status(500).send('Error al eliminar: ' + err.message); }
 });
 
 app.get('/exportar-excel', async (req, res) => {
@@ -448,7 +375,7 @@ app.get('/exportar-excel', async (req, res) => {
 
         let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${zonaActual}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th></tr>`;
 
-        (registros || []).forEach((reg, index) => {
+        registros.forEach((reg, index) => {
             htmlTabla += `<tr><td>${index + 1}</td><td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td><td>${reg.observacion_semaforo || 'Completo'}</td><td>${reg.nombre_iglesia}</td><td>${reg.direccion}</td><td>${reg.nombre_pastor}</td><td>${reg.telefono_pastor}</td><td>${reg.nombre_lider}</td><td>${reg.telefono_lider}</td><td>${reg.num_cajas}</td></tr>`;
         });
 
@@ -459,4 +386,4 @@ app.get('/exportar-excel', async (req, res) => {
     } catch (err) { res.status(500).send('Error al exportar'); }
 });
 
-app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));s
+app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
