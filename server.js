@@ -220,7 +220,7 @@ app.get('/dev-admin/logout', (req, res) => {
 });
 
 // ==========================================
-// SESIÓN Y ADMINISTRACIÓN ZONAL
+// SESIÓN Y ADMINISTRACIÓN ZONAL (INCLUYE CARLOS A. CARRILLO)
 // ==========================================
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
@@ -240,7 +240,8 @@ app.post('/login', (req, res) => {
         "manlio": "manlio2026",
         "orizaba": "orizaba2026",
         "cd_aleman": "cdaleman2026",
-        "xalapa": "xalapa2026"
+        "xalapa": "xalapa2026",
+        "carlos_a_carrillo": "carlos2026"
     };
 
     if (contrasenasZonas[zona] && contrasenasZonas[zona] === password) {
@@ -278,7 +279,7 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// GUARDAR REGISTRO (SOLO PASTOR Y TELÉFONO OBLIGATORIOS; LO DEMÁS OPCIONAL CON MENSAJES POR DEFECTO)
+// GUARDAR REGISTRO (SOLO PASTOR Y TELÉFONO OBLIGATORIOS)
 app.post('/guardar-registro', async (req, res) => {
     try {
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, maestros, guerreritos, guerreros } = req.body;
@@ -458,4 +459,4 @@ app.get('/exportar-excel', async (req, res) => {
     } catch (err) { res.status(500).send('Error al exportar'); }
 });
 
-app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));s
