@@ -3,105 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unirse a la Comunidad | Operación Niño de la Navidad</title>
+    <title>Unirse a Grupos Oficiales | Samaritan's Purse</title>
     <link rel="icon" type="image/png" href="/images/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px 10px; }
-        .card-unirse { background: #ffffff; border-radius: 16px; max-width: 500px; width: 100%; box-shadow: 0 15px 35px rgba(0,0,0,0.4); border-top: 6px solid #009639; overflow: hidden; }
-        .header-unirse { background: #f8f9fa; border-bottom: 1px solid #e9ecef; text-align: center; padding: 25px 20px 15px; }
-        .header-unirse img { height: 60px; margin-bottom: 10px; }
-        .btn-whatsapp { background-color: #25D366; color: white; font-weight: bold; border: none; padding: 12px 20px; border-radius: 10px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; width: 100%; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); transition: transform 0.2s; }
-        .btn-whatsapp:hover { background-color: #20ba5a; color: white; transform: translateY(-2px); }
+        body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2b2b2b; }
+        .container-box { max-width: 550px; margin: 40px auto; background: #ffffff; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 30px; border-top: 6px solid #25D366; }
     </style>
 </head>
 <body>
-
-    <div class="card-unirse">
-        <div class="header-unirse">
-            <img src="/images/logo.png" alt="Samaritan's Purse">
-            <h4 class="fw-bold text-success mb-1">Operación Niño de la Navidad</h4>
-            <p class="small text-muted mb-0">Integración a Grupos Oficiales de WhatsApp</p>
+    <div class="container container-box">
+        <div class="text-center mb-4">
+            <img src="/images/logo.png" alt="Logo" style="height: 55px;" class="mb-2">
+            <h4 class="fw-bold text-success">Clasificación a Grupos de WhatsApp</h4>
+            <p class="small text-muted">Ingrese sus datos para verificar su registro y asignarle su grupo correspondiente.</p>
         </div>
 
-        <div class="card-body p-4">
-            <% if (locals.registroExitoso && registroExitoso) { %>
-                <div class="text-center py-3">
-                    <div class="mb-3 text-success">
-                        <i class="fas fa-check-circle fa-4x"></i>
-                    </div>
-                    <h5 class="fw-bold text-dark mb-2">¡Bienvenido(a), <%= nombreUsuario %>!</h5>
-                    <p class="small text-muted mb-4">
-                        Hemos verificado tu número en el registro oficial. Haz clic en el siguiente botón para unirte a tu grupo correspondiente:
-                    </p>
+        <% if (errorMensaje) { %>
+            <div class="alert alert-danger small py-2"><%= errorMensaje %></div>
+        <% } %>
 
-                    <a href="<%= linkGrupo %>" target="_blank" class="btn-whatsapp mb-3">
-                        <i class="fab fa-whatsapp fa-2x"></i> Ingresar al Grupo de WhatsApp
-                    </a>
-
-                    <div class="mt-3">
-                        <a href="/unirse-comunidad" class="btn btn-link btn-sm text-secondary text-decoration-none">
-                            <i class="fas fa-arrow-left me-1"></i> Realizar otra consulta
-                        </a>
-                    </div>
+        <% if (!registroExitoso) { %>
+            <form action="/procesar-unirse-comunidad" method="POST">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Nombre Completo:</label>
+                    <input type="text" name="nombre_completo" class="form-control form-control-sm" placeholder="Ej. Juan Pérez" required>
                 </div>
-            <% } else { %>
-
-                <% if (locals.errorMensaje && errorMensaje) { %>
-                    <div class="alert alert-danger alert-dismissible fade show small py-2 mb-3" role="alert">
-                        <i class="fas fa-exclamation-triangle me-1"></i> <%= errorMensaje %>
-                        <button type="button" class="btn-close btn-sm py-2" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <% } %>
-
-                <form action="/procesar-unirse-comunidad" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary">Nombre Completo:</label>
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
-                            <input type="text" name="nombre_completo" class="form-control" placeholder="Ej. Juan Pérez López" required>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary">Número de Teléfono Registrado:</label>
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text"><i class="fas fa-phone text-muted"></i></span>
-                            <input type="tel" name="telefono" class="form-control" placeholder="Ej. 2941234567" required pattern="[0-9]{10}" title="Por favor ingresa 10 dígitos numéricos">
-                        </div>
-                        <div class="form-text text-muted" style="font-size: 0.72rem;">
-                            <i class="fas fa-shield-alt text-success me-1"></i> Filtro de seguridad: Debe ser el número que diste al registrar tu iglesia.
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary">Correo Electrónico (Opcional):</label>
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
-                            <input type="email" name="correo" class="form-control" placeholder="ejemplo@correo.com">
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold text-secondary">¿Cuál es tu rol en la Iglesia / Proyecto?</label>
-                        <select name="rol" class="form-select form-select-sm" required>
-                            <option value="">-- Selecciona tu Rol --</option>
-                            <option value="pastor">Pastor(a)</option>
-                            <option value="lider">Líder de Proyecto</option>
-                            <option value="maestro">Maestro(a)</option>
-                            <option value="guerrero">Guerrero de Oración</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm">
-                        <i class="fas fa-check-circle me-1"></i> Verificar y Obtener Enlace
-                    </button>
-                </form>
-            <% } %>
-        </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Número de Teléfono (Registrado en el formulario):</label>
+                    <input type="tel" name="telefono" class="form-control form-control-sm" placeholder="10 dígitos" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Correo Electrónico (Opcional):</label>
+                    <input type="email" name="correo" class="form-control form-control-sm" placeholder="correo@domain.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Su Rol en el Proyecto:</label>
+                    <select name="rol" class="form-select form-select-sm" required>
+                        <option value="">-- Seleccione su rol --</option>
+                        <option value="pastor">Pastor (Grupo CM)</option>
+                        <option value="lider">Líder de Proyecto</option>
+                        <option value="maestro">Maestro (Grupo Maestros)</option>
+                        <option value="guerrero">Guerrero de Oración / Tutor</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success w-100 fw-bold py-2" style="background-color: #25D366; border: none;">
+                    <i class="fab fa-whatsapp me-2"></i> Verificar e Ir a mi Grupo
+                </button>
+            </form>
+        <% } else { %>
+            <div class="text-center py-3">
+                <div class="mb-3 text-success fs-1"><i class="fas fa-check-circle"></i></div>
+                <h5 class="fw-bold">¡Verificación Exitosa, <%= nombreUsuario %>!</h5>
+                <p class="small text-muted">Su número coincide con nuestros registros. Ya puede unirse al grupo oficial de WhatsApp correspondiente a su categoría.</p>
+                <a href="<%= linkGrupo %>" target="_blank" class="btn btn-success fw-bold px-4 py-2 mt-2" style="background-color: #25D366; border: none;">
+                    <i class="fab fa-whatsapp me-2"></i> Unirme al Grupo de WhatsApp
+                </a>
+                <div class="mt-4">
+                    <a href="/unirse-comunidad" class="small text-muted text-decoration-underline">Registrar otra persona</a>
+                </div>
+            </div>
+        <% } %>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
