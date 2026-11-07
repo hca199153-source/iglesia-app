@@ -118,65 +118,47 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             iglesia_id: iglesiaEncontrada.id
         }]);
 
-        // ENLACES PERSONALIZADOS POR ZONA Y ROL (CM para pastores, Maestros, Guerreros)
+        // ENLACES PERSONALIZADOS POR ZONA Y ROL
         const zonaKey = iglesiaEncontrada.zona || 'san_andres';
         
         const linksPorZona = {
             'san_andres': {
-                'pastor': 'https://chat.whatsapp.com/GrupoCM_SanAndres',
-                'lider': 'https://chat.whatsapp.com/GrupoLider_SanAndres',
-                'maestro': 'https://chat.whatsapp.com/MaestrosZona_SanAndres',
-                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_SanAndres'
+                'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 
+                'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
+                'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 
+                'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
             },
-            'medellin': {
-                'pastor': 'https://chat.whatsapp.com/GrupoCM_Medellin',
-                'lider': 'https://chat.whatsapp.com/GrupoLider_Medellin',
-                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Medellin',
-                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Medellin'
+            'catemaco': {
+                'pastor': 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA',
+                'lider': 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA',
+                'maestro': 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS',
+                'guerrero': 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS'
             },
-            'manlio': {
-                'pastor': 'https://chat.whatsapp.com/GrupoCM_Manlio',
-                'lider': 'https://chat.whatsapp.com/GrupoLider_Manlio',
-                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Manlio',
-                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Manlio'
-            },
-            'orizaba': {
-                'pastor': 'https://chat.whatsapp.com/GrupoCM_Orizaba',
-                'lider': 'https://chat.whatsapp.com/GrupoLider_Orizaba',
-                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Orizaba',
-                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Orizaba'
-            },
-            'cd_aleman': {
-                'pastor': 'https://chat.whatsapp.com/GrupoCM_CdAleman',
-                'lider': 'https://chat.whatsapp.com/GrupoLider_CdAleman',
-                'maestro': 'https://chat.whatsapp.com/MaestrosZona_CdAleman',
-                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_CdAleman'
-            },
-            'xalapa': {
-                'pastor': 'https://chat.whatsapp.com/GrupoCM_Xalapa',
-                'lider': 'https://chat.whatsapp.com/GrupoLider_Xalapa',
-                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Xalapa',
-                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Xalapa'
-            },
-            'carlos_a_carrillo': {
-                'pastor': 'https://chat.whatsapp.com/GrupoCM_Carrillo',
-                'lider': 'https://chat.whatsapp.com/GrupoLider_Carrillo',
-                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Carrillo',
-                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Carrillo'
+            'lerdo': {
+                'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
+                'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
+                'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr',
+                'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
             },
             'tezonapa': {
-                'pastor': 'https://chat.whatsapp.com/GrupoCM_Tezonapa',
-                'lider': 'https://chat.whatsapp.com/GrupoLider_Tezonapa',
-                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Tezonapa',
-                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Tezonapa'
+                'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
+                'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
+                'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr',
+                'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
+            },
+            'carlos_a_carrillo': {
+                'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
+                'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
+                'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr',
+                'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
             }
         };
 
         const linksDefault = {
-            'pastor': 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22',
-            'lider': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
-            'maestro': 'https://chat.whatsapp.com/Io6FzfaTXeA3soWMb59dnW',
-            'guerrero': 'https://chat.whatsapp.com/DFETFvqOMHLCDLIuTag7AT'
+            'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
+            'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
+            'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr',
+            'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
         };
 
         const zonaLinks = linksPorZona[zonaKey] || linksDefault;
@@ -280,7 +262,7 @@ app.get('/dev-admin/logout', (req, res) => {
 });
 
 // ==========================================
-// SESIÓN Y ADMINISTRACIÓN ZONAL (INCLUYE TEZONAPA Y CARLOS A. CARRILLO)
+// SESIÓN Y ADMINISTRACIÓN ZONAL
 // ==========================================
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
