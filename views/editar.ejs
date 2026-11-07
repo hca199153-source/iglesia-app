@@ -33,6 +33,8 @@
                             <option value="orizaba" <%= iglesia.zona === 'orizaba' ? 'selected' : '' %>>Orizaba</option>
                             <option value="cd_aleman" <%= iglesia.zona === 'cd_aleman' ? 'selected' : '' %>>Ciudad Alemán</option>
                             <option value="xalapa" <%= iglesia.zona === 'xalapa' ? 'selected' : '' %>>Xalapa</option>
+                            <option value="carlos_a_carrillo" <%= iglesia.zona === 'carlos_a_carrillo' ? 'selected' : '' %>>Carlos A. Carrillo</option>
+                            <option value="tezonapa" <%= iglesia.zona === 'tezonapa' ? 'selected' : '' %>>Tezonapa</option>
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -61,13 +63,13 @@
                 </div>
 
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-church me-1"></i> 2. Datos de la Iglesia</h6>
-                <div class="mb-2"><label class="form-label small text-muted">Nombre de la Iglesia *</label><input type="text" name="nombre_iglesia" class="form-control form-control-sm" value="<%= iglesia.nombre_iglesia %>" required></div>
-                <div class="mb-3"><label class="form-label small text-muted">Dirección *</label><input type="text" name="direccion" class="form-control form-control-sm" value="<%= iglesia.direccion %>" required></div>
+                <div class="mb-2"><label class="form-label small text-muted">Nombre de la Iglesia (Opcional)</label><input type="text" name="nombre_iglesia" class="form-control form-control-sm" value="<%= iglesia.nombre_iglesia || '' %>"></div>
+                <div class="mb-3"><label class="form-label small text-muted">Dirección (Opcional)</label><input type="text" name="direccion" class="form-control form-control-sm" value="<%= iglesia.direccion || '' %>"></div>
 
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-users me-1"></i> 3. Datos del Líder</h6>
-                <div class="mb-2"><label class="form-label small text-muted">Nombre del Líder *</label><input type="text" name="nombre_lider" class="form-control form-control-sm" value="<%= iglesia.nombre_lider %>" required></div>
+                <div class="mb-2"><label class="form-label small text-muted">Nombre del Líder (Opcional)</label><input type="text" name="nombre_lider" class="form-control form-control-sm" value="<%= iglesia.nombre_lider || '' %>"></div>
                 <div class="row g-2 mb-3">
-                    <div class="col-6"><label class="form-label small text-muted">Teléfono *</label><input type="tel" name="telefono_lider" class="form-control form-control-sm" value="<%= iglesia.telefono_lider %>" required></div>
+                    <div class="col-6"><label class="form-label small text-muted">Teléfono (Opcional)</label><input type="tel" name="telefono_lider" class="form-control form-control-sm" value="<%= iglesia.telefono_lider || '' %>"></div>
                     <div class="col-6"><label class="form-label small text-muted">Correo (Opcional)</label><input type="email" name="correo_lider" class="form-control form-control-sm" value="<%= iglesia.correo_lider || '' %>"></div>
                 </div>
 
@@ -81,7 +83,7 @@
                     </select>
                 </div>
 
-                <!-- Maestros Asignados (Opcionales sin required estricto) -->
+                <!-- Maestros Asignados (Opcionales) -->
                 <h6 class="border-bottom border-success pb-1 mb-3 small fw-bold text-success"><i class="fas fa-users me-1"></i> Maestros Asignados</h6>
                 <% for(let i = 0; i < 4; i++) { 
                     let m = (iglesia.maestros && iglesia.maestros[i]) ? iglesia.maestros[i] : {};
