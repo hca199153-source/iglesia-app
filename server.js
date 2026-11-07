@@ -56,7 +56,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// SECCIÓN: UNIRSE A LA COMUNIDAD
+// SECCIÓN: UNIRSE A LA COMUNIDAD (WHATSAPP INTELIGENTE)
 // ==========================================
 app.get('/unirse-comunidad', (req, res) => {
     res.render('unirse_comunidad', { 
@@ -72,59 +72,119 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
     try {
         const { nombre_completo, telefono, correo, rol } = req.body;
         const telLimpio = (telefono || '').replace(/\D/g, '');
-        let iglesiaIdEncontrada = null;
+        let iglesiaEncontrada = null;
 
         if (telLimpio.length >= 10) {
-            const { data: iglesiasMatch } = await supabase.from('iglesias').select('id, telefono_pastor, telefono_lider');
+            // 1. Buscar en iglesias (Pastor o Líder)
+            const { data: iglesiasMatch } = await supabase.from('iglesias').select('*');
             if (iglesiasMatch) {
                 const encontrada = iglesiasMatch.find(i => {
                     const telP = (i.telefono_pastor || '').replace(/\D/g, '');
                     const telL = (i.telefono_lider || '').replace(/\D/g, '');
                     return (telP && telP.endsWith(telLimpio.slice(-10))) || (telL && telL.endsWith(telLimpio.slice(-10)));
                 });
-                if (encontrada) iglesiaIdEncontrada = encontrada.id;
+                if (encontrada) iglesiaEncontrada = encontrada;
             }
 
-            if (!iglesiaIdEncontrada) {
-                const { data: maestrosMatch } = await supabase.from('maestros').select('iglesia_id, telefono');
+            // 2. Buscar en maestros si no se encontró
+            if (!iglesiaEncontrada) {
+                const { data: maestrosMatch } = await supabase.from('maestros').select('*, iglesias (*)');
                 if (maestrosMatch) {
-                    const maestroEncontrado = maestrosMatch.find(m => {
+                    const mEncontrado = maestrosMatch.find(m => {
                         const telM = (m.telefono || '').replace(/\D/g, '');
                         return telM && telM.endsWith(telLimpio.slice(-10));
                     });
-                    if (maestroEncontrado) iglesiaIdEncontrada = maestroEncontrado.iglesia_id;
+                    if (mEncontrado && mEncontrado.iglesias) iglesiaEncontrada = mEncontrado.iglesias;
                 }
             }
         }
 
-        if (!iglesiaIdEncontrada) {
+        if (!iglesiaEncontrada) {
             return res.render('unirse_comunidad', { 
                 registroExitoso: false, 
                 linkGrupo: null, 
                 rolSeleccionado: rol,
                 nombreUsuario: null,
-                errorMensaje: 'Número no válido o no registrado en el sistema previo.'
+                errorMensaje: '❌ Su número no coincide con ningún registro previo en el formulario oficial. Por favor, asegúrese de haber registrado su iglesia primero.'
             });
         }
 
+        // Guardar o actualizar en miembros de comunidad vinculado a su iglesia y zona
         await supabase.from('miembros_comunidad').insert([{
             nombre_completo: (nombre_completo || '').trim(),
             telefono: telLimpio,
             correo: (correo && correo.trim() !== '') ? correo.trim() : 'Sin correo registrado',
             rol,
-            iglesia_id: iglesiaIdEncontrada
+            iglesia_id: iglesiaEncontrada.id
         }]);
 
-        const linksGrupos = {
+        // ENLACES PERSONALIZADOS POR ZONA Y ROL (CM para pastores, Maestros, Guerreros)
+        const zonaKey = iglesiaEncontrada.zona || 'san_andres';
+        
+        const linksPorZona = {
+            'san_andres': {
+                'pastor': 'https://chat.whatsapp.com/GrupoCM_SanAndres',
+                'lider': 'https://chat.whatsapp.com/GrupoLider_SanAndres',
+                'maestro': 'https://chat.whatsapp.com/MaestrosZona_SanAndres',
+                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_SanAndres'
+            },
+            'medellin': {
+                'pastor': 'https://chat.whatsapp.com/GrupoCM_Medellin',
+                'lider': 'https://chat.whatsapp.com/GrupoLider_Medellin',
+                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Medellin',
+                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Medellin'
+            },
+            'manlio': {
+                'pastor': 'https://chat.whatsapp.com/GrupoCM_Manlio',
+                'lider': 'https://chat.whatsapp.com/GrupoLider_Manlio',
+                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Manlio',
+                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Manlio'
+            },
+            'orizaba': {
+                'pastor': 'https://chat.whatsapp.com/GrupoCM_Orizaba',
+                'lider': 'https://chat.whatsapp.com/GrupoLider_Orizaba',
+                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Orizaba',
+                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Orizaba'
+            },
+            'cd_aleman': {
+                'pastor': 'https://chat.whatsapp.com/GrupoCM_CdAleman',
+                'lider': 'https://chat.whatsapp.com/GrupoLider_CdAleman',
+                'maestro': 'https://chat.whatsapp.com/MaestrosZona_CdAleman',
+                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_CdAleman'
+            },
+            'xalapa': {
+                'pastor': 'https://chat.whatsapp.com/GrupoCM_Xalapa',
+                'lider': 'https://chat.whatsapp.com/GrupoLider_Xalapa',
+                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Xalapa',
+                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Xalapa'
+            },
+            'carlos_a_carrillo': {
+                'pastor': 'https://chat.whatsapp.com/GrupoCM_Carrillo',
+                'lider': 'https://chat.whatsapp.com/GrupoLider_Carrillo',
+                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Carrillo',
+                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Carrillo'
+            },
+            'tezonapa': {
+                'pastor': 'https://chat.whatsapp.com/GrupoCM_Tezonapa',
+                'lider': 'https://chat.whatsapp.com/GrupoLider_Tezonapa',
+                'maestro': 'https://chat.whatsapp.com/MaestrosZona_Tezonapa',
+                'guerrero': 'https://chat.whatsapp.com/GuerrerosZona_Tezonapa'
+            }
+        };
+
+        const linksDefault = {
             'pastor': 'https://chat.whatsapp.com/KgKlFqcwt2NFinwAvgqp22',
             'lider': 'https://chat.whatsapp.com/BlEFuksJSMuI5rrq7sfx6p',
             'maestro': 'https://chat.whatsapp.com/Io6FzfaTXeA3soWMb59dnW',
             'guerrero': 'https://chat.whatsapp.com/DFETFvqOMHLCDLIuTag7AT'
         };
 
+        const zonaLinks = linksPorZona[zonaKey] || linksDefault;
+        const linkFinal = zonaLinks[rol] || linksDefault['pastor'];
+
         res.render('unirse_comunidad', { 
             registroExitoso: true, 
-            linkGrupo: linksGrupos[rol] || linksGrupos['pastor'], 
+            linkGrupo: linkFinal, 
             rolSeleccionado: rol,
             nombreUsuario: nombre_completo,
             errorMensaje: null
@@ -220,7 +280,7 @@ app.get('/dev-admin/logout', (req, res) => {
 });
 
 // ==========================================
-// SESIÓN Y ADMINISTRACIÓN ZONAL (INCLUYE TEZONAPA)
+// SESIÓN Y ADMINISTRACIÓN ZONAL (INCLUYE TEZONAPA Y CARLOS A. CARRILLO)
 // ==========================================
 app.post('/login', (req, res) => {
     const { zona, password } = req.body;
@@ -242,7 +302,7 @@ app.post('/login', (req, res) => {
         "cd_aleman": "cdaleman2026",
         "xalapa": "xalapa2026",
         "carlos_a_carrillo": "carlos2026",
-        "tezonapa": "tezonapa2026" // 👈 NUEVA ZONA
+        "tezonapa": "tezonapa2026"
     };
 
     if (contrasenasZonas[zona] && contrasenasZonas[zona] === password) {
