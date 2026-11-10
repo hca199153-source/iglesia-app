@@ -322,7 +322,7 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// GUARDAR REGISTRO (CAMPOS OPCIONALES CON VALORES POR DEFECTO)
+// GUARDAR REGISTRO
 app.post('/guardar-registro', async (req, res) => {
     try {
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, maestros, guerreritos, guerreros } = req.body;
