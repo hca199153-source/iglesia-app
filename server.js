@@ -270,7 +270,7 @@ app.post('/login', (req, res) => {
     if (zona === 'dev_console') {
         if (password === 'dev2026') {
             req.session.isDev = true;
-            return res.redirect('/dev-admin');
+            return res.redirect('/admin');
         } else {
             return res.send(`<script>alert('Contraseña incorrecta.');window.location.href = '/admin';</script>`);
         }
