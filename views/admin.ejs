@@ -84,6 +84,22 @@
         }
         .btn-notif-wa:hover { background-color: #1eb857; color: white; transform: scale(1.05); }
 
+        .btn-trasladar {
+            background-color: #6f42c1;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-trasladar:hover { background-color: #59359a; color: white; transform: scale(1.05); }
+
         @page { size: A4 landscape; margin: 8mm; }
         @media print {
             body { background: white !important; color: #000 !important; font-size: 10px !important; margin: 0 !important; padding: 0 !important; }
@@ -363,6 +379,11 @@
                                                 <i class="fab fa-whatsapp"></i> Notificar
                                             </button>
 
+                                            <!-- 🚀 NUEVO BOTÓN PARA TRASLADAR REGISTRO A OTRA ZONA -->
+                                            <button type="button" class="btn-trasladar" onclick="abrirModalTrasladar('<%= item.id %>', '<%= item.nombre_iglesia %>', '<%= zona %>')">
+                                                <i class="fas fa-exchange-alt"></i> Trasladar
+                                            </button>
+
                                             <span class="badge-semaforo <%= colorClase %>" onclick="abrirModalSemaforo('<%= item.id %>', '<%= item.estado_semaforo || 'verde' %>', '<%= item.observacion_semaforo || '' %>')">
                                                 <i class="fas fa-circle"></i> <%= textoEstado %>
                                             </span>
@@ -384,7 +405,41 @@
     </div>
     <% } %>
 
-    <!-- MODALES DE ADMINISTRACIÓN -->
+    <!-- MODAL PARA TRASLADAR REGISTRO A OTRA ZONA -->
+    <div class="modal fade" id="modalTrasladar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header py-2 bg-purple text-white" style="background-color: #6f42c1;">
+                    <h6 class="modal-title fw-bold"><i class="fas fa-exchange-alt me-2"></i> Trasladar de Zona</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formTrasladarZona" method="POST" action="">
+                    <div class="modal-body p-3">
+                        <p class="small text-muted mb-2">Iglesia seleccionada: <strong id="lblIglesiaTraslado" class="text-dark"></strong></p>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Seleccione la Zona Destino:</label>
+                            <select name="nueva_zona" id="selectNuevaZona" class="form-select form-select-sm" required>
+                                <option value="">-- Seleccionar Zona --</option>
+                                <option value="san_andres">San Andrés Tuxtla</option>
+                                <option value="medellin">Medellín</option>
+                                <option value="manlio">Manlio Fabio</option>
+                                <option value="orizaba">Orizaba</option>
+                                <option value="cd_aleman">Ciudad Alemán</option>
+                                <option value="xalapa">Xalapa</option>
+                                <option value="carlos_a_carrillo">Carlos A. Carrillo</option>
+                                <option value="tezonapa">Tezonapa</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-1">
+                        <button type="submit" class="btn btn-sm text-white w-100 fw-bold" style="background-color: #6f42c1;">Confirmar Traslado</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES DE ADMINISTRACIÓN PREVIOS -->
     <div class="modal fade" id="modalNotifWhatsApp" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -394,7 +449,6 @@
                 </div>
                 <div class="modal-body p-3">
                     <input type="hidden" id="notifRowId">
-                    
                     <div class="row g-2">
                         <div class="col-md-6 mb-2">
                             <label class="form-label small fw-bold text-secondary">1. Enviar mensaje a:</label>
@@ -409,7 +463,6 @@
                         </div>
                     </div>
 
-                    <!-- SECCIÓN 1: FALTANTES -->
                     <div id="secFaltantesInfo" class="mb-2">
                         <label class="form-label small fw-bold text-secondary mb-1">Selecciona qué información falta:</label>
                         <div class="bg-light p-2 border rounded">
@@ -420,7 +473,6 @@
                         </div>
                     </div>
 
-                    <!-- SECCIÓN 2: GRUPOS PREDETERMINADOS -->
                     <div id="secInvitacionGrupo" class="mb-2" style="display: none;">
                         <label class="form-label small fw-bold text-secondary mb-1">Selecciona el grupo a invitar:</label>
                         <select id="selectGrupoPlantilla" class="form-select form-select-sm" onchange="actualizarPrevisualizacionMensaje()">
@@ -436,30 +488,25 @@
                         <input type="text" id="txtNotaExtraWa" class="form-control form-control-sm" placeholder="Ej. Por favor enviar antes del viernes..." onkeyup="actualizarPrevisualizacionMensaje()">
                     </div>
 
-                    <!-- TEXTAREA EDITABLE -->
                     <div class="mb-2">
                         <div class="d-flex justify-content-between align-items-center">
                             <label class="form-label small fw-bold text-success mb-1">3. Mensaje Final (Totalmente Editable):</label>
-                            <span class="text-muted" style="font-size: 0.7rem;">Puedes corregir o escribir cualquier cambio aquí antes de enviar.</span>
                         </div>
                         <textarea id="boxPreviewMensajeWa" class="form-control form-control-sm bg-white" rows="6" style="font-size: 0.8rem; font-family: monospace;"></textarea>
                     </div>
 
-                    <!-- ALERTA DE IMAGEN INSTITUCIONAL -->
                     <div class="alert alert-secondary py-2 px-3 small d-flex align-items-center justify-content-between mb-0">
                         <div class="d-flex align-items-center">
                             <img src="/images/logo.png" alt="Logo SP" style="width: 35px; height: 35px; object-fit: contain;" class="me-2 bg-white rounded p-1 border">
-                            <div>
-                                <strong>Imagen adjunta oficial:</strong> <span class="text-muted">Se enviará el logotipo institucional junto con el texto.</span>
-                            </div>
+                            <div><strong>Imagen adjunta oficial:</strong> Se enviará el logotipo institucional.</div>
                         </div>
-                        <a href="/images/logo.png" target="_blank" class="btn btn-outline-dark btn-sm py-0" style="font-size: 0.75rem;"><i class="fas fa-eye me-1"></i> Ver Imagen</a>
+                        <a href="/images/logo.png" target="_blank" class="btn btn-outline-dark btn-sm py-0" style="font-size: 0.75rem;"><i class="fas fa-eye me-1"></i> Ver</a>
                     </div>
                 </div>
                 <div class="modal-footer py-2">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-outline-success btn-sm fw-bold" onclick="copiarMensajePortapapeles()"><i class="fas fa-copy me-1"></i> Copiar Texto</button>
-                    <button type="button" class="btn btn-success btn-sm fw-bold" onclick="enviarMensajeWhatsAppPersonalizado()"><i class="fab fa-whatsapp me-1"></i> Abrir en WhatsApp</button>
+                    <button type="button" class="btn btn-outline-success btn-sm fw-bold" onclick="copiarMensajePortapapeles()"><i class="fas fa-copy me-1"></i> Copiar</button>
+                    <button type="button" class="btn btn-success btn-sm fw-bold" onclick="enviarMensajeWhatsAppPersonalizado()"><i class="fab fa-whatsapp me-1"></i> Enviar</button>
                 </div>
             </div>
         </div>
@@ -523,6 +570,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let modalTrasladarBs = null;
+        function abrirModalTrasladar(id, nombreIglesia, zonaActual) {
+            document.getElementById('formTrasladarZona').action = '/trasladar-zona/' + id;
+            document.getElementById('lblIglesiaTraslado').innerText = nombreIglesia;
+            
+            const selectZona = document.getElementById('selectNuevaZona');
+            selectZona.value = zonaActual; // Selecciona la actual por defecto
+
+            if (!modalTrasladarBs) modalTrasladarBs = new bootstrap.Modal(document.getElementById('modalTrasladar'));
+            modalTrasladarBs.show();
+        }
+
         function aplicarFiltrosYOrden() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
             const filterSemaforo = document.getElementById('filterSemaforo').value;
@@ -660,27 +719,13 @@
             } else {
                 const grupoSel = document.getElementById('selectGrupoPlantilla').value;
                 const mapaGrupos = {
-                    'maestros_lerdo': {
-                        nombre: 'Maestros de Lerdo de Tejada',
-                        link: 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
-                    },
-                    'maestros_catemaco': {
-                        nombre: 'Maestros de la Zona Catemaco',
-                        link: 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS'
-                    },
-                    'cm_lerdo': {
-                        nombre: 'CM de Lerdo de Tejada',
-                        link: 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK'
-                    },
-                    'cm_catemaco': {
-                        nombre: 'CM Catemaco',
-                        link: 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA'
-                    }
+                    'maestros_lerdo': { nombre: 'Maestros de Lerdo de Tejada', link: 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' },
+                    'maestros_catemaco': { nombre: 'Maestros de la Zona Catemaco', link: 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS' },
+                    'cm_lerdo': { nombre: 'CM de Lerdo de Tejada', link: 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK' },
+                    'cm_catemaco': { nombre: 'CM Catemaco', link: 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA' }
                 };
 
                 const infoGrupo = mapaGrupos[grupoSel] || mapaGrupos['maestros_lerdo'];
-
-                // Texto limpio sin emojis problemáticos
                 msg = `Estimado ${cargo.toLowerCase()} *${nombre}*, bendiciones.\n\nLe compartimos el enlace de acceso exclusivo para integrarse al grupo de *${infoGrupo.nombre}*, por este medio estaremos compartiendo información importante y avisos sobre nuestras próximas actividades:\n\n${infoGrupo.link}`;
 
                 if (notaExtra) msg += `\n\nNota: ${notaExtra}`;
