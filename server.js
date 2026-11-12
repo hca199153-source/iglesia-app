@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const QRCode = require('qrcode'); // 👈 Librería para generar códigos QR
 const supabase = require('./db.js');
 
 const app = express();
@@ -28,7 +29,12 @@ let systemState = {
 };
 
 app.use((req, res, next) => {
-    const rutasLibres = ['/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login', '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad', '/guardar-registro', '/public', '/images', '/css'];
+    const rutasLibres = [
+        '/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login', 
+        '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad', 
+        '/guardar-registro', '/iglesia/qr', '/evento/checkin-dashboard', 
+        '/evento/confirmar-llegada', '/evento/marcar-asistencia', '/public', '/images', '/css'
+    ];
     if (rutasLibres.some(r => req.path.startsWith(r))) {
         return next();
     }
@@ -191,7 +197,7 @@ app.post('/admin-comunidad/eliminar/:id', async (req, res) => {
 });
 
 // ==========================================
-// DEV-ADMIN
+// DEV-ADMIN Y CONTROL DE ZONAS PAUSADAS
 // ==========================================
 app.get('/dev-admin', (req, res) => {
     if (!req.session.isDev) return res.render('dev_login', { error: null });
@@ -296,7 +302,116 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// 🚀 NUEVA RUTA PARA TRASLADAR UNA IGLESIA DE ZONA EN LA BD
+// ==========================================
+// NUEVA ZONA: CÓDIGO QR Y CHECK-IN DE EVENTO
+// ==========================================
+
+// 1. Generar y mostrar el código QR individual de una iglesia para que el pastor lo descargue
+app.get('/iglesia/qr/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const { data: iglesia, error } = await supabase.from('iglesias').select('*').eq('id', id).maybeSingle();
+        
+        if (!iglesia) return res.status(404).send('Iglesia no encontrada.');
+
+        let token = iglesia.token_qr;
+        if (!token) {
+            token = 'iglesia_' + id + '_' + Math.random().toString(36).substring(2, 9);
+            await supabase.from('iglesias').update({ token_qr: token }).eq('id', id);
+        }
+
+        const hostUrl = req.protocol + '://' + req.get('host');
+        const urlCheckIn = `${hostUrl}/evento/confirmar-llegada?token=${token}`;
+
+        QRCode.toDataURL(urlCheckIn, { width: 300, margin: 2, color: { dark: '#007a2e', light: '#ffffff' } }, (err, qrImageSrc) => {
+            if (err) {
+                console.error("Error al generar QR:", err);
+                return res.status(500).send("Error al generar el código QR.");
+            }
+            res.render('qr_iglesia', { iglesia, qrImageSrc, urlCheckIn });
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error interno al generar el QR.');
+    }
+});
+
+// 2. Dashboard de Check-in y Asistencia en la Puerta del Evento
+app.get('/evento/checkin-dashboard', async (req, res) => {
+    try {
+        const zonaFiltro = req.query.zona || '';
+        
+        let query = supabase.from('iglesias').select('*');
+        if (zonaFiltro) {
+            query = query.eq('zona', zonaFiltro);
+        }
+
+        const { data: iglesias } = await query;
+        const listaIglesias = iglesias || [];
+
+        const totalEsperadas = listaIglesias.length;
+        const totalLlegadas = listaIglesias.filter(i => i.asistencia_confirmada).length;
+        const totalFaltantes = totalEsperadas - totalLlegadas;
+        const totalCajitasEntregadas = listaIglesias
+            .filter(i => i.asistencia_confirmada)
+            .reduce((acc, curr) => acc + (parseInt(curr.num_cajas) || 0), 0);
+
+        res.render('checkin_dashboard', {
+            iglesias: listaIglesias,
+            zonaFiltro,
+            totalEsperadas,
+            totalLlegadas,
+            totalFaltantes,
+            totalCajitasEntregadas
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error al cargar el dashboard de check-in.');
+    }
+});
+
+// 3. Confirmar llegada mediante lectura de QR
+app.get('/evento/confirmar-llegada', async (req, res) => {
+    try {
+        const { token } = req.query;
+        if (!token) return res.status(400).send('Token QR no válido o faltante.');
+
+        const { data: iglesia, error } = await supabase.from('iglesias').select('*').eq('token_qr', token).maybeSingle();
+        
+        if (!iglesia) {
+            return res.render('resultado_checkin', { exito: false, mensaje: '❌ Código QR no reconocido en la base de datos.' });
+        }
+
+        await supabase.from('iglesias').update({
+            asistencia_confirmada: true,
+            fecha_llegada: new Date().toISOString()
+        }).eq('id', iglesia.id);
+
+        res.render('resultado_checkin', { exito: true, iglesia });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error al procesar la confirmación de llegada.');
+    }
+});
+
+// 4. Marcar asistencia manualmente desde el dashboard de check-in
+app.post('/evento/marcar-asistencia/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const { estado } = req.body;
+
+        await supabase.from('iglesias').update({
+            asistencia_confirmada: estado === 'true' || estado === true,
+            fecha_llegada: (estado === 'true' || estado === true) ? new Date().toISOString() : null
+        }).eq('id', id);
+
+        res.redirect('/evento/checkin-dashboard');
+    } catch (err) {
+        res.status(500).send('Error al actualizar el estado de asistencia.');
+    }
+});
+
+// RUTA PARA TRASLADAR ZONA DE UNA IGLESIA
 app.post('/trasladar-zona/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
@@ -306,7 +421,6 @@ app.post('/trasladar-zona/:id', async (req, res) => {
             return res.status(400).send('Debe seleccionar una zona de destino.');
         }
 
-        // Actualizar únicamente el campo 'zona' de la iglesia en Supabase
         const { error } = await supabase
             .from('iglesias')
             .update({ zona: nueva_zona })
