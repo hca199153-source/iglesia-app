@@ -160,10 +160,12 @@
                 </div>
             </div>
             <div class="d-flex gap-2 no-print flex-wrap">
+                <a href="/evento/checkin-dashboard" class="btn btn-sm fw-bold shadow-sm" style="background-color: #007a2e; color: white; border: 1px solid #0056b3;">
+                    <i class="fas fa-qrcode me-1"></i> Dashboard Check-in Evento
+                </a>
                 <a href="/admin-comunidad" class="btn btn-success btn-sm fw-bold shadow-sm" style="background-color: #25D366; border-color: #25D366; color: white;">
                     <i class="fab fa-whatsapp me-1 fa-lg"></i> Admin Grupos WhatsApp
                 </a>
-                
                 <a href="/dev-admin" class="btn btn-dark btn-sm fw-bold border-success text-success"><i class="fas fa-terminal me-1"></i> Dev Console</a>
                 <button onclick="detenerDictadoGlobal()" class="btn btn-warning btn-sm fw-bold"><i class="fas fa-volume-mute me-1"></i> Detener Audio</button>
                 <a href="/exportar-excel" class="btn btn-excel btn-sm"><i class="fas fa-file-excel me-1"></i> Excel</a>
@@ -369,9 +371,11 @@
                                     <td class="no-print text-center">
                                         <div class="d-flex flex-column gap-1 align-items-center">
                                             <div class="d-flex gap-1">
-                                                <a href="/editar-registro/<%= item.id %>" class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i></a>
+                                                <a href="/editar-registro/<%= item.id %>" class="btn btn-outline-primary btn-sm" title="Editar"><i class="fas fa-edit"></i></a>
+                                                <!-- 🔗 Botón directo al QR individual de la iglesia -->
+                                                <a href="/iglesia/qr/<%= item.id %>" target="_blank" class="btn btn-outline-success btn-sm" title="Ver Código QR"><i class="fas fa-qrcode"></i></a>
                                                 <form action="/eliminar-registro/<%= item.id %>" method="POST" onsubmit="return confirm('¿Eliminar registro?');" style="display:inline;">
-                                                    <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                                                 </form>
                                             </div>
                                             
@@ -379,7 +383,6 @@
                                                 <i class="fab fa-whatsapp"></i> Notificar
                                             </button>
 
-                                            <!-- 🚀 NUEVO BOTÓN PARA TRASLADAR REGISTRO A OTRA ZONA -->
                                             <button type="button" class="btn-trasladar" onclick="abrirModalTrasladar('<%= item.id %>', '<%= item.nombre_iglesia %>', '<%= zona %>')">
                                                 <i class="fas fa-exchange-alt"></i> Trasladar
                                             </button>
@@ -405,7 +408,7 @@
     </div>
     <% } %>
 
-    <!-- MODAL PARA TRASLADAR REGISTRO A OTRA ZONA -->
+    <!-- MODAL PARA TRASLADAR ZONA -->
     <div class="modal fade" id="modalTrasladar" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
@@ -439,7 +442,7 @@
         </div>
     </div>
 
-    <!-- MODALES DE ADMINISTRACIÓN PREVIOS -->
+    <!-- MODAL WHATSAPP -->
     <div class="modal fade" id="modalNotifWhatsApp" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -489,9 +492,7 @@
                     </div>
 
                     <div class="mb-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <label class="form-label small fw-bold text-success mb-1">3. Mensaje Final (Totalmente Editable):</label>
-                        </div>
+                        <label class="form-label small fw-bold text-success mb-1">3. Mensaje Final (Totalmente Editable):</label>
                         <textarea id="boxPreviewMensajeWa" class="form-control form-control-sm bg-white" rows="6" style="font-size: 0.8rem; font-family: monospace;"></textarea>
                     </div>
 
@@ -512,6 +513,7 @@
         </div>
     </div>
 
+    <!-- MODAL DICTADO -->
     <div class="modal fade" id="modalDictado" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
@@ -545,6 +547,7 @@
         </div>
     </div>
 
+    <!-- MODAL SEMÁFORO -->
     <div class="modal fade" id="modalSemaforo" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
@@ -576,7 +579,7 @@
             document.getElementById('lblIglesiaTraslado').innerText = nombreIglesia;
             
             const selectZona = document.getElementById('selectNuevaZona');
-            selectZona.value = zonaActual; // Selecciona la actual por defecto
+            selectZona.value = zonaActual;
 
             if (!modalTrasladarBs) modalTrasladarBs = new bootstrap.Modal(document.getElementById('modalTrasladar'));
             modalTrasladarBs.show();
