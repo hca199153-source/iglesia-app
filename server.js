@@ -1,7 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const QRCode = require('qrcode'); // 👈 Librería para generar códigos QR
+const QRCode = require('qrcode');
 const supabase = require('./db.js');
 
 const app = express();
@@ -32,8 +32,9 @@ app.use((req, res, next) => {
     const rutasLibres = [
         '/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login', 
         '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad', 
-        '/guardar-registro', '/iglesia/qr', '/evento/checkin-dashboard', 
-        '/evento/confirmar-llegada', '/evento/marcar-asistencia', '/public', '/images', '/css'
+        '/guardar-registro', '/iglesia/qr', '/descargar-qr', '/buscar-mi-qr',
+        '/evento/checkin-dashboard', '/evento/confirmar-llegada', 
+        '/evento/marcar-asistencia', '/public', '/images', '/css'
     ];
     if (rutasLibres.some(r => req.path.startsWith(r))) {
         return next();
@@ -303,10 +304,10 @@ app.get('/admin', async (req, res) => {
 });
 
 // ==========================================
-// NUEVA ZONA: CÓDIGO QR Y CHECK-IN DE EVENTO
+// ZONA: CÓDIGO QR Y CHECK-IN DE EVENTO
 // ==========================================
 
-// 1. Generar y mostrar el código QR individual de una iglesia para que el pastor lo descargue
+// 1. Generar y mostrar el código QR individual de una iglesia (Admin)
 app.get('/iglesia/qr/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
@@ -336,7 +337,61 @@ app.get('/iglesia/qr/:id', async (req, res) => {
     }
 });
 
-// 2. Dashboard de Check-in y Asistencia en la Puerta del Evento
+// 2. Portal público para que el pastor descargue su QR ingresando su teléfono
+app.get('/descargar-qr', (req, res) => {
+    res.render('descargar_qr_publico', { iglesia: null, qrImageSrc: null, errorMensaje: null });
+});
+
+app.post('/buscar-mi-qr', async (req, res) => {
+    try {
+        const telLimpio = (req.body.telefono || '').replace(/\D/g, '');
+        if (telLimpio.length < 10) {
+            return res.render('descargar_qr_publico', { 
+                iglesia: null, 
+                qrImageSrc: null, 
+                errorMensaje: 'Por favor ingresa un número válido de al menos 10 dígitos.' 
+            });
+        }
+
+        const ultimos10 = telLimpio.slice(-10);
+        const { data: iglesias } = await supabase.from('iglesias').select('*');
+        
+        const iglesiaEncontrada = (iglesias || []).find(i => {
+            const telP = (i.telefono_pastor || '').replace(/\D/g, '');
+            const telL = (i.telefono_lider || '').replace(/\D/g, '');
+            return (telP && telP.endsWith(ultimos10)) || (telL && telL.endsWith(ultimos10));
+        });
+
+        if (!iglesiaEncontrada) {
+            return res.render('descargar_qr_publico', { 
+                iglesia: null, 
+                qrImageSrc: null, 
+                errorMensaje: 'No encontramos ninguna iglesia registrada con ese teléfono. Verifica el número o contacta a tu coordinador de zona.' 
+            });
+        }
+
+        let token = iglesiaEncontrada.token_qr;
+        if (!token) {
+            token = 'iglesia_' + iglesiaEncontrada.id + '_' + Math.random().toString(36).substring(2, 9);
+            await supabase.from('iglesias').update({ token_qr: token }).eq('id', iglesiaEncontrada.id);
+        }
+
+        const hostUrl = req.protocol + '://' + req.get('host');
+        const urlCheckIn = `${hostUrl}/evento/confirmar-llegada?token=${token}`;
+
+        QRCode.toDataURL(urlCheckIn, { width: 300, margin: 2, color: { dark: '#007a2e', light: '#ffffff' } }, (err, qrImageSrc) => {
+            if (err) {
+                return res.render('descargar_qr_publico', { iglesia: null, qrImageSrc: null, errorMensaje: 'Error interno al generar la imagen QR.' });
+            }
+            res.render('descargar_qr_publico', { iglesia: iglesiaEncontrada, qrImageSrc, errorMensaje: null });
+        });
+    } catch (err) {
+        console.error(err);
+        res.render('descargar_qr_publico', { iglesia: null, qrImageSrc: null, errorMensaje: 'Ocurrió un error al consultar la base de datos.' });
+    }
+});
+
+// 3. Dashboard de Check-in y Asistencia en la Puerta del Evento
 app.get('/evento/checkin-dashboard', async (req, res) => {
     try {
         const zonaFiltro = req.query.zona || '';
@@ -370,7 +425,7 @@ app.get('/evento/checkin-dashboard', async (req, res) => {
     }
 });
 
-// 3. Confirmar llegada mediante lectura de QR
+// 4. Confirmar llegada mediante lectura de QR
 app.get('/evento/confirmar-llegada', async (req, res) => {
     try {
         const { token } = req.query;
@@ -394,7 +449,7 @@ app.get('/evento/confirmar-llegada', async (req, res) => {
     }
 });
 
-// 4. Marcar asistencia manualmente desde el dashboard de check-in
+// 5. Marcar asistencia manualmente desde el dashboard de check-in
 app.post('/evento/marcar-asistencia/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
