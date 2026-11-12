@@ -3,141 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dev Console | Samaritan's Purse</title>
+    <title>Programmer Console | Samaritan's Purse</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #071711; font-family: 'Segoe UI', Tahoma, sans-serif; color: #e0e0e0; margin: 0; padding: 20px; }
-        .dev-container { max-width: 1000px; margin: 0 auto; background: #0b221a; border: 2px solid #009639; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-        .dev-header { background: #05140f; border-bottom: 2px solid #009639; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .card-dev { background: #0e2b21; border: 1px solid #164e3b; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        .status-badge { font-family: monospace; font-size: 1rem; padding: 6px 14px; border-radius: 20px; font-weight: bold; }
-        .badge-active { background-color: #198754; color: white; }
-        .badge-mantenimiento { background-color: #ffc107; color: #000; }
-        .badge-fuera_tiempo { background-color: #dc3545; color: white; }
-        .form-control, .form-select { background-color: #05140f; border: 1px solid #009639; color: #00ff66; }
-        .form-control:focus, .form-select:focus { background-color: #05140f; color: #00ff66; border-color: #00ff66; box-shadow: 0 0 10px rgba(0,255,102,0.3); }
+        body { background-color: #05140d; font-family: 'Consolas', 'Courier New', monospace; color: #00ff66; margin: 0; padding: 20px; }
+        .dev-container { max-width: 1000px; margin: 0 auto; background: #0a2217; border: 2px solid #00ff66; border-radius: 12px; box-shadow: 0 0 25px rgba(0, 255, 102, 0.2); padding: 25px; }
+        .dev-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #00ff66; padding-bottom: 15px; margin-bottom: 20px; }
+        .status-box { background: #061910; border: 1px solid #00ff66; padding: 15px; border-radius: 8px; margin-bottom: 25px; }
+        .card-option { background: #0d2d1f; border: 1px solid #009639; border-radius: 8px; padding: 20px; text-center; color: #ffffff; }
     </style>
 </head>
 <body>
     <div class="dev-container">
         <div class="dev-header">
-            <div class="d-flex align-items-center gap-3">
-                <i class="fas fa-code-branch fa-2x text-success"></i>
-                <div>
-                    <h4 class="fw-bold text-white mb-0">&lt;Programmer Console /&gt;</h4>
-                    <small class="text-success font-monospace">Samaritan's Purse Master System Control</small>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <a href="/admin" class="btn btn-outline-success btn-sm fw-bold"><i class="fas fa-users-cog me-1"></i> Panel Zonal</a>
-                <a href="/dev-admin/logout" class="btn btn-outline-danger btn-sm fw-bold"><i class="fas fa-power-off me-1"></i> Logout</a>
-            </div>
-        </div>
-
-        <div class="card-dev d-flex justify-content-between align-items-center">
             <div>
-                <span class="text-muted small font-monospace d-block mb-1">&gt; Estado Actual del Formulario Público:</span>
-                <% if (systemState.status === 'active') { %>
-                    <span class="status-badge badge-active"><i class="fas fa-check-circle me-1"></i> ACTIVO (Aceptando Registros)</span>
-                <% } else if (systemState.status === 'mantenimiento') { %>
-                    <span class="status-badge badge-mantenimiento"><i class="fas fa-tools me-1"></i> PAUSADO (Corrección de Código)</span>
-                <% } else { %>
-                    <span class="status-badge badge-fuera_tiempo"><i class="fas fa-clock me-1"></i> PAUSADO (Periodo Finalizado)</span>
-                <% } %>
+                <h3 class="fw-bold mb-0 text-success"><i class="fas fa-terminal me-2"></i> <Programmer Console /></h3>
+                <small class="text-muted">Samaritan's Purse Master System Control</small>
             </div>
-            <a href="/" target="_blank" class="btn btn-outline-success btn-sm"><i class="fas fa-external-link-alt me-1"></i> Ver Formulario</a>
+            <div>
+                <a href="/admin" class="btn btn-outline-success btn-sm me-2"><i class="fas fa-users me-1"></i> Panel Zonal</a>
+                <a href="/dev-admin/logout" class="btn btn-outline-danger btn-sm"><i class="fas fa-power-off me-1"></i> Logout</a>
+            </div>
         </div>
 
-        <div class="row g-3">
+        <!-- ESTADO GLOBAL -->
+        <div class="status-box">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted d-block small">> Estado Actual del Formulario Público:</span>
+                    <% if (systemState.status === 'active') { %>
+                        <h4 class="text-success fw-bold mb-0"><i class="fas fa-check-circle me-1"></i> ACTIVO (Aceptando Registros)</h4>
+                    <% } else if (systemState.status === 'mantenimiento') { %>
+                        <h4 class="text-warning fw-bold mb-0"><i class="fas fa-wrench me-1"></i> PAUSA POR MANTENIMIENTO</h4>
+                    <% } else { %>
+                        <h4 class="text-danger fw-bold mb-0"><i class="fas fa-hourglass-end me-1"></i> PAUSA POR CIERRE FINAL</h4>
+                    <% } %>
+                </div>
+                <a href="/" target="_blank" class="btn btn-sm btn-outline-light"><i class="fas fa-external-link-alt me-1"></i> Ver Formulario</a>
+            </div>
+        </div>
+
+        <!-- ACCIONES DE ESTADO GLOBAL -->
+        <div class="row g-3 mb-4 text-center">
             <div class="col-md-4">
-                <div class="card-dev text-center h-100">
+                <div class="card-option">
                     <i class="fas fa-play-circle fa-2x text-success mb-2"></i>
-                    <h6 class="fw-bold text-white">1. Reanudar Sistema</h6>
-                    <p class="small text-muted">Abre el formulario público.</p>
-                    <button class="btn btn-success btn-sm w-100 fw-bold mt-auto" onclick="confirmarCambio('active', '¿Estás seguro de REANUDAR las inscripciones?')">Reanudar</button>
+                    <h6 class="fw-bold">1. Reanudar Sistema</h6>
+                    <form action="/dev-admin/cambiar-estado" method="POST">
+                        <input type="hidden" name="status" value="active">
+                        <button type="submit" class="btn btn-success btn-sm w-100 mt-2 fw-bold">Reanudar</button>
+                    </form>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card-dev text-center h-100 border-warning">
+                <div class="card-option">
                     <i class="fas fa-wrench fa-2x text-warning mb-2"></i>
-                    <h6 class="fw-bold text-white">2. Pausa Correcciones</h6>
-                    <p class="small text-muted">Pausa temporal por código.</p>
-                    <button class="btn btn-warning btn-sm w-100 fw-bold mt-auto" onclick="abrirModalPausa('mantenimiento')">Pausar Código</button>
+                    <h6 class="fw-bold">2. Pausa Correcciones</h6>
+                    <form action="/dev-admin/cambiar-estado" method="POST">
+                        <input type="hidden" name="status" value="mantenimiento">
+                        <button type="submit" class="btn btn-warning btn-sm w-100 mt-2 fw-bold">Pausar Código</button>
+                    </form>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card-dev text-center h-100 border-danger">
+                <div class="card-option">
                     <i class="fas fa-hourglass-end fa-2x text-danger mb-2"></i>
-                    <h6 class="fw-bold text-white">3. Pausa Cierre Final</h6>
-                    <p class="small text-muted">Bloqueo por fin de tiempo.</p>
-                    <button class="btn btn-danger btn-sm w-100 fw-bold mt-auto" onclick="abrirModalPausa('fuera_tiempo')">Pausar Cierre</button>
+                    <h6 class="fw-bold">3. Pausa Cierre Final</h6>
+                    <form action="/dev-admin/cambiar-estado" method="POST">
+                        <input type="hidden" name="status" value="fuera_tiempo">
+                        <button type="submit" class="btn btn-danger btn-sm w-100 mt-2 fw-bold">Pausar Cierre</button>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- MODAL CONFIRMACIÓN TRIPLE -->
-    <div class="modal fade" id="modalPausa" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark text-white border-success">
-                <div class="modal-header border-secondary">
-                    <h6 class="modal-title fw-bold text-success"><i class="fas fa-shield-alt me-1"></i> Seguridad de Pausa</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form action="/dev-admin/cambiar-estado" method="POST" onsubmit="return validarConfirmacion()">
-                    <div class="modal-body">
-                        <input type="hidden" name="status" id="inputModalStatus">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-success">Mensaje:</label>
-                            <input type="text" name="customMessage" id="inputCustomMessage" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-success">Cronómetro Regresivo (Opcional):</label>
-                            <input type="datetime-local" name="targetDate" class="form-control form-control-sm">
-                        </div>
-                        <div class="p-2 border border-danger rounded bg-black mb-3">
-                            <p class="small text-danger fw-bold mb-1">Escribe <strong class="text-white">PAUSAR</strong> para confirmar:</p>
-                            <input type="text" id="inputVerificacion" class="form-control form-control-sm" placeholder="PAUSAR" required autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="modal-footer border-secondary">
-                        <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold">Aplicar Bloqueo</button>
-                    </div>
-                </form>
+        <!-- SECCIÓN DE PAUSA ESPECÍFICA POR ZONAS (CUPO LLENO) -->
+        <div class="card bg-dark border-success p-3 text-white">
+            <h5 class="fw-bold text-success mb-2"><i class="fas fa-layer-group me-2"></i> Control de Capacidad por Zonas</h5>
+            <p class="small text-muted mb-3">Bloquee zonas específicas cuando alcancen el cupo máximo para impedir más registros en esa región.</p>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-striped align-middle small mb-0">
+                    <thead>
+                        <tr class="table-success text-dark">
+                            <th>Zona / Región</th>
+                            <th>Estado de Registro</th>
+                            <th class="text-center">Acción rápida</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% 
+                        const listaZonas = [
+                            { id: 'san_andres', nombre: 'San Andrés Tuxtla' },
+                            { id: 'medellin', nombre: 'Medellín' },
+                            { id: 'manlio', nombre: 'Manlio Fabio' },
+                            { id: 'orizaba', nombre: 'Orizaba' },
+                            { id: 'cd_aleman', nombre: 'Ciudad Alemán' },
+                            { id: 'xalapa', nombre: 'Xalapa' },
+                            { id: 'carlos_a_carrillo', nombre: 'Carlos A. Carrillo' },
+                            { id: 'tezonapa', nombre: 'Tezonapa' }
+                        ];
+                        
+                        listaZonas.forEach(z => {
+                            let pausadas = systemState.zonasPausadas || [];
+                            let estaPausada = pausadas.includes(z.id);
+                        %>
+                        <tr>
+                            <td class="fw-bold"><%= z.nombre %></td>
+                            <td>
+                                <% if (estaPausada) { %>
+                                    <span class="badge bg-danger">🔴 PAUSADA (Cupo lleno)</span>
+                                <% } else { %>
+                                    <span class="badge bg-success">🟢 ACTIVA</span>
+                                <% } %>
+                            </td>
+                            <td class="text-center">
+                                <form action="/dev-admin/cambiar-zona-estado" method="POST" style="display:inline;">
+                                    <input type="hidden" name="zona" value="<%= z.id %>">
+                                    <% if (estaPausada) { %>
+                                        <input type="hidden" name="accion" value="activar">
+                                        <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2 fw-bold">Reabrir</button>
+                                    <% } else { %>
+                                        <input type="hidden" name="accion" value="pausar">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold">Pausar (Cerrar Cupo)</button>
+                                    <% } %>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let modalPausaBs = null;
-        function abrirModalPausa(status) {
-            document.getElementById('inputModalStatus').value = status;
-            document.getElementById('inputVerificacion').value = '';
-            document.getElementById('inputCustomMessage').value = status === 'mantenimiento' 
-                ? "Estamos trabajando en darte la mejor experiencia con el sistema..." 
-                : "El periodo de recepción de registros ha finalizado oficialmente.";
-            if (!modalPausaBs) modalPausaBs = new bootstrap.Modal(document.getElementById('modalPausa'));
-            modalPausaBs.show();
-        }
-        function validarConfirmacion() {
-            if (document.getElementById('inputVerificacion').value.trim() !== 'PAUSAR') {
-                alert('Debes escribir exactamente la palabra "PAUSAR".');
-                return false;
-            }
-            return true;
-        }
-        function confirmarCambio(status, mensaje) {
-            if (confirm(mensaje)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/dev-admin/cambiar-estado';
-                const input = document.createElement('input');
-                input.type = 'hidden'; input.name = 'status'; input.value = status;
-                form.appendChild(input); document.body.appendChild(form); form.submit();
-            }
-        }
-    </script>
 </body>
 </html>
