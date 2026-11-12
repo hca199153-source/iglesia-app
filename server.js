@@ -20,16 +20,15 @@ app.use(session({
     cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// ESTADO GLOBAL DE LA APLICACIÓN
 let systemState = {
     status: 'active', // 'active', 'mantenimiento', 'fuera_tiempo'
     targetDate: null,  
-    customMessage: ''
+    customMessage: '',
+    zonasPausadas: [] 
 };
 
-// MIDDLEWARE DE CONTROL DE ESTADO PÚBLICO Y SEGURIDAD
 app.use((req, res, next) => {
-    const rutasLibres = ['/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login', '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad', '/public', '/images', '/css'];
+    const rutasLibres = ['/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login', '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad', '/guardar-registro', '/public', '/images', '/css'];
     if (rutasLibres.some(r => req.path.startsWith(r))) {
         return next();
     }
@@ -56,7 +55,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// SECCIÓN: UNIRSE A LA COMUNIDAD (WHATSAPP INTELIGENTE)
+// SECCIÓN: UNIRSE A LA COMUNIDAD
 // ==========================================
 app.get('/unirse-comunidad', (req, res) => {
     res.render('unirse_comunidad', { 
@@ -75,7 +74,6 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
         let iglesiaEncontrada = null;
 
         if (telLimpio.length >= 10) {
-            // 1. Buscar en iglesias (Pastor o Líder)
             const { data: iglesiasMatch } = await supabase.from('iglesias').select('*');
             if (iglesiasMatch) {
                 const encontrada = iglesiasMatch.find(i => {
@@ -86,7 +84,6 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
                 if (encontrada) iglesiaEncontrada = encontrada;
             }
 
-            // 2. Buscar en maestros si no se encontró
             if (!iglesiaEncontrada) {
                 const { data: maestrosMatch } = await supabase.from('maestros').select('*, iglesias (*)');
                 if (maestrosMatch) {
@@ -105,11 +102,10 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
                 linkGrupo: null, 
                 rolSeleccionado: rol,
                 nombreUsuario: null,
-                errorMensaje: '❌ Su número no coincide con ningún registro previo en el formulario oficial. Por favor, asegúrese de haber registrado su iglesia primero.'
+                errorMensaje: '❌ Su número no coincide con ningún registro previo en el formulario oficial.'
             });
         }
 
-        // Guardar o actualizar en miembros de comunidad vinculado a su iglesia y zona
         await supabase.from('miembros_comunidad').insert([{
             nombre_completo: (nombre_completo || '').trim(),
             telefono: telLimpio,
@@ -118,49 +114,15 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             iglesia_id: iglesiaEncontrada.id
         }]);
 
-        // ENLACES PERSONALIZADOS POR ZONA Y ROL
         const zonaKey = iglesiaEncontrada.zona || 'san_andres';
-        
         const linksPorZona = {
-            'san_andres': {
-                'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 
-                'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
-                'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 
-                'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
-            },
-            'catemaco': {
-                'pastor': 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA',
-                'lider': 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA',
-                'maestro': 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS',
-                'guerrero': 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS'
-            },
-            'lerdo': {
-                'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
-                'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
-                'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr',
-                'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
-            },
-            'tezonapa': {
-                'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
-                'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
-                'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr',
-                'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
-            },
-            'carlos_a_carrillo': {
-                'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
-                'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
-                'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr',
-                'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
-            }
+            'san_andres': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' },
+            'catemaco': { 'pastor': 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA', 'lider': 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA', 'maestro': 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS', 'guerrero': 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS' },
+            'lerdo': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' },
+            'tezonapa': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' },
+            'carlos_a_carrillo': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' }
         };
-
-        const linksDefault = {
-            'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
-            'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK',
-            'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr',
-            'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr'
-        };
-
+        const linksDefault = { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' };
         const zonaLinks = linksPorZona[zonaKey] || linksDefault;
         const linkFinal = zonaLinks[rol] || linksDefault['pastor'];
 
@@ -172,7 +134,6 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             errorMensaje: null
         });
     } catch (err) {
-        console.error('Error al registrar en comunidad:', err);
         res.status(500).send('Error al procesar el registro.');
     }
 });
@@ -230,7 +191,7 @@ app.post('/admin-comunidad/eliminar/:id', async (req, res) => {
 });
 
 // ==========================================
-// PANEL DE PROGRAMADOR (DEV-ADMIN)
+// DEV-ADMIN
 // ==========================================
 app.get('/dev-admin', (req, res) => {
     if (!req.session.isDev) return res.render('dev_login', { error: null });
@@ -243,7 +204,7 @@ app.post('/dev-admin/login', (req, res) => {
         req.session.isDev = true;
         res.redirect('/dev-admin');
     } else {
-        res.render('dev_login', { error: 'Contraseña de desarrollador incorrecta.' });
+        res.render('dev_login', { error: 'Contraseña incorrecta.' });
     }
 });
 
@@ -253,6 +214,19 @@ app.post('/dev-admin/cambiar-estado', (req, res) => {
     systemState.status = status;
     systemState.targetDate = targetDate ? new Date(targetDate).getTime() : null;
     systemState.customMessage = (customMessage || '').trim();
+    res.redirect('/dev-admin');
+});
+
+app.post('/dev-admin/cambiar-zona-estado', (req, res) => {
+    if (!req.session.isDev) return res.status(403).send('No autorizado');
+    const { zona, accion } = req.body;
+    if (!systemState.zonasPausadas) systemState.zonasPausadas = [];
+
+    if (accion === 'pausar' && !systemState.zonasPausadas.includes(zona)) {
+        systemState.zonasPausadas.push(zona);
+    } else if (accion === 'activar') {
+        systemState.zonasPausadas = systemState.zonasPausadas.filter(z => z !== zona);
+    }
     res.redirect('/dev-admin');
 });
 
@@ -322,15 +296,45 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// GUARDAR REGISTRO
+// 🚀 NUEVA RUTA PARA TRASLADAR UNA IGLESIA DE ZONA EN LA BD
+app.post('/trasladar-zona/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const { nueva_zona } = req.body;
+
+        if (!nueva_zona) {
+            return res.status(400).send('Debe seleccionar una zona de destino.');
+        }
+
+        // Actualizar únicamente el campo 'zona' de la iglesia en Supabase
+        const { error } = await supabase
+            .from('iglesias')
+            .update({ zona: nueva_zona })
+            .eq('id', id);
+
+        if (error) throw new Error(error.message);
+
+        res.redirect('/admin');
+    } catch (err) {
+        console.error("Error al trasladar zona:", err);
+        res.status(500).send('Error al procesar el traslado de zona.');
+    }
+});
+
+// GUARDAR REGISTRO CON BLOQUEO POR ZONA PAUSADA
 app.post('/guardar-registro', async (req, res) => {
     try {
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, maestros, guerreritos, guerreros } = req.body;
+        const zonaKey = (zona && zona.trim() !== '') ? zona : 'san_andres';
+
+        if (systemState.zonasPausadas && systemState.zonasPausadas.includes(zonaKey)) {
+            return res.status(400).send(`<!DOCTYPE html><html lang="es"><head><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light d-flex align-items-center justify-content-center vh-100"><div class="card p-4 text-center shadow-sm" style="max-width: 450px;"><h3 class="text-danger mb-3">¡Registro Cerrado!</h3><p class="text-muted">Lo sentimos, la capacidad para la zona <strong>${zonaKey.toUpperCase()}</strong> se encuentra completa por el momento.</p><a href="/" class="btn btn-secondary mt-2">Regresar al Inicio</a></div></body></html>`);
+        }
 
         const { data: iglesiaData, error: iglesiaError } = await supabase
             .from('iglesias')
             .insert([{
-                zona: (zona && zona.trim() !== '') ? zona : 'san_andres', 
+                zona: zonaKey, 
                 nombre_pastor: (nombre_pastor || '').trim(), 
                 telefono_pastor: (telefono_pastor || '').trim(), 
                 correo_pastor: (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'Sin correo registrado',
@@ -400,7 +404,6 @@ app.get('/editar-registro/:id', async (req, res) => {
     }
 });
 
-// ACTUALIZAR REGISTRO
 app.post('/actualizar-registro/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
@@ -458,7 +461,6 @@ app.post('/actualizar-registro/:id', async (req, res) => {
 
         res.redirect('/admin');
     } catch (err) { 
-        console.error("Error al actualizar:", err);
         res.status(500).send('Error al actualizar el registro.'); 
     }
 });
