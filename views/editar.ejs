@@ -23,28 +23,13 @@
             </div>
             
             <form action="/actualizar-registro/<%= iglesia.id %>" method="POST">
-                <div class="row g-2 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small">Zona de Captura:</label>
-                        <select name="zona" class="form-select form-select-sm" required>
-                            <option value="san_andres" <%= iglesia.zona === 'san_andres' ? 'selected' : '' %>>San Andrés Tuxtla</option>
-                            <option value="medellin" <%= iglesia.zona === 'medellin' ? 'selected' : '' %>>Medellín</option>
-                            <option value="manlio" <%= iglesia.zona === 'manlio' ? 'selected' : '' %>>Manlio Fabio</option>
-                            <option value="orizaba" <%= iglesia.zona === 'orizaba' ? 'selected' : '' %>>Orizaba</option>
-                            <option value="cd_aleman" <%= iglesia.zona === 'cd_aleman' ? 'selected' : '' %>>Ciudad Alemán</option>
-                            <option value="xalapa" <%= iglesia.zona === 'xalapa' ? 'selected' : '' %>>Xalapa</option>
-                            <option value="carlos_a_carrillo" <%= iglesia.zona === 'carlos_a_carrillo' ? 'selected' : '' %>>Carlos A. Carrillo</option>
-                            <option value="tezonapa" <%= iglesia.zona === 'tezonapa' ? 'selected' : '' %>>Tezonapa</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small">Estado Semáforo:</label>
-                        <select name="estado_semaforo" class="form-select form-select-sm" required>
-                            <option value="verde" <%= (iglesia.estado_semaforo || 'verde') === 'verde' ? 'selected' : '' %>>🟢 Verde (Completo)</option>
-                            <option value="amarillo" <%= iglesia.estado_semaforo === 'amarillo' ? 'selected' : '' %>>🟡 Amarillo (Faltante Menor)</option>
-                            <option value="rojo" <%= iglesia.estado_semaforo === 'rojo' ? 'selected' : '' %>>🔴 Rojo (Faltante Crítico)</option>
-                        </select>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Estado Semáforo:</label>
+                    <select name="estado_semaforo" class="form-select form-select-sm" required>
+                        <option value="verde" <%= (iglesia.estado_semaforo || 'verde') === 'verde' ? 'selected' : '' %>>🟢 Verde (Completo)</option>
+                        <option value="amarillo" <%= iglesia.estado_semaforo === 'amarillo' ? 'selected' : '' %>>🟡 Amarillo (Faltante Menor)</option>
+                        <option value="rojo" <%= iglesia.estado_semaforo === 'rojo' ? 'selected' : '' %>>🔴 Rojo (Faltante Crítico)</option>
+                    </select>
                 </div>
 
                 <div class="mb-3">
