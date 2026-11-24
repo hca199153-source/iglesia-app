@@ -100,6 +100,14 @@
         }
         .btn-trasladar:hover { background-color: #59359a; color: white; transform: scale(1.05); }
 
+        .nuevo-grupo-box {
+            background-color: #f0fdf4;
+            border: 1px dashed #198754;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 8px;
+        }
+
         @page { size: A4 landscape; margin: 8mm; }
         @media print {
             body { background: white !important; color: #000 !important; font-size: 10px !important; margin: 0 !important; padding: 0 !important; }
@@ -482,35 +490,29 @@
                     <div id="secInvitacionGrupo" class="mb-2" style="display: none;">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label small fw-bold text-secondary mb-0">Selecciona el grupo a invitar:</label>
-                            <div class="d-flex gap-1">
-                                <button type="button" class="btn btn-outline-success btn-sm py-0 px-2" style="font-size: 0.72rem;" onclick="toggleFormularioNuevoGrupo()">
-                                    <i class="fas fa-plus-circle me-1"></i> Agregar nuevo grupo
-                                </button>
-                                <button type="button" id="btnEliminarGrupoCustom" class="btn btn-outline-danger btn-sm py-0 px-2" style="font-size: 0.72rem; display: none;" onclick="eliminarGrupoSeleccionado()" title="Eliminar grupo personalizado">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
+                            <button type="button" class="btn btn-outline-success btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem;" onclick="toggleFormularioNuevoGrupo()">
+                                <i class="fas fa-plus-circle me-1"></i> Agregar nuevo grupo
+                            </button>
                         </div>
+                        <select id="selectGrupoPlantilla" class="form-select form-select-sm" onchange="actualizarPrevisualizacionMensaje()"></select>
 
-                        <select id="selectGrupoPlantilla" class="form-select form-select-sm mb-2" onchange="actualizarControlesGrupo(); actualizarPrevisualizacionMensaje();"></select>
-
-                        <!-- ZONA PARA AGREGAR UN NUEVO GRUPO Y SU ENLACE -->
-                        <div id="boxAgregarNuevoGrupo" class="p-2 border border-success rounded bg-light mb-2" style="display: none;">
-                            <div class="small fw-bold text-success mb-2"><i class="fab fa-whatsapp me-1"></i> Nuevo Grupo de WhatsApp</div>
-                            <div class="row g-2">
+                        <div id="boxNuevoGrupo" class="nuevo-grupo-box" style="display: none;">
+                            <div class="row g-2 align-items-end">
                                 <div class="col-md-5">
-                                    <input type="text" id="txtNombreNuevoGrupo" class="form-control form-control-sm" placeholder="Nombre (Ej. Maestros Coatepec)">
+                                    <label class="form-label small fw-bold text-success mb-1">Nombre del grupo:</label>
+                                    <input type="text" id="txtNuevoGrupoNombre" class="form-control form-control-sm" placeholder="Ej. Maestros Cosamaloapan">
                                 </div>
                                 <div class="col-md-5">
-                                    <input type="url" id="txtLinkNuevoGrupo" class="form-control form-control-sm" placeholder="https://chat.whatsapp.com/...">
+                                    <label class="form-label small fw-bold text-success mb-1">Enlace del grupo:</label>
+                                    <input type="url" id="txtNuevoGrupoEnlace" class="form-control form-control-sm" placeholder="https://chat.whatsapp.com/...">
                                 </div>
                                 <div class="col-md-2 d-grid">
-                                    <button type="button" class="btn btn-success btn-sm fw-bold" onclick="guardarNuevoGrupoEnLista()">
-                                        <i class="fas fa-check me-1"></i> Añadir
+                                    <button type="button" id="btnGuardarNuevoGrupo" class="btn btn-success btn-sm fw-bold" onclick="guardarNuevoGrupoEnBD()">
+                                        <i class="fas fa-save me-1"></i> Guardar
                                     </button>
                                 </div>
                             </div>
-                            <div id="msgErrorNuevoGrupo" class="text-danger mt-1" style="font-size: 0.72rem; display: none;"></div>
+                            <div id="msgEstadoNuevoGrupo" class="small mt-1" style="min-height: 18px;"></div>
                         </div>
                     </div>
 
@@ -601,144 +603,81 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const STORAGE_GRUPOS_KEY = 'sp_grupos_whatsapp_custom_v1';
+        let gruposWhatsAppList = <%- JSON.stringify(locals.gruposWhatsApp || []) %>;
 
-        const GRUPOS_BASE = {
-            'maestros_lerdo': { nombre: 'Maestros de Lerdo de Tejada', link: 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', custom: false },
-            'maestros_catemaco': { nombre: 'Maestros de la Zona Catemaco', link: 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS', custom: false },
-            'cm_lerdo': { nombre: 'CM de Lerdo de Tejada', link: 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', custom: false },
-            'cm_catemaco': { nombre: 'CM Catemaco', link: 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA', custom: false }
-        };
-
-        function obtenerGruposCustom() {
-            try {
-                const raw = localStorage.getItem(STORAGE_GRUPOS_KEY);
-                return raw ? JSON.parse(raw) : {};
-            } catch (e) {
-                return {};
-            }
-        }
-
-        function guardarGruposCustom(gruposObj) {
-            try {
-                localStorage.setItem(STORAGE_GRUPOS_KEY, JSON.stringify(gruposObj));
-            } catch (e) {
-                console.error('Error guardando grupos en localStorage:', e);
-            }
-        }
-
-        function obtenerTodosLosGrupos() {
-            return { ...GRUPOS_BASE, ...obtenerGruposCustom() };
-        }
-
-        function renderizarOpcionesGrupos(valorSeleccionado = null) {
+        function renderizarOpcionesGrupos(seleccionarId = null) {
             const selectGrupo = document.getElementById('selectGrupoPlantilla');
             if (!selectGrupo) return;
 
-            const todos = obtenerTodosLosGrupos();
-            const keys = Object.keys(todos);
-            const prevVal = valorSeleccionado || selectGrupo.value || keys[0];
-
             selectGrupo.innerHTML = '';
-            keys.forEach((key, idx) => {
-                const g = todos[key];
-                const opt = document.createElement('option');
-                opt.value = key;
-                opt.textContent = `${idx + 1}️⃣ Grupo: ${g.nombre}${g.custom ? ' ★' : ''}`;
-                selectGrupo.appendChild(opt);
+            gruposWhatsAppList.forEach((g, idx) => {
+                const option = document.createElement('option');
+                option.value = String(g.id);
+                option.textContent = `${idx + 1}️⃣ Grupo: ${g.nombre}`;
+                if (seleccionarId !== null && String(g.id) === String(seleccionarId)) {
+                    option.selected = true;
+                }
+                selectGrupo.appendChild(option);
             });
-
-            if (todos[prevVal]) {
-                selectGrupo.value = prevVal;
-            } else if (keys.length > 0) {
-                selectGrupo.value = keys[0];
-            }
-
-            actualizarControlesGrupo();
-        }
-
-        function actualizarControlesGrupo() {
-            const selectGrupo = document.getElementById('selectGrupoPlantilla');
-            const btnEliminar = document.getElementById('btnEliminarGrupoCustom');
-            if (!selectGrupo || !btnEliminar) return;
-
-            const todos = obtenerTodosLosGrupos();
-            const actual = todos[selectGrupo.value];
-            btnEliminar.style.display = (actual && actual.custom) ? 'inline-block' : 'none';
         }
 
         function toggleFormularioNuevoGrupo() {
-            const box = document.getElementById('boxAgregarNuevoGrupo');
-            const msgError = document.getElementById('msgErrorNuevoGrupo');
-            if (!box) return;
-
-            const mostrar = box.style.display === 'none';
-            box.style.display = mostrar ? 'block' : 'none';
-            if (msgError) {
-                msgError.style.display = 'none';
-                msgError.textContent = '';
-            }
-            if (mostrar) {
-                document.getElementById('txtNombreNuevoGrupo').focus();
+            const box = document.getElementById('boxNuevoGrupo');
+            const estaVisible = box.style.display !== 'none';
+            box.style.display = estaVisible ? 'none' : 'block';
+            document.getElementById('msgEstadoNuevoGrupo').innerHTML = '';
+            if (!estaVisible) {
+                document.getElementById('txtNuevoGrupoNombre').focus();
             }
         }
 
-        function guardarNuevoGrupoEnLista() {
-            const inputNombre = document.getElementById('txtNombreNuevoGrupo');
-            const inputLink = document.getElementById('txtLinkNuevoGrupo');
-            const msgError = document.getElementById('msgErrorNuevoGrupo');
+        async function guardarNuevoGrupoEnBD() {
+            const inputNombre = document.getElementById('txtNuevoGrupoNombre');
+            const inputEnlace = document.getElementById('txtNuevoGrupoEnlace');
+            const msgEstado = document.getElementById('msgEstadoNuevoGrupo');
+            const btnGuardar = document.getElementById('btnGuardarNuevoGrupo');
 
-            const nombre = (inputNombre.value || '').trim();
-            const link = (inputLink.value || '').trim();
+            const nombre = inputNombre.value.trim();
+            const enlace = inputEnlace.value.trim();
 
-            msgError.style.display = 'none';
-            msgError.textContent = '';
-
-            if (!nombre) {
-                msgError.textContent = 'Escribe el nombre del grupo.';
-                msgError.style.display = 'block';
-                inputNombre.focus();
+            if (!nombre || !enlace) {
+                msgEstado.innerHTML = '<span class="text-danger fw-bold">Complete el nombre y el enlace del grupo.</span>';
                 return;
             }
 
-            if (!link || !/^https?:\/\/(chat\.whatsapp\.com|wa\.me)\/\S+/i.test(link)) {
-                msgError.textContent = 'Ingresa un enlace válido de WhatsApp (ejemplo: https://chat.whatsapp.com/...)';
-                msgError.style.display = 'block';
-                inputLink.focus();
-                return;
+            btnGuardar.disabled = true;
+            msgEstado.innerHTML = '<span class="text-secondary"><i class="fas fa-spinner fa-spin me-1"></i> Guardando en base de datos...</span>';
+
+            try {
+                const resp = await fetch('/api/grupos-whatsapp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, enlace })
+                });
+                const data = await resp.json();
+
+                if (!resp.ok || !data.success || !data.grupo) {
+                    msgEstado.innerHTML = `<span class="text-danger fw-bold">${data.message || 'No se pudo guardar el grupo.'}</span>`;
+                    btnGuardar.disabled = false;
+                    return;
+                }
+
+                gruposWhatsAppList.push(data.grupo);
+                renderizarOpcionesGrupos(data.grupo.id);
+                actualizarPrevisualizacionMensaje();
+
+                inputNombre.value = '';
+                inputEnlace.value = '';
+                msgEstado.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i> Grupo guardado en BD y seleccionado.</span>';
+                setTimeout(() => {
+                    document.getElementById('boxNuevoGrupo').style.display = 'none';
+                    msgEstado.innerHTML = '';
+                }, 1400);
+            } catch (err) {
+                msgEstado.innerHTML = '<span class="text-danger fw-bold">Error de conexión al guardar en base de datos.</span>';
+            } finally {
+                btnGuardar.disabled = false;
             }
-
-            const slug = 'custom_' + nombre.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '_' + Date.now().toString().slice(-4);
-            const customGrupos = obtenerGruposCustom();
-            customGrupos[slug] = {
-                nombre,
-                link,
-                custom: true
-            };
-            guardarGruposCustom(customGrupos);
-
-            inputNombre.value = '';
-            inputLink.value = '';
-            document.getElementById('boxAgregarNuevoGrupo').style.display = 'none';
-
-            renderizarOpcionesGrupos(slug);
-            actualizarPrevisualizacionMensaje();
-        }
-
-        function eliminarGrupoSeleccionado() {
-            const selectGrupo = document.getElementById('selectGrupoPlantilla');
-            if (!selectGrupo) return;
-
-            const key = selectGrupo.value;
-            const customGrupos = obtenerGruposCustom();
-            if (!customGrupos[key]) return;
-
-            if (!confirm(`¿Quitar "${customGrupos[key].nombre}" de la lista de grupos?`)) return;
-
-            delete customGrupos[key];
-            guardarGruposCustom(customGrupos);
-            renderizarOpcionesGrupos('maestros_lerdo');
-            actualizarPrevisualizacionMensaje();
         }
 
         let modalTrasladarBs = null;
@@ -829,9 +768,8 @@
             if (!telPastor && !telLider) selectDest.innerHTML = `<option value="">⚠️ Sin teléfono registrado para esta iglesia</option>`;
 
             renderizarOpcionesGrupos();
-            document.getElementById('boxAgregarNuevoGrupo').style.display = 'none';
-            document.getElementById('txtNombreNuevoGrupo').value = '';
-            document.getElementById('txtLinkNuevoGrupo').value = '';
+            document.getElementById('boxNuevoGrupo').style.display = 'none';
+            document.getElementById('msgEstadoNuevoGrupo').innerHTML = '';
 
             document.getElementById('selectTipoNotificacion').value = 'invitacion_grupo';
             document.getElementById('chkFaltaCajas').checked = false;
@@ -893,11 +831,10 @@
                 msg += `\nAgradecemos mucho su valioso apoyo. ¡Bendiciones!`;
 
             } else {
-                const grupoSel = document.getElementById('selectGrupoPlantilla').value;
-                const mapaGrupos = obtenerTodosLosGrupos();
-                const infoGrupo = mapaGrupos[grupoSel] || Object.values(mapaGrupos)[0];
+                const grupoIdSel = document.getElementById('selectGrupoPlantilla').value;
+                const infoGrupo = gruposWhatsAppList.find(g => String(g.id) === String(grupoIdSel)) || gruposWhatsAppList[0];
 
-                msg = `Estimado ${cargo.toLowerCase()} *${nombre}*, bendiciones.\n\nLe compartimos el enlace de acceso exclusivo para integrarse al grupo de *${infoGrupo.nombre}*, por este medio estaremos compartiendo información importante y avisos sobre nuestras próximas actividades:\n\n${infoGrupo.link}`;
+                msg = `Estimado ${cargo.toLowerCase()} *${nombre}*, bendiciones.\n\nLe compartimos el enlace de acceso exclusivo para integrarse al grupo de *${infoGrupo.nombre}*, por este medio estaremos compartiendo información importante y avisos sobre nuestras próximas actividades:\n\n${infoGrupo.enlace}`;
 
                 if (notaExtra) msg += `\n\nNota: ${notaExtra}`;
             }
