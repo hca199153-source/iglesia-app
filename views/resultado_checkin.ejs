@@ -3,34 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check-in Exitoso | Evento</title>
+    <title>Confirmación de Llegada | Samaritan's Purse</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .checkin-card { background: #ffffff; border-radius: 16px; max-width: 480px; width: 100%; padding: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.45); border-top: 6px solid #009639; }
+    </style>
 </head>
-<body class="bg-success d-flex align-items-center justify-content-center vh-100">
-    <div class="card shadow-lg p-4 text-center bg-white" style="max-width: 450px; border-radius: 16px;">
-        <% if (exito) { %>
-            <div class="mb-3 text-success">
-                <i class="fas fa-check-circle fa-4x animate-bounce"></i>
-            </div>
-            <h3 class="fw-bold text-success mb-1">¡Asistencia Confirmada!</h3>
-            <p class="small text-muted mb-3">Check-in registrado correctamente en el sistema.</p>
+<body>
+    <div class="checkin-card text-center">
+        <img src="/images/logo.png" alt="Logo" style="height: 55px;" class="mb-3">
 
-            <div class="bg-light p-3 rounded text-start mb-3 border">
-                <h5 class="fw-bold text-dark mb-1"><%= iglesia.nombre_iglesia %></h5>
-                <p class="small mb-1"><strong>Pastor:</strong> <%= iglesia.nombre_pastor %></p>
-                <p class="small mb-1"><strong>Líder:</strong> <%= iglesia.nombre_lider %></p>
-                <p class="small mb-0"><strong>Cajitas a entregar:</strong> <span class="badge bg-success fs-6"><%= iglesia.num_cajas %></span></p>
+        <% if (exito && locals.iglesia) {
+            const zonaVisible = (locals.nombresZonas && nombresZonas[iglesia.zona]) ? nombresZonas[iglesia.zona] : (iglesia.zona || '');
+            const concHecho = Boolean(iglesia.concentrado_realizado);
+        %>
+            <div class="text-success mb-2"><i class="fas fa-check-circle fa-3x"></i></div>
+            <h4 class="fw-bold text-success mb-1">¡Asistencia Confirmada!</h4>
+            <p class="text-muted small mb-3">Registro de llegada guardado correctamente.</p>
+
+            <div class="bg-light border rounded p-3 text-start small mb-3">
+                <div class="mb-1"><strong>Iglesia:</strong> <%= iglesia.nombre_iglesia %></div>
+                <div class="mb-1"><strong>Pastor:</strong> <%= iglesia.nombre_pastor %></div>
+                <div class="mb-1"><strong>Zona:</strong> <%= zonaVisible %></div>
+                <div><strong>Cajitas:</strong> <span class="badge bg-success"><%= iglesia.num_cajas || 0 %></span></div>
             </div>
 
-            <a href="/evento/checkin-dashboard" class="btn btn-success w-100 fw-bold">Ver Dashboard de Asistencia</a>
+            <div class="alert <%= concHecho ? 'alert-success border-success' : 'alert-danger border-danger' %> py-3 px-3 mb-3">
+                <div class="small fw-bold text-uppercase mb-1">Concentrado (App Externa)</div>
+                <span class="badge fs-6 px-3 py-2 <%= concHecho ? 'bg-success' : 'bg-danger' %>">
+                    <i class="fas <%= concHecho ? 'fa-check-circle' : 'fa-times-circle' %> me-1"></i>
+                    <%= concHecho ? 'Realizado' : 'No realizado' %>
+                </span>
+            </div>
+
+            <div class="d-grid gap-2">
+                <a href="/evento/checkin-dashboard" class="btn btn-success fw-bold">
+                    <i class="fas fa-list-check me-1"></i> Ir al Dashboard de Check-in
+                </a>
+                <a href="/admin" class="btn btn-outline-secondary btn-sm">Volver al Panel</a>
+            </div>
         <% } else { %>
-            <div class="mb-3 text-danger">
-                <i class="fas fa-times-circle fa-4x"></i>
-            </div>
-            <h3 class="fw-bold text-danger mb-1">Error de Lectura</h3>
-            <p class="text-muted"><%= mensaje %></p>
-            <a href="/evento/checkin-dashboard" class="btn btn-secondary w-100 fw-bold">Volver al Panel</a>
+            <div class="text-danger mb-2"><i class="fas fa-exclamation-triangle fa-3x"></i></div>
+            <h5 class="fw-bold text-danger mb-2">No se pudo confirmar la llegada</h5>
+            <p class="text-muted small mb-3"><%= locals.mensaje || 'Código QR inválido o no encontrado.' %></p>
+            <a href="/evento/checkin-dashboard" class="btn btn-secondary btn-sm">Ir al Dashboard de Check-in</a>
         <% } %>
     </div>
 </body>
