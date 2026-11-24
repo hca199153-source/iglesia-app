@@ -12,14 +12,14 @@
         .dev-container { max-width: 1000px; margin: 0 auto; background: #0a2217; border: 2px solid #00ff66; border-radius: 12px; box-shadow: 0 0 25px rgba(0, 255, 102, 0.2); padding: 25px; }
         .dev-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #00ff66; padding-bottom: 15px; margin-bottom: 20px; }
         .status-box { background: #061910; border: 1px solid #00ff66; padding: 15px; border-radius: 8px; margin-bottom: 25px; }
-        .card-option { background: #0d2d1f; border: 1px solid #009639; border-radius: 8px; padding: 20px; text-center; color: #ffffff; }
+        .card-option { background: #0d2d1f; border: 1px solid #009639; border-radius: 8px; padding: 20px; text-align: center; color: #ffffff; }
     </style>
 </head>
 <body>
     <div class="dev-container">
         <div class="dev-header">
             <div>
-                <h3 class="fw-bold mb-0 text-success"><i class="fas fa-terminal me-2"></i> <Programmer Console /></h3>
+                <h3 class="fw-bold mb-0 text-success"><i class="fas fa-terminal me-2"></i> &lt;Programmer Console /&gt;</h3>
                 <small class="text-muted">Samaritan's Purse Master System Control</small>
             </div>
             <div>
@@ -28,11 +28,10 @@
             </div>
         </div>
 
-        <!-- ESTADO GLOBAL -->
         <div class="status-box">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <span class="text-muted d-block small">> Estado Actual del Formulario Público:</span>
+                    <span class="text-muted d-block small">&gt; Estado Actual del Formulario Público:</span>
                     <% if (systemState.status === 'active') { %>
                         <h4 class="text-success fw-bold mb-0"><i class="fas fa-check-circle me-1"></i> ACTIVO (Aceptando Registros)</h4>
                     <% } else if (systemState.status === 'mantenimiento') { %>
@@ -45,7 +44,6 @@
             </div>
         </div>
 
-        <!-- ACCIONES DE ESTADO GLOBAL -->
         <div class="row g-3 mb-4 text-center">
             <div class="col-md-4">
                 <div class="card-option">
@@ -79,7 +77,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN DE PAUSA ESPECÍFICA POR ZONAS (CUPO LLENO) -->
         <div class="card bg-dark border-success p-3 text-white">
             <h5 class="fw-bold text-success mb-2"><i class="fas fa-layer-group me-2"></i> Control de Capacidad por Zonas</h5>
             <p class="small text-muted mb-3">Bloquee zonas específicas cuando alcancen el cupo máximo para impedir más registros en esa región.</p>
@@ -94,7 +91,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% 
+                        <%
                         const listaZonas = [
                             { id: 'san_andres', nombre: 'San Andrés Tuxtla' },
                             { id: 'medellin', nombre: 'Medellín' },
@@ -102,10 +99,12 @@
                             { id: 'orizaba', nombre: 'Orizaba' },
                             { id: 'cd_aleman', nombre: 'Ciudad Alemán' },
                             { id: 'xalapa', nombre: 'Xalapa' },
-                            { id: 'carlos_a_carrillo', nombre: 'Carlos A. Carrillo' },
-                            { id: 'tezonapa', nombre: 'Tezonapa' }
+                            { id: 'carlos_a_carrillo', nombre: 'Cosamaloapan' },
+                            { id: 'tezonapa', nombre: 'Tezonapa' },
+                            { id: 'sayula', nombre: 'Sayula' },
+                            { id: 'cosamaloapan', nombre: 'Coatepec' }
                         ];
-                        
+
                         listaZonas.forEach(z => {
                             let pausadas = systemState.zonasPausadas || [];
                             let estaPausada = pausadas.includes(z.id);
