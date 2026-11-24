@@ -14,20 +14,20 @@
         .admin-container { max-width: 1650px; margin: 20px auto; background: #009639; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 20px; }
         .admin-header { background: #ffffff; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .admin-header img { height: 45px; width: auto; }
-        
+
         .stat-card-green { background-color: #007a2e; color: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
         .stat-card-blue { background-color: #0056b3; color: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
         .stat-card-yellow { background-color: #ffc107; color: #533f03; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
         .stat-card-teal { background-color: #0d9488; color: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
         .stat-card-purple { background-color: #7c3aed; color: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
         .stat-card-red { background-color: #dc2626; color: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
-        
+
         .table-section { background: #ffffff; border-radius: 12px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
         .table-custom th { background-color: #009639 !important; color: white !important; font-size: 0.76rem; text-transform: uppercase; }
         .table-custom td { font-size: 0.75rem; vertical-align: top; }
-        
+
         .filter-box { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 12px 15px; margin-bottom: 15px; }
-        
+
         .btn-excel { background-color: #198754; color: white; font-weight: bold; }
         .btn-excel:hover { background-color: #146c43; color: white; }
         .btn-print { background-color: #d32f2f; color: white; font-weight: bold; }
@@ -134,10 +134,10 @@
                             <option value="orizaba">Orizaba</option>
                             <option value="cd_aleman">Ciudad Alemán</option>
                             <option value="xalapa">Xalapa</option>
-                            <option value="carlos_a_carrillo">Carlos A. Carrillo</option>
+                            <option value="carlos_a_carrillo">Cosamaloapan</option>
                             <option value="tezonapa">Tezonapa</option>
                             <option value="sayula">Sayula</option>
-                            <option value="cosamaloapan">Cosamaloapan</option>
+                            <option value="cosamaloapan">Coatepec</option>
                             <option value="dev_console" style="background-color: #0b221a; color: #00ff66; font-weight: bold;">🛠️ Dev Console (Programador)</option>
                         </select>
                     </div>
@@ -158,7 +158,7 @@
                 <img src="/images/logo.png" alt="Logo" class="me-3">
                 <div>
                     <h4 class="fw-bold text-success mb-0">Panel de Administración</h4>
-                    <p class="small text-muted mb-0">Zona Activa: <span id="labelZonaActual" class="fw-bold text-uppercase text-danger"><%= zona %></span></p>
+                    <p class="small text-muted mb-0">Zona Activa: <span id="labelZonaActual" class="fw-bold text-uppercase text-danger"><%= (locals.nombresZonas && nombresZonas[zona]) ? nombresZonas[zona] : zona %></span></p>
                 </div>
             </div>
             <div class="d-flex gap-2 no-print flex-wrap">
@@ -253,7 +253,7 @@
                     </thead>
                     <tbody>
                         <% if (registros && registros.length > 0) { %>
-                            <% registros.forEach((item, index) => { 
+                            <% registros.forEach((item, index) => {
                                 let colorClase = 'semaforo-verde';
                                 let textoEstado = 'Completo';
                                 if (item.estado_semaforo === 'amarillo') {
@@ -270,7 +270,7 @@
                                 let textoPastor = `Pastor ${item.nombre_pastor}. Teléfono: ${item.telefono_pastor || 'No registrado'}. Correo: ${item.correo_pastor || 'No registrado'}.`;
                                 let textoLider = `Líder de proyecto ${item.nombre_lider}. Teléfono: ${item.telefono_lider || 'No registrado'}. Correo: ${item.correo_lider || 'No registrado'}.`;
                                 let textoCajas = `Cajitas solicitadas: ${item.num_cajas}.`;
-                                
+
                                 let textoMaestros = "Maestros asignados: ";
                                 if (item.maestros && item.maestros.length > 0) {
                                     textoMaestros += item.maestros.map((m, i) => `Maestro ${i+1}: ${m.nombre}, teléfono ${m.telefono}, correo ${m.correo || 'sin correo'}`).join('. ');
@@ -305,7 +305,7 @@
                                     data-dictado-maestros="<%= textoMaestros %>"
                                     data-dictado-guerreritos="<%= textoGuerreritos %>"
                                     data-dictado-guerreros="<%= textoGuerreros %>">
-                                    
+
                                     <td class="fw-bold"><%= index + 1 %></td>
                                     <td>
                                         <strong><%= item.nombre_iglesia %></strong><br>
@@ -374,13 +374,12 @@
                                         <div class="d-flex flex-column gap-1 align-items-center">
                                             <div class="d-flex gap-1">
                                                 <a href="/editar-registro/<%= item.id %>" class="btn btn-outline-primary btn-sm" title="Editar"><i class="fas fa-edit"></i></a>
-                                                <!-- 🔗 Botón directo al QR individual de la iglesia -->
                                                 <a href="/iglesia/qr/<%= item.id %>" target="_blank" class="btn btn-outline-success btn-sm" title="Ver Código QR"><i class="fas fa-qrcode"></i></a>
                                                 <form action="/eliminar-registro/<%= item.id %>" method="POST" onsubmit="return confirm('¿Eliminar registro?');" style="display:inline;">
                                                     <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                                                 </form>
                                             </div>
-                                            
+
                                             <button type="button" class="btn-notif-wa" onclick="abrirModalNotifWhatsApp('<%= item.id %>')">
                                                 <i class="fab fa-whatsapp"></i> Notificar
                                             </button>
@@ -392,7 +391,7 @@
                                             <span class="badge-semaforo <%= colorClase %>" onclick="abrirModalSemaforo('<%= item.id %>', '<%= item.estado_semaforo || 'verde' %>', '<%= item.observacion_semaforo || '' %>')">
                                                 <i class="fas fa-circle"></i> <%= textoEstado %>
                                             </span>
-                                            
+
                                             <button type="button" class="btn-audio-dictado" id="btnAudio_<%= item.id %>" onclick="abrirModalDictado('<%= item.id %>')">
                                                 <i class="fas fa-volume-up"></i> Dictar
                                             </button>
@@ -431,10 +430,10 @@
                                 <option value="orizaba">Orizaba</option>
                                 <option value="cd_aleman">Ciudad Alemán</option>
                                 <option value="xalapa">Xalapa</option>
-                                <option value="carlos_a_carrillo">Carlos A. Carrillo</option>
+                                <option value="carlos_a_carrillo">Cosamaloapan</option>
                                 <option value="tezonapa">Tezonapa</option>
                                 <option value="sayula">Sayula</option>
-                                <option value="cosamaloapan">Cosamaloapan</option>
+                                <option value="cosamaloapan">Coatepec</option>
                             </select>
                         </div>
                     </div>
@@ -581,7 +580,7 @@
         function abrirModalTrasladar(id, nombreIglesia, zonaActual) {
             document.getElementById('formTrasladarZona').action = '/trasladar-zona/' + id;
             document.getElementById('lblIglesiaTraslado').innerText = nombreIglesia;
-            
+
             const selectZona = document.getElementById('selectNuevaZona');
             selectZona.value = zonaActual;
 
