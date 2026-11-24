@@ -127,7 +127,9 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
             'catemaco': { 'pastor': 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA', 'lider': 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA', 'maestro': 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS', 'guerrero': 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS' },
             'lerdo': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' },
             'tezonapa': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' },
-            'carlos_a_carrillo': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' }
+            'carlos_a_carrillo': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' },
+            'sayula': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' },
+            'cosamaloapan': { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' }
         };
         const linksDefault = { 'pastor': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'lider': 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK', 'maestro': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr', 'guerrero': 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' };
         const zonaLinks = linksPorZona[zonaKey] || linksDefault;
@@ -265,7 +267,9 @@ app.post('/login', (req, res) => {
         "cd_aleman": "cdaleman2026",
         "xalapa": "xalapa2026",
         "carlos_a_carrillo": "carlos2026",
-        "tezonapa": "tezonapa2026"
+        "tezonapa": "tezonapa2026",
+        "sayula": "sayula2026",
+        "cosamaloapan": "cosamaloapan2026"
     };
 
     if (contrasenasZonas[zona] && contrasenasZonas[zona] === password) {
