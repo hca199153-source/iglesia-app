@@ -9,8 +9,8 @@
 <body>
     <div class="container" style="max-width: 400px; margin-top: 50px;">
         <h2 style="text-align: center; color: #065f46;">🔑 Acceso Administrativo</h2>
-        
-        <% if (error) { %>
+
+        <% if (locals.error) { %>
             <div style="background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center;">
                 <%= error %>
             </div>
@@ -22,8 +22,15 @@
                 <select name="zona" required>
                     <option value="">-- Seleccione una zona --</option>
                     <option value="san_andres">San Andrés Tuxtla, Veracruz</option>
+                    <option value="medellin">Medellín</option>
+                    <option value="manlio">Manlio Fabio</option>
+                    <option value="orizaba">Orizaba</option>
                     <option value="cd_aleman">Ciudad Alemán</option>
                     <option value="xalapa">Xalapa</option>
+                    <option value="carlos_a_carrillo">Cosamaloapan</option>
+                    <option value="tezonapa">Tezonapa</option>
+                    <option value="sayula">Sayula</option>
+                    <option value="cosamaloapan">Coatepec</option>
                 </select>
             </div>
 
@@ -34,7 +41,7 @@
 
             <button type="submit" class="btn-submit">Ingresar al Panel</button>
         </form>
-        
+
         <div style="text-align: center; margin-top: 15px;">
             <a href="/" style="color: #059669; text-decoration: none; font-weight: bold;">← Volver al Formulario Público</a>
         </div>
