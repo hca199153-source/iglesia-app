@@ -41,6 +41,29 @@ const NOMBRES_ZONAS = {
     cosamaloapan: 'Coatepec'
 };
 
+const GRUPOS_DEFAULT = [
+    { id: 'default_1', nombre: 'Maestros de Lerdo de Tejada', enlace: 'https://chat.whatsapp.com/J56uP7MaPa78reDb0BHxvr' },
+    { id: 'default_2', nombre: 'Maestros de la Zona Catemaco', enlace: 'https://chat.whatsapp.com/GdjuIPnI2JTINlXTQiHBAS' },
+    { id: 'default_3', nombre: 'CM de Lerdo de Tejada', enlace: 'https://chat.whatsapp.com/KCgzoYFlnqz0CPiseThOdK' },
+    { id: 'default_4', nombre: 'CM Catemaco', enlace: 'https://chat.whatsapp.com/Gn0mJGYtdS893bEV12XPUA' }
+];
+
+async function obtenerGruposWhatsApp() {
+    try {
+        const { data, error } = await supabase
+            .from('grupos_whatsapp')
+            .select('id, nombre, enlace')
+            .order('id', { ascending: true });
+
+        if (!error && data && data.length > 0) {
+            return data;
+        }
+    } catch (_) {
+        // Si la tabla no existe aún, usar los grupos por defecto
+    }
+    return GRUPOS_DEFAULT;
+}
+
 function normalizarTexto(texto) {
     return (texto || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
 }
@@ -223,6 +246,40 @@ app.post('/admin-comunidad/eliminar/:id', async (req, res) => {
 });
 
 // ==========================================
+// GRUPOS DE WHATSAPP EN BASE DE DATOS
+// ==========================================
+app.post('/api/grupos-whatsapp', async (req, res) => {
+    try {
+        const nombre = (req.body.nombre || '').trim();
+        const enlace = (req.body.enlace || '').trim();
+
+        if (!nombre || !enlace) {
+            return res.status(400).json({ success: false, message: 'Debe indicar el nombre y el enlace del grupo.' });
+        }
+
+        const enlaceValido = /^https?:\/\/(chat\.whatsapp\.com|wa\.me)\/\S+/i.test(enlace);
+        if (!enlaceValido) {
+            return res.status(400).json({ success: false, message: 'Ingrese un enlace válido de WhatsApp (ej. https://chat.whatsapp.com/...).' });
+        }
+
+        const { data, error } = await supabase
+            .from('grupos_whatsapp')
+            .insert([{ nombre, enlace }])
+            .select('id, nombre, enlace')
+            .single();
+
+        if (error) {
+            return res.status(500).json({ success: false, message: 'No se pudo guardar en la base de datos: ' + error.message });
+        }
+
+        return res.status(201).json({ success: true, grupo: data });
+    } catch (err) {
+        console.error('Error al guardar grupo WhatsApp:', err);
+        return res.status(500).json({ success: false, message: 'Error interno al guardar el grupo.' });
+    }
+});
+
+// ==========================================
 // DEV-ADMIN Y CONTROL DE ZONAS PAUSADAS
 // ==========================================
 app.get('/dev-admin', (req, res) => {
@@ -310,7 +367,21 @@ app.get('/logout', (req, res) => {
 app.get('/admin', async (req, res) => {
     try {
         const zonaActual = req.session.zona;
-        if (!zonaActual) return res.render('admin', { registros: [], zona: null, totalIglesias: 0, totalCajitas: 0, totalMaestros: 0, totalPastores: 0, totalGuerreritos: 0, totalGuerreros: 0 });
+        const gruposWhatsApp = await obtenerGruposWhatsApp();
+
+        if (!zonaActual) {
+            return res.render('admin', {
+                registros: [],
+                zona: null,
+                gruposWhatsApp,
+                totalIglesias: 0,
+                totalCajitas: 0,
+                totalMaestros: 0,
+                totalPastores: 0,
+                totalGuerreritos: 0,
+                totalGuerreros: 0
+            });
+        }
 
         const { data: registros } = await supabase.from('iglesias').select(`*, maestros (*), guerreritos_oracion (*), guerreros_oracion (*)`).eq('zona', zonaActual);
 
@@ -318,6 +389,7 @@ app.get('/admin', async (req, res) => {
         res.render('admin', {
             registros: regs,
             zona: zonaActual,
+            gruposWhatsApp,
             totalIglesias: regs.length,
             totalCajitas: regs.reduce((a, c) => a + (parseInt(c.num_cajas) || 0), 0),
             totalMaestros: regs.reduce((a, c) => a + (c.maestros ? c.maestros.length : 0), 0),
@@ -522,7 +594,6 @@ app.post('/guardar-registro', async (req, res) => {
             return res.status(400).send(`<!DOCTYPE html><html lang="es"><head><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light d-flex align-items-center justify-content-center vh-100"><div class="card p-4 text-center shadow-sm" style="max-width: 450px;"><h3 class="text-danger mb-3">¡Registro Cerrado!</h3><p class="text-muted">Lo sentimos, la capacidad para la zona <strong>${nombreZonaVisible}</strong> se encuentra completa por el momento.</p><a href="/" class="btn btn-secondary mt-2">Regresar al Inicio</a></div></body></html>`);
         }
 
-        // Validación anti-duplicados (misma zona + mismo teléfono de pastor o misma iglesia + pastor)
         const telPastor10 = ultimos10Digitos(telefono_pastor);
         const pastorNorm = normalizarTexto(nombre_pastor);
         const iglesiaNorm = normalizarTexto(nombre_iglesia);
