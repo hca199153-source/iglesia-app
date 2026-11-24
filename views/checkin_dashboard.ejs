@@ -3,157 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Check-in | Evento</title>
+    <title>Dashboard Check-in Evento | Samaritan's Purse</title>
     <link rel="icon" type="image/png" href="/images/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2b2b2b; }
-        .dashboard-container { max-width: 1500px; margin: 20px auto; background: #009639; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 25px; }
-        .header-box { background: #ffffff; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .stat-card { border-radius: 12px; padding: 18px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        body { background-color: #0b221a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2b2b2b; margin: 0; padding: 0; }
+        .checkin-container { max-width: 1550px; margin: 20px auto; background: #009639; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); padding: 20px; }
+        .checkin-header { background: #ffffff; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .checkin-header img { height: 45px; width: auto; }
+
+        .stat-esperadas { background-color: #0056b3; color: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .stat-llegadas { background-color: #198754; color: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .stat-faltantes { background-color: #dc3545; color: white; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .stat-cajitas { background-color: #ffc107; color: #533f03; border-radius: 12px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+
         .table-section { background: #ffffff; border-radius: 12px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .table-custom th { background-color: #d1e7dd !important; color: #0f5132 !important; font-size: 0.78rem; text-transform: uppercase; }
+        .table-custom td { font-size: 0.78rem; vertical-align: middle; }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <div class="header-box">
+    <div class="checkin-container">
+        <div class="checkin-header">
             <div class="d-flex align-items-center">
-                <img src="/images/logo.png" alt="Logo" style="height: 45px;" class="me-3">
+                <img src="/images/logo.png" alt="Logo" class="me-3">
                 <div>
-                    <h4 class="fw-bold text-success mb-0"><i class="fas fa-clipboard-check me-2"></i> Control de Asistencia y Check-in</h4>
-                    <p class="small text-muted mb-0">Monitoreo de llegada de iglesias al evento en tiempo real</p>
+                    <h4 class="fw-bold text-success mb-0"><i class="fas fa-qrcode me-2"></i> Control de Acceso y Check-in</h4>
+                    <p class="small text-muted mb-0">Monitoreo de asistencia y estado de concentrado en tiempo real</p>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="/admin" class="btn btn-outline-secondary btn-sm fw-bold"><i class="fas fa-arrow-left me-1"></i> Regresar al Panel Zonal</a>
-                <button onclick="window.print()" class="btn btn-dark btn-sm fw-bold"><i class="fas fa-print me-1"></i> Imprimir Reporte</button>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="/descargar-qr" target="_blank" class="btn btn-outline-success btn-sm fw-bold">
+                    <i class="fas fa-download me-1"></i> Buscador Público QR
+                </a>
+                <a href="/admin" class="btn btn-dark btn-sm fw-bold">
+                    <i class="fas fa-arrow-left me-1"></i> Volver al Panel
+                </a>
             </div>
         </div>
 
-        <div class="row g-3 mb-4">
+        <div class="row g-3 mb-3">
             <div class="col-md-3 col-sm-6">
-                <div class="stat-card" style="background-color: #0056b3;">
-                    <div>
-                        <span class="small text-uppercase fw-bold opacity-75">Iglesias Esperadas</span>
-                        <h2 class="fw-bold mb-0"><%= totalEsperadas %></h2>
-                    </div>
+                <div class="stat-esperadas">
+                    <div><span class="small text-uppercase fw-bold opacity-75">Iglesias Esperadas</span><h2 class="fw-bold mb-0"><%= totalEsperadas %></h2></div>
                     <i class="fas fa-church fa-2x opacity-50"></i>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
-                <div class="stat-card" style="background-color: #198754;">
-                    <div>
-                        <span class="small text-uppercase fw-bold opacity-75">Iglesias Llegadas</span>
-                        <h2 class="fw-bold mb-0"><%= totalLlegadas %></h2>
-                    </div>
-                    <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                <div class="stat-llegadas">
+                    <div><span class="small text-uppercase fw-bold opacity-75">Confirmadas</span><h2 class="fw-bold mb-0"><%= totalLlegadas %></h2></div>
+                    <i class="fas fa-user-check fa-2x opacity-50"></i>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
-                <div class="stat-card" style="background-color: #dc3545;">
-                    <div>
-                        <span class="small text-uppercase fw-bold opacity-75">Faltantes por Llegar</span>
-                        <h2 class="fw-bold mb-0"><%= totalFaltantes %></h2>
-                    </div>
-                    <i class="fas fa-hourglass-half fa-2x opacity-50"></i>
+                <div class="stat-faltantes">
+                    <div><span class="small text-uppercase fw-bold opacity-75">Pendientes</span><h2 class="fw-bold mb-0"><%= totalFaltantes %></h2></div>
+                    <i class="fas fa-clock fa-2x opacity-50"></i>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
-                <div class="stat-card" style="background-color: #ffc107; color: #533f03;">
-                    <div>
-                        <span class="small text-uppercase fw-bold opacity-75">Cajitas Recibidas</span>
-                        <h2 class="fw-bold mb-0"><%= totalCajitasEntregadas %></h2>
-                    </div>
+                <div class="stat-cajitas">
+                    <div><span class="small text-uppercase fw-bold opacity-75">Cajitas Confirmadas</span><h2 class="fw-bold mb-0"><%= totalCajitasEntregadas %></h2></div>
                     <i class="fas fa-box-open fa-2x opacity-50"></i>
                 </div>
             </div>
         </div>
 
         <div class="table-section">
-            <div class="row g-2 align-items-center mb-3">
-                <div class="col-md-4">
-                    <h6 class="fw-bold text-success mb-0"><i class="fas fa-list me-1"></i> Lista de Control de Acceso</h6>
-                </div>
-                <div class="col-md-4">
-                    <form method="GET" action="/evento/checkin-dashboard">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h6 class="fw-bold text-success mb-0"><i class="fas fa-clipboard-list me-2"></i> Lista de Control de Acceso</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    <form method="GET" action="/evento/checkin-dashboard" class="m-0">
                         <select name="zona" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="">-- Filtrar por todas las zonas --</option>
-                            <option value="san_andres" <%= zonaFiltro === 'san_andres' ? 'selected' : '' %>>San Andrés Tuxtla</option>
-                            <option value="medellin" <%= zonaFiltro === 'medellin' ? 'selected' : '' %>>Medellín</option>
-                            <option value="manlio" <%= zonaFiltro === 'manlio' ? 'selected' : '' %>>Manlio Fabio</option>
-                            <option value="orizaba" <%= zonaFiltro === 'orizaba' ? 'selected' : '' %>>Orizaba</option>
-                            <option value="cd_aleman" <%= zonaFiltro === 'cd_aleman' ? 'selected' : '' %>>Ciudad Alemán</option>
-                            <option value="xalapa" <%= zonaFiltro === 'xalapa' ? 'selected' : '' %>>Xalapa</option>
-                            <option value="carlos_a_carrillo" <%= zonaFiltro === 'carlos_a_carrillo' ? 'selected' : '' %>>Cosamaloapan</option>
-                            <option value="tezonapa" <%= zonaFiltro === 'tezonapa' ? 'selected' : '' %>>Tezonapa</option>
-                            <option value="sayula" <%= zonaFiltro === 'sayula' ? 'selected' : '' %>>Sayula</option>
-                            <option value="cosamaloapan" <%= zonaFiltro === 'cosamaloapan' ? 'selected' : '' %>>Coatepec</option>
+                            <% if (locals.nombresZonas) { %>
+                                <% Object.keys(nombresZonas).forEach(zKey => { %>
+                                    <option value="<%= zKey %>" <%= zonaFiltro === zKey ? 'selected' : '' %>><%= nombresZonas[zKey] %></option>
+                                <% }) %>
+                            <% } %>
                         </select>
                     </form>
-                </div>
-                <div class="col-md-4">
-                    <input type="text" id="searchCheckin" class="form-control form-control-sm" placeholder="Buscar iglesia o pastor en la lista..." onkeyup="filtrarTablaCheckin()">
+                    <input type="text" id="buscarCheckin" class="form-control form-control-sm" style="min-width: 240px;" placeholder="Buscar iglesia o pastor en la lista..." onkeyup="filtrarTablaCheckin()">
                 </div>
             </div>
 
             <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle small" id="tablaCheckin">
-                    <thead class="table-success">
+                <table class="table table-striped table-hover table-custom align-middle" id="tablaCheckin">
+                    <thead>
                         <tr>
                             <th>#</th>
                             <th>Iglesia / Zona</th>
                             <th>Pastor / Contacto</th>
                             <th>Cajitas</th>
+                            <th class="text-center">Concentrado</th>
                             <th class="text-center">Estado de Asistencia</th>
-                            <th>Hora de Llegada</th>
+                            <th class="text-center">Hora de Llegada</th>
                             <th class="text-center">Acción Manual</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% if (iglesias && iglesias.length > 0) { %>
-                            <% iglesias.forEach((item, index) => { %>
+                            <% iglesias.forEach((item, idx) => {
+                                const zonaVisible = (locals.nombresZonas && nombresZonas[item.zona]) ? nombresZonas[item.zona].toUpperCase() : (item.zona || '').toUpperCase();
+                                const asistio = Boolean(item.asistencia_confirmada);
+                                const concHecho = Boolean(item.concentrado_realizado);
+                                let horaTexto = '--:--';
+                                if (asistio && item.fecha_llegada) {
+                                    const dt = new Date(item.fecha_llegada);
+                                    horaTexto = dt.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                                }
+                            %>
                                 <tr>
-                                    <td class="fw-bold"><%= index + 1 %></td>
+                                    <td class="fw-bold"><%= idx + 1 %></td>
                                     <td>
                                         <strong><%= item.nombre_iglesia %></strong><br>
-                                        <small class="text-muted text-uppercase" style="font-size: 0.68rem;"><%= (locals.nombresZonas && nombresZonas[item.zona]) ? nombresZonas[item.zona] : item.zona %></small>
+                                        <small class="text-muted text-uppercase"><%= zonaVisible %></small>
                                     </td>
                                     <td>
-                                        <%= item.nombre_pastor %><br>
+                                        <div><%= item.nombre_pastor %></div>
                                         <small class="text-muted"><i class="fas fa-phone me-1"></i> <%= item.telefono_pastor || 'Sin tel.' %></small>
                                     </td>
-                                    <td><span class="badge bg-success"><%= item.num_cajas %> cajas</span></td>
+                                    <td><span class="badge bg-success"><%= item.num_cajas || 0 %> cajas</span></td>
                                     <td class="text-center">
-                                        <% if (item.asistencia_confirmada) { %>
-                                            <span class="badge bg-success px-3 py-2"><i class="fas fa-check-circle me-1"></i> Presente (Confirmado)</span>
-                                        <% } else { %>
-                                            <span class="badge bg-secondary px-3 py-2"><i class="fas fa-clock me-1"></i> Pendiente de Llegada</span>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <% if (item.fecha_llegada) { %>
-                                            <small class="text-muted"><%= new Date(item.fecha_llegada).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %> hrs</small>
-                                        <% } else { %>
-                                            <span class="text-muted fst-italic">--:--</span>
-                                        <% } %>
+                                        <span class="badge rounded-pill <%= concHecho ? 'bg-success' : 'bg-danger' %>">
+                                            <i class="fas <%= concHecho ? 'fa-check-circle' : 'fa-times-circle' %> me-1"></i>
+                                            <%= concHecho ? 'Realizado' : 'No realizado' %>
+                                        </span>
                                     </td>
                                     <td class="text-center">
-                                        <form action="/evento/marcar-asistencia/<%= item.id %>" method="POST" style="display:inline;">
-                                            <% if (item.asistencia_confirmada) { %>
-                                                <input type="hidden" name="estado" value="false">
-                                                <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Marcar como no presentado">Desmarcar</button>
-                                            <% } else { %>
-                                                <input type="hidden" name="estado" value="true">
-                                                <button type="submit" class="btn btn-success btn-sm py-0 px-2" title="Marcar asistencia manualmente"><i class="fas fa-check me-1"></i> Check-in</button>
-                                            <% } %>
-                                        </form>
-                                        <a href="/iglesia/qr/<%= item.id %>" target="_blank" class="btn btn-outline-dark btn-sm py-0 px-2 ms-1" title="Ver QR"><i class="fas fa-qrcode"></i></a>
+                                        <% if (asistio) { %>
+                                            <span class="badge rounded-pill bg-success px-3 py-2"><i class="fas fa-check-circle me-1"></i> Presente (Confirmado)</span>
+                                        <% } else { %>
+                                            <span class="badge rounded-pill bg-secondary px-3 py-2"><i class="fas fa-clock me-1"></i> Pendiente de Llegada</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-center fw-bold text-secondary"><%= horaTexto %></td>
+                                    <td class="text-center">
+                                        <div class="d-inline-flex align-items-center gap-1">
+                                            <form action="/evento/marcar-asistencia/<%= item.id %>" method="POST" style="display:inline;">
+                                                <input type="hidden" name="estado" value="<%= asistio ? 'false' : 'true' %>">
+                                                <button type="submit" class="btn btn-sm fw-bold <%= asistio ? 'btn-danger' : 'btn-success' %>">
+                                                    <i class="fas <%= asistio ? 'fa-times' : 'fa-check' %> me-1"></i>
+                                                    <%= asistio ? 'Desmarcar' : 'Check-in' %>
+                                                </button>
+                                            </form>
+                                            <a href="/iglesia/qr/<%= item.id %>" target="_blank" class="btn btn-outline-secondary btn-sm" title="Ver QR">
+                                                <i class="fas fa-qrcode"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             <% }) %>
                         <% } else { %>
-                            <tr><td colspan="7" class="text-center text-muted py-4">No hay iglesias registradas en esta zona.</td></tr>
+                            <tr><td colspan="8" class="text-center text-muted py-4">No hay iglesias para mostrar.</td></tr>
                         <% } %>
                     </tbody>
                 </table>
@@ -163,11 +166,11 @@
 
     <script>
         function filtrarTablaCheckin() {
-            const input = document.getElementById('searchCheckin').value.toLowerCase();
+            const q = document.getElementById('buscarCheckin').value.toLowerCase().trim();
             const filas = document.querySelectorAll('#tablaCheckin tbody tr');
-            filas.forEach(fila => {
-                const texto = fila.innerText.toLowerCase();
-                fila.style.display = texto.includes(input) ? '' : 'none';
+            filas.forEach(tr => {
+                const txt = tr.innerText.toLowerCase();
+                tr.style.display = (!q || txt.includes(q)) ? '' : 'none';
             });
         }
     </script>
