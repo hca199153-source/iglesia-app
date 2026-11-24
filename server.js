@@ -41,6 +41,15 @@ const NOMBRES_ZONAS = {
     cosamaloapan: 'Coatepec'
 };
 
+function normalizarTexto(texto) {
+    return (texto || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function ultimos10Digitos(telefono) {
+    const limpios = (telefono || '').toString().replace(/\D/g, '');
+    return limpios.length >= 10 ? limpios.slice(-10) : limpios;
+}
+
 app.use((req, res, next) => {
     res.locals.nombresZonas = NOMBRES_ZONAS;
     const rutasLibres = [
@@ -502,7 +511,7 @@ app.post('/trasladar-zona/:id', async (req, res) => {
     }
 });
 
-// GUARDAR REGISTRO CON BLOQUEO POR ZONA PAUSADA
+// GUARDAR REGISTRO CON BLOQUEO POR ZONA PAUSADA Y ANTI-DUPLICADOS
 app.post('/guardar-registro', async (req, res) => {
     try {
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, maestros, guerreritos, guerreros } = req.body;
@@ -511,6 +520,34 @@ app.post('/guardar-registro', async (req, res) => {
 
         if (systemState.zonasPausadas && systemState.zonasPausadas.includes(zonaKey)) {
             return res.status(400).send(`<!DOCTYPE html><html lang="es"><head><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light d-flex align-items-center justify-content-center vh-100"><div class="card p-4 text-center shadow-sm" style="max-width: 450px;"><h3 class="text-danger mb-3">¡Registro Cerrado!</h3><p class="text-muted">Lo sentimos, la capacidad para la zona <strong>${nombreZonaVisible}</strong> se encuentra completa por el momento.</p><a href="/" class="btn btn-secondary mt-2">Regresar al Inicio</a></div></body></html>`);
+        }
+
+        // Validación anti-duplicados (misma zona + mismo teléfono de pastor o misma iglesia + pastor)
+        const telPastor10 = ultimos10Digitos(telefono_pastor);
+        const pastorNorm = normalizarTexto(nombre_pastor);
+        const iglesiaNorm = normalizarTexto(nombre_iglesia);
+
+        const { data: existentesZona, error: errDuplicado } = await supabase
+            .from('iglesias')
+            .select('id, nombre_iglesia, nombre_pastor, telefono_pastor')
+            .eq('zona', zonaKey);
+
+        if (errDuplicado) throw new Error(errDuplicado.message);
+
+        const yaExiste = (existentesZona || []).some(reg => {
+            const telExistente10 = ultimos10Digitos(reg.telefono_pastor);
+            const mismoTelefono = telPastor10 && telPastor10.length >= 10 && telExistente10 === telPastor10;
+
+            const regIglesiaNorm = normalizarTexto(reg.nombre_iglesia);
+            const regPastorNorm = normalizarTexto(reg.nombre_pastor);
+            const iglesiaValida = iglesiaNorm && iglesiaNorm !== 'iglesia pendiente de asignar';
+            const mismaIglesiaYPastor = iglesiaValida && regIglesiaNorm === iglesiaNorm && regPastorNorm === pastorNorm;
+
+            return mismoTelefono || mismaIglesiaYPastor;
+        });
+
+        if (yaExiste) {
+            return res.status(409).send(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light d-flex align-items-center justify-content-center vh-100"><div class="card p-4 text-center shadow-sm border-warning" style="max-width: 460px;"><h3 class="text-warning mb-3">Ese registro ya existe</h3><p class="text-muted">Ya hay un registro previo con estos datos en la zona <strong>${nombreZonaVisible}</strong>. No se guardó un duplicado.</p><a href="/" class="btn btn-success mt-2 fw-bold">Regresar al Inicio</a></div></body></html>`);
         }
 
         const { data: iglesiaData, error: iglesiaError } = await supabase
