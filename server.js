@@ -23,17 +23,31 @@ app.use(session({
 
 let systemState = {
     status: 'active', // 'active', 'mantenimiento', 'fuera_tiempo'
-    targetDate: null,  
+    targetDate: null,
     customMessage: '',
-    zonasPausadas: [] 
+    zonasPausadas: []
+};
+
+const NOMBRES_ZONAS = {
+    san_andres: 'San Andrés Tuxtla',
+    medellin: 'Medellín',
+    manlio: 'Manlio Fabio',
+    orizaba: 'Orizaba',
+    cd_aleman: 'Ciudad Alemán',
+    xalapa: 'Xalapa',
+    carlos_a_carrillo: 'Cosamaloapan',
+    tezonapa: 'Tezonapa',
+    sayula: 'Sayula',
+    cosamaloapan: 'Coatepec'
 };
 
 app.use((req, res, next) => {
+    res.locals.nombresZonas = NOMBRES_ZONAS;
     const rutasLibres = [
-        '/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login', 
-        '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad', 
+        '/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login',
+        '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad',
         '/guardar-registro', '/iglesia/qr', '/descargar-qr', '/buscar-mi-qr',
-        '/evento/checkin-dashboard', '/evento/confirmar-llegada', 
+        '/evento/checkin-dashboard', '/evento/confirmar-llegada',
         '/evento/marcar-asistencia', '/public', '/images', '/css'
     ];
     if (rutasLibres.some(r => req.path.startsWith(r))) {
@@ -41,14 +55,14 @@ app.use((req, res, next) => {
     }
 
     if (systemState.status === 'mantenimiento') {
-        return res.render('pausa', { 
-            tipo: 'mantenimiento', 
+        return res.render('pausa', {
+            tipo: 'mantenimiento',
             targetDate: systemState.targetDate,
             mensaje: systemState.customMessage || "Estamos trabajando en darte la mejor experiencia posible..."
         });
     } else if (systemState.status === 'fuera_tiempo') {
-        return res.render('pausa', { 
-            tipo: 'fuera_tiempo', 
+        return res.render('pausa', {
+            tipo: 'fuera_tiempo',
             targetDate: systemState.targetDate,
             mensaje: systemState.customMessage || "El periodo de registros ha finalizado. Agradecemos a todas las iglesias su participación."
         });
@@ -65,9 +79,9 @@ app.get('/', (req, res) => {
 // SECCIÓN: UNIRSE A LA COMUNIDAD
 // ==========================================
 app.get('/unirse-comunidad', (req, res) => {
-    res.render('unirse_comunidad', { 
-        registroExitoso: false, 
-        linkGrupo: null, 
+    res.render('unirse_comunidad', {
+        registroExitoso: false,
+        linkGrupo: null,
         rolSeleccionado: null,
         nombreUsuario: null,
         errorMensaje: null
@@ -104,9 +118,9 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
         }
 
         if (!iglesiaEncontrada) {
-            return res.render('unirse_comunidad', { 
-                registroExitoso: false, 
-                linkGrupo: null, 
+            return res.render('unirse_comunidad', {
+                registroExitoso: false,
+                linkGrupo: null,
                 rolSeleccionado: rol,
                 nombreUsuario: null,
                 errorMensaje: '❌ Su número no coincide con ningún registro previo en el formulario oficial.'
@@ -135,9 +149,9 @@ app.post('/procesar-unirse-comunidad', async (req, res) => {
         const zonaLinks = linksPorZona[zonaKey] || linksDefault;
         const linkFinal = zonaLinks[rol] || linksDefault['pastor'];
 
-        res.render('unirse_comunidad', { 
-            registroExitoso: true, 
-            linkGrupo: linkFinal, 
+        res.render('unirse_comunidad', {
+            registroExitoso: true,
+            linkGrupo: linkFinal,
             rolSeleccionado: rol,
             nombreUsuario: nombre_completo,
             errorMensaje: null
@@ -209,7 +223,7 @@ app.get('/dev-admin', (req, res) => {
 
 app.post('/dev-admin/login', (req, res) => {
     const { password } = req.body;
-    if (password === 'dev2026') { 
+    if (password === 'dev2026') {
         req.session.isDev = true;
         res.redirect('/dev-admin');
     } else {
@@ -292,15 +306,15 @@ app.get('/admin', async (req, res) => {
         const { data: registros } = await supabase.from('iglesias').select(`*, maestros (*), guerreritos_oracion (*), guerreros_oracion (*)`).eq('zona', zonaActual);
 
         const regs = registros || [];
-        res.render('admin', { 
-            registros: regs, 
-            zona: zonaActual, 
-            totalIglesias: regs.length, 
-            totalCajitas: regs.reduce((a, c) => a + (parseInt(c.num_cajas) || 0), 0), 
-            totalMaestros: regs.reduce((a, c) => a + (c.maestros ? c.maestros.length : 0), 0), 
-            totalPastores: regs.filter(r => r.nombre_pastor).length, 
-            totalGuerreritos: regs.reduce((a, c) => a + (c.guerreritos_oracion ? c.guerreritos_oracion.length : 0), 0), 
-            totalGuerreros: regs.reduce((a, c) => a + (c.guerreros_oracion ? c.guerreros_oracion.length : 0), 0) 
+        res.render('admin', {
+            registros: regs,
+            zona: zonaActual,
+            totalIglesias: regs.length,
+            totalCajitas: regs.reduce((a, c) => a + (parseInt(c.num_cajas) || 0), 0),
+            totalMaestros: regs.reduce((a, c) => a + (c.maestros ? c.maestros.length : 0), 0),
+            totalPastores: regs.filter(r => r.nombre_pastor).length,
+            totalGuerreritos: regs.reduce((a, c) => a + (c.guerreritos_oracion ? c.guerreritos_oracion.length : 0), 0),
+            totalGuerreros: regs.reduce((a, c) => a + (c.guerreros_oracion ? c.guerreros_oracion.length : 0), 0)
         });
     } catch (err) {
         res.status(500).send('Error al cargar panel.');
@@ -310,13 +324,11 @@ app.get('/admin', async (req, res) => {
 // ==========================================
 // ZONA: CÓDIGO QR Y CHECK-IN DE EVENTO
 // ==========================================
-
-// 1. Generar y mostrar el código QR individual de una iglesia (Admin)
 app.get('/iglesia/qr/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
-        const { data: iglesia, error } = await supabase.from('iglesias').select('*').eq('id', id).maybeSingle();
-        
+        const { data: iglesia } = await supabase.from('iglesias').select('*').eq('id', id).maybeSingle();
+
         if (!iglesia) return res.status(404).send('Iglesia no encontrada.');
 
         let token = iglesia.token_qr;
@@ -341,7 +353,6 @@ app.get('/iglesia/qr/:id', async (req, res) => {
     }
 });
 
-// 2. Portal público para que el pastor descargue su QR ingresando su teléfono
 app.get('/descargar-qr', (req, res) => {
     res.render('descargar_qr_publico', { iglesia: null, qrImageSrc: null, errorMensaje: null });
 });
@@ -350,16 +361,16 @@ app.post('/buscar-mi-qr', async (req, res) => {
     try {
         const telLimpio = (req.body.telefono || '').replace(/\D/g, '');
         if (telLimpio.length < 10) {
-            return res.render('descargar_qr_publico', { 
-                iglesia: null, 
-                qrImageSrc: null, 
-                errorMensaje: 'Por favor ingresa un número válido de al menos 10 dígitos.' 
+            return res.render('descargar_qr_publico', {
+                iglesia: null,
+                qrImageSrc: null,
+                errorMensaje: 'Por favor ingresa un número válido de al menos 10 dígitos.'
             });
         }
 
         const ultimos10 = telLimpio.slice(-10);
         const { data: iglesias } = await supabase.from('iglesias').select('*');
-        
+
         const iglesiaEncontrada = (iglesias || []).find(i => {
             const telP = (i.telefono_pastor || '').replace(/\D/g, '');
             const telL = (i.telefono_lider || '').replace(/\D/g, '');
@@ -367,10 +378,10 @@ app.post('/buscar-mi-qr', async (req, res) => {
         });
 
         if (!iglesiaEncontrada) {
-            return res.render('descargar_qr_publico', { 
-                iglesia: null, 
-                qrImageSrc: null, 
-                errorMensaje: 'No encontramos ninguna iglesia registrada con ese teléfono. Verifica el número o contacta a tu coordinador de zona.' 
+            return res.render('descargar_qr_publico', {
+                iglesia: null,
+                qrImageSrc: null,
+                errorMensaje: 'No encontramos ninguna iglesia registrada con ese teléfono. Verifica el número o contacta a tu coordinador de zona.'
             });
         }
 
@@ -395,11 +406,10 @@ app.post('/buscar-mi-qr', async (req, res) => {
     }
 });
 
-// 3. Dashboard de Check-in y Asistencia en la Puerta del Evento
 app.get('/evento/checkin-dashboard', async (req, res) => {
     try {
         const zonaFiltro = req.query.zona || '';
-        
+
         let query = supabase.from('iglesias').select('*');
         if (zonaFiltro) {
             query = query.eq('zona', zonaFiltro);
@@ -429,14 +439,13 @@ app.get('/evento/checkin-dashboard', async (req, res) => {
     }
 });
 
-// 4. Confirmar llegada mediante lectura de QR
 app.get('/evento/confirmar-llegada', async (req, res) => {
     try {
         const { token } = req.query;
         if (!token) return res.status(400).send('Token QR no válido o faltante.');
 
-        const { data: iglesia, error } = await supabase.from('iglesias').select('*').eq('token_qr', token).maybeSingle();
-        
+        const { data: iglesia } = await supabase.from('iglesias').select('*').eq('token_qr', token).maybeSingle();
+
         if (!iglesia) {
             return res.render('resultado_checkin', { exito: false, mensaje: '❌ Código QR no reconocido en la base de datos.' });
         }
@@ -453,7 +462,6 @@ app.get('/evento/confirmar-llegada', async (req, res) => {
     }
 });
 
-// 5. Marcar asistencia manualmente desde el dashboard de check-in
 app.post('/evento/marcar-asistencia/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
@@ -499,26 +507,27 @@ app.post('/guardar-registro', async (req, res) => {
     try {
         const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, maestros, guerreritos, guerreros } = req.body;
         const zonaKey = (zona && zona.trim() !== '') ? zona : 'san_andres';
+        const nombreZonaVisible = NOMBRES_ZONAS[zonaKey] || zonaKey.toUpperCase();
 
         if (systemState.zonasPausadas && systemState.zonasPausadas.includes(zonaKey)) {
-            return res.status(400).send(`<!DOCTYPE html><html lang="es"><head><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light d-flex align-items-center justify-content-center vh-100"><div class="card p-4 text-center shadow-sm" style="max-width: 450px;"><h3 class="text-danger mb-3">¡Registro Cerrado!</h3><p class="text-muted">Lo sentimos, la capacidad para la zona <strong>${zonaKey.toUpperCase()}</strong> se encuentra completa por el momento.</p><a href="/" class="btn btn-secondary mt-2">Regresar al Inicio</a></div></body></html>`);
+            return res.status(400).send(`<!DOCTYPE html><html lang="es"><head><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="bg-light d-flex align-items-center justify-content-center vh-100"><div class="card p-4 text-center shadow-sm" style="max-width: 450px;"><h3 class="text-danger mb-3">¡Registro Cerrado!</h3><p class="text-muted">Lo sentimos, la capacidad para la zona <strong>${nombreZonaVisible}</strong> se encuentra completa por el momento.</p><a href="/" class="btn btn-secondary mt-2">Regresar al Inicio</a></div></body></html>`);
         }
 
         const { data: iglesiaData, error: iglesiaError } = await supabase
             .from('iglesias')
             .insert([{
-                zona: zonaKey, 
-                nombre_pastor: (nombre_pastor || '').trim(), 
-                telefono_pastor: (telefono_pastor || '').trim(), 
+                zona: zonaKey,
+                nombre_pastor: (nombre_pastor || '').trim(),
+                telefono_pastor: (telefono_pastor || '').trim(),
                 correo_pastor: (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'Sin correo registrado',
-                nombre_iglesia: (nombre_iglesia && nombre_iglesia.trim() !== '') ? nombre_iglesia.trim() : 'Iglesia pendiente de asignar', 
-                direccion: (direccion && direccion.trim() !== '') ? direccion.trim() : 'Dirección pendiente de registrar', 
-                nombre_lider: (nombre_lider && nombre_lider.trim() !== '') ? nombre_lider.trim() : 'Sin líder registrado', 
-                telefono_lider: (telefono_lider && telefono_lider.trim() !== '') ? telefono_lider.trim() : 'Sin teléfono', 
+                nombre_iglesia: (nombre_iglesia && nombre_iglesia.trim() !== '') ? nombre_iglesia.trim() : 'Iglesia pendiente de asignar',
+                direccion: (direccion && direccion.trim() !== '') ? direccion.trim() : 'Dirección pendiente de registrar',
+                nombre_lider: (nombre_lider && nombre_lider.trim() !== '') ? nombre_lider.trim() : 'Sin líder registrado',
+                telefono_lider: (telefono_lider && telefono_lider.trim() !== '') ? telefono_lider.trim() : 'Sin teléfono',
                 correo_lider: (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'Sin correo registrado',
-                num_cajas: parseInt(num_cajas) || 0, 
+                num_cajas: parseInt(num_cajas) || 0,
                 num_maestros: maestros ? Object.keys(maestros).length : 0,
-                estado_semaforo: 'verde', 
+                estado_semaforo: 'verde',
                 observacion_semaforo: 'Completo',
                 notificado_whatsapp: false
             }])
@@ -530,11 +539,11 @@ app.post('/guardar-registro', async (req, res) => {
         if (maestros) {
             const maestrosArray = Object.values(maestros)
                 .filter(m => m.nombre && m.nombre.trim() !== '')
-                .map(m => ({ 
-                    iglesia_id: iglesiaId, 
-                    nombre: m.nombre.trim(), 
-                    telefono: (m.telefono && m.telefono.trim() !== '') ? m.telefono.trim() : 'Sin teléfono', 
-                    correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'Sin correo registrado' 
+                .map(m => ({
+                    iglesia_id: iglesiaId,
+                    nombre: m.nombre.trim(),
+                    telefono: (m.telefono && m.telefono.trim() !== '') ? m.telefono.trim() : 'Sin teléfono',
+                    correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'Sin correo registrado'
                 }));
             if (maestrosArray.length > 0) await supabase.from('maestros').insert(maestrosArray);
         }
@@ -572,8 +581,8 @@ app.get('/editar-registro/:id', async (req, res) => {
         const { data: iglesia } = await supabase.from('iglesias').select(`*, maestros (*), guerreritos_oracion (*), guerreros_oracion (*)`).eq('id', id).maybeSingle();
         if (!iglesia) return res.status(404).send('Registro no encontrado.');
         res.render('editar', { iglesia });
-    } catch (err) { 
-        res.status(500).send('Error interno.'); 
+    } catch (err) {
+        res.status(500).send('Error interno.');
     }
 });
 
@@ -582,18 +591,18 @@ app.post('/actualizar-registro/:id', async (req, res) => {
         const id = parseInt(req.params.id, 10);
         const { nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, estado_semaforo, observacion_semaforo, maestros, guerreritos, guerreros } = req.body;
 
-        await supabase.from('iglesias').update({ 
-            nombre_pastor: (nombre_pastor || '').trim(), 
-            telefono_pastor: (telefono_pastor || '').trim(), 
-            correo_pastor: (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'Sin correo registrado', 
-            nombre_iglesia: (nombre_iglesia && nombre_iglesia.trim() !== '') ? nombre_iglesia.trim() : 'Iglesia pendiente de asignar', 
-            direccion: (direccion && direccion.trim() !== '') ? direccion.trim() : 'Dirección pendiente de registrar', 
-            nombre_lider: (nombre_lider && nombre_lider.trim() !== '') ? nombre_lider.trim() : 'Sin líder registrado', 
-            telefono_lider: (telefono_lider && telefono_lider.trim() !== '') ? telefono_lider.trim() : 'Sin teléfono', 
-            correo_lider: (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'Sin correo registrado', 
-            num_cajas: parseInt(num_cajas) || 0, 
-            estado_semaforo: estado_semaforo || 'verde', 
-            observacion_semaforo: (observacion_semaforo || '').trim() || 'Completo' 
+        await supabase.from('iglesias').update({
+            nombre_pastor: (nombre_pastor || '').trim(),
+            telefono_pastor: (telefono_pastor || '').trim(),
+            correo_pastor: (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'Sin correo registrado',
+            nombre_iglesia: (nombre_iglesia && nombre_iglesia.trim() !== '') ? nombre_iglesia.trim() : 'Iglesia pendiente de asignar',
+            direccion: (direccion && direccion.trim() !== '') ? direccion.trim() : 'Dirección pendiente de registrar',
+            nombre_lider: (nombre_lider && nombre_lider.trim() !== '') ? nombre_lider.trim() : 'Sin líder registrado',
+            telefono_lider: (telefono_lider && telefono_lider.trim() !== '') ? telefono_lider.trim() : 'Sin teléfono',
+            correo_lider: (correo_lider && correo_lider.trim() !== '') ? correo_lider.trim() : 'Sin correo registrado',
+            num_cajas: parseInt(num_cajas) || 0,
+            estado_semaforo: estado_semaforo || 'verde',
+            observacion_semaforo: (observacion_semaforo || '').trim() || 'Completo'
         }).eq('id', id);
 
         await supabase.from('maestros').delete().eq('iglesia_id', id);
@@ -601,39 +610,39 @@ app.post('/actualizar-registro/:id', async (req, res) => {
         await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
 
         if (maestros) {
-            const arr = Object.values(maestros).filter(m => m.nombre && m.nombre.trim() !== '').map(m => ({ 
-                iglesia_id: id, 
-                nombre: m.nombre.trim(), 
-                telefono: (m.telefono && m.telefono.trim() !== '') ? m.telefono.trim() : 'Sin teléfono', 
-                correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'Sin correo registrado' 
+            const arr = Object.values(maestros).filter(m => m.nombre && m.nombre.trim() !== '').map(m => ({
+                iglesia_id: id,
+                nombre: m.nombre.trim(),
+                telefono: (m.telefono && m.telefono.trim() !== '') ? m.telefono.trim() : 'Sin teléfono',
+                correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'Sin correo registrado'
             }));
             if (arr.length > 0) await supabase.from('maestros').insert(arr);
         }
 
         if (guerreritos) {
             const lista = Array.isArray(guerreritos) ? guerreritos : Object.values(guerreritos);
-            const arr = lista.filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '').map(g => ({ 
-                iglesia_id: id, 
-                nombre_guerrerito: g.nombre_guerrerito.trim(), 
-                nombre_tutor: (g.nombre_tutor && g.nombre_tutor.trim() !== '') ? g.nombre_tutor.trim() : 'Sin tutor registrado', 
-                telefono_tutor: (g.telefono_tutor && g.telefono_tutor.trim() !== '') ? g.telefono_tutor.trim() : 'Sin teléfono' 
+            const arr = lista.filter(g => g.nombre_guerrerito && g.nombre_guerrerito.trim() !== '').map(g => ({
+                iglesia_id: id,
+                nombre_guerrerito: g.nombre_guerrerito.trim(),
+                nombre_tutor: (g.nombre_tutor && g.nombre_tutor.trim() !== '') ? g.nombre_tutor.trim() : 'Sin tutor registrado',
+                telefono_tutor: (g.telefono_tutor && g.telefono_tutor.trim() !== '') ? g.telefono_tutor.trim() : 'Sin teléfono'
             }));
             if (arr.length > 0) await supabase.from('guerreritos_oracion').insert(arr);
         }
 
         if (guerreros) {
             const lista = Array.isArray(guerreros) ? guerreros : Object.values(guerreros);
-            const arr = lista.filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '').map(gu => ({ 
-                iglesia_id: id, 
-                nombre_guerrero: gu.nombre_guerrero.trim(), 
-                telefono_guerrero: (gu.telefono_guerrero && gu.telefono_guerrero.trim() !== '') ? gu.telefono_guerrero.trim() : 'Sin teléfono' 
+            const arr = lista.filter(gu => gu.nombre_guerrero && gu.nombre_guerrero.trim() !== '').map(gu => ({
+                iglesia_id: id,
+                nombre_guerrero: gu.nombre_guerrero.trim(),
+                telefono_guerrero: (gu.telefono_guerrero && gu.telefono_guerrero.trim() !== '') ? gu.telefono_guerrero.trim() : 'Sin teléfono'
             }));
             if (arr.length > 0) await supabase.from('guerreros_oracion').insert(arr);
         }
 
         res.redirect('/admin');
-    } catch (err) { 
-        res.status(500).send('Error al actualizar el registro.'); 
+    } catch (err) {
+        res.status(500).send('Error al actualizar el registro.');
     }
 });
 
@@ -661,9 +670,10 @@ app.post('/eliminar-registro/:id', async (req, res) => {
 app.get('/exportar-excel', async (req, res) => {
     try {
         const zonaActual = req.session.zona || 'GENERAL';
+        const nombreZonaVisible = NOMBRES_ZONAS[zonaActual] || zonaActual;
         const { data: registros } = await supabase.from('iglesias').select(`*, maestros(*), guerreritos_oracion(*), guerreros_oracion(*)`).eq('zona', zonaActual);
 
-        let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${zonaActual}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th></tr>`;
+        let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${nombreZonaVisible}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th></tr>`;
 
         (registros || []).forEach((reg, index) => {
             htmlTabla += `<tr><td>${index + 1}</td><td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td><td>${reg.observacion_semaforo || 'Completo'}</td><td>${reg.nombre_iglesia}</td><td>${reg.direccion}</td><td>${reg.nombre_pastor}</td><td>${reg.telefono_pastor}</td><td>${reg.nombre_lider}</td><td>${reg.telefono_lider}</td><td>${reg.num_cajas}</td></tr>`;
@@ -671,7 +681,7 @@ app.get('/exportar-excel', async (req, res) => {
 
         htmlTabla += `</table></body></html>`;
         res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename=Reporte_${zonaActual}.xls`);
+        res.setHeader('Content-Disposition', `attachment; filename=Reporte_${nombreZonaVisible.replace(/\s+/g, '_')}.xls`);
         res.status(200).send(htmlTabla);
     } catch (err) { res.status(500).send('Error al exportar'); }
 });
