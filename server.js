@@ -403,6 +403,30 @@ app.get('/admin', async (req, res) => {
 });
 
 // ==========================================
+// ESTADO DE CONCENTRADO DE APP EXTERNA
+// ==========================================
+app.post('/actualizar-concentrado/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const realizado = req.body.realizado === true || req.body.realizado === 'true';
+
+        const { error } = await supabase
+            .from('iglesias')
+            .update({ concentrado_realizado: realizado })
+            .eq('id', id);
+
+        if (error) {
+            return res.status(500).json({ success: false, message: error.message });
+        }
+
+        return res.json({ success: true, concentrado_realizado: realizado });
+    } catch (err) {
+        console.error('Error al actualizar estado de concentrado:', err);
+        return res.status(500).json({ success: false, message: 'Error interno al actualizar el concentrado.' });
+    }
+});
+
+// ==========================================
 // ZONA: CÓDIGO QR Y CHECK-IN DE EVENTO
 // ==========================================
 app.get('/iglesia/qr/:id', async (req, res) => {
@@ -531,12 +555,21 @@ app.get('/evento/confirmar-llegada', async (req, res) => {
             return res.render('resultado_checkin', { exito: false, mensaje: '❌ Código QR no reconocido en la base de datos.' });
         }
 
+        const fechaLlegada = new Date().toISOString();
         await supabase.from('iglesias').update({
             asistencia_confirmada: true,
-            fecha_llegada: new Date().toISOString()
+            fecha_llegada: fechaLlegada
         }).eq('id', iglesia.id);
 
-        res.render('resultado_checkin', { exito: true, iglesia });
+        res.render('resultado_checkin', {
+            exito: true,
+            iglesia: {
+                ...iglesia,
+                asistencia_confirmada: true,
+                fecha_llegada: fechaLlegada,
+                concentrado_realizado: Boolean(iglesia.concentrado_realizado)
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send('Error al procesar la confirmación de llegada.');
@@ -637,7 +670,8 @@ app.post('/guardar-registro', async (req, res) => {
                 num_maestros: maestros ? Object.keys(maestros).length : 0,
                 estado_semaforo: 'verde',
                 observacion_semaforo: 'Completo',
-                notificado_whatsapp: false
+                notificado_whatsapp: false,
+                concentrado_realizado: false
             }])
             .select().single();
 
@@ -781,10 +815,11 @@ app.get('/exportar-excel', async (req, res) => {
         const nombreZonaVisible = NOMBRES_ZONAS[zonaActual] || zonaActual;
         const { data: registros } = await supabase.from('iglesias').select(`*, maestros(*), guerreritos_oracion(*), guerreros_oracion(*)`).eq('zona', zonaActual);
 
-        let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${nombreZonaVisible}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th></tr>`;
+        let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${nombreZonaVisible}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th><th>Concentrado</th></tr>`;
 
         (registros || []).forEach((reg, index) => {
-            htmlTabla += `<tr><td>${index + 1}</td><td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td><td>${reg.observacion_semaforo || 'Completo'}</td><td>${reg.nombre_iglesia}</td><td>${reg.direccion}</td><td>${reg.nombre_pastor}</td><td>${reg.telefono_pastor}</td><td>${reg.nombre_lider}</td><td>${reg.telefono_lider}</td><td>${reg.num_cajas}</td></tr>`;
+            const concTexto = reg.concentrado_realizado ? 'REALIZADO' : 'NO REALIZADO';
+            htmlTabla += `<tr><td>${index + 1}</td><td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td><td>${reg.observacion_semaforo || 'Completo'}</td><td>${reg.nombre_iglesia}</td><td>${reg.direccion}</td><td>${reg.nombre_pastor}</td><td>${reg.telefono_pastor}</td><td>${reg.nombre_lider}</td><td>${reg.telefono_lider}</td><td>${reg.num_cajas}</td><td>${concTexto}</td></tr>`;
         });
 
         htmlTabla += `</table></body></html>`;
