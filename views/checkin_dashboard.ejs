@@ -17,7 +17,6 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- ENCABEZADO -->
         <div class="header-box">
             <div class="d-flex align-items-center">
                 <img src="/images/logo.png" alt="Logo" style="height: 45px;" class="me-3">
@@ -32,7 +31,6 @@
             </div>
         </div>
 
-        <!-- TARJETAS DE INDICADORES (KPIs) -->
         <div class="row g-3 mb-4">
             <div class="col-md-3 col-sm-6">
                 <div class="stat-card" style="background-color: #0056b3;">
@@ -72,7 +70,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN DE FILTROS Y TABLA -->
         <div class="table-section">
             <div class="row g-2 align-items-center mb-3">
                 <div class="col-md-4">
@@ -88,8 +85,10 @@
                             <option value="orizaba" <%= zonaFiltro === 'orizaba' ? 'selected' : '' %>>Orizaba</option>
                             <option value="cd_aleman" <%= zonaFiltro === 'cd_aleman' ? 'selected' : '' %>>Ciudad Alemán</option>
                             <option value="xalapa" <%= zonaFiltro === 'xalapa' ? 'selected' : '' %>>Xalapa</option>
-                            <option value="carlos_a_carrillo" <%= zonaFiltro === 'carlos_a_carrillo' ? 'selected' : '' %>>Carlos A. Carrillo</option>
+                            <option value="carlos_a_carrillo" <%= zonaFiltro === 'carlos_a_carrillo' ? 'selected' : '' %>>Cosamaloapan</option>
                             <option value="tezonapa" <%= zonaFiltro === 'tezonapa' ? 'selected' : '' %>>Tezonapa</option>
+                            <option value="sayula" <%= zonaFiltro === 'sayula' ? 'selected' : '' %>>Sayula</option>
+                            <option value="cosamaloapan" <%= zonaFiltro === 'cosamaloapan' ? 'selected' : '' %>>Coatepec</option>
                         </select>
                     </form>
                 </div>
@@ -118,7 +117,7 @@
                                     <td class="fw-bold"><%= index + 1 %></td>
                                     <td>
                                         <strong><%= item.nombre_iglesia %></strong><br>
-                                        <small class="text-muted text-uppercase" style="font-size: 0.68rem;"><%= item.zona %></small>
+                                        <small class="text-muted text-uppercase" style="font-size: 0.68rem;"><%= (locals.nombresZonas && nombresZonas[item.zona]) ? nombresZonas[item.zona] : item.zona %></small>
                                     </td>
                                     <td>
                                         <%= item.nombre_pastor %><br>
