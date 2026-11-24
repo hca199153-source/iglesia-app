@@ -580,10 +580,9 @@ app.get('/editar-registro/:id', async (req, res) => {
 app.post('/actualizar-registro/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
-        const { zona, nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, estado_semaforo, observacion_semaforo, maestros, guerreritos, guerreros } = req.body;
+        const { nombre_pastor, telefono_pastor, correo_pastor, nombre_iglesia, direccion, nombre_lider, telefono_lider, correo_lider, num_cajas, estado_semaforo, observacion_semaforo, maestros, guerreritos, guerreros } = req.body;
 
         await supabase.from('iglesias').update({ 
-            zona, 
             nombre_pastor: (nombre_pastor || '').trim(), 
             telefono_pastor: (telefono_pastor || '').trim(), 
             correo_pastor: (correo_pastor && correo_pastor.trim() !== '') ? correo_pastor.trim() : 'Sin correo registrado', 
