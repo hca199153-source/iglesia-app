@@ -50,6 +50,36 @@
         .semaforo-amarillo { background-color: #ffc107; color: #000; }
         .semaforo-rojo { background-color: #dc3545; color: white; }
 
+        .badge-concentrado {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.68rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .conc-si { background-color: #198754; color: #ffffff; }
+        .conc-no { background-color: #dc3545; color: #ffffff; }
+
+        .btn-concentrado-toggle {
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+            transition: transform 0.2s, opacity 0.2s;
+            cursor: pointer;
+        }
+        .btn-concentrado-toggle:hover { transform: scale(1.06); }
+        .btn-concentrado-si { background-color: #198754; color: #ffffff; }
+        .btn-concentrado-no { background-color: #dc3545; color: #ffffff; }
+
         .btn-audio-dictado {
             background-color: #0d6efd;
             color: white;
@@ -253,6 +283,7 @@
                             <th>Pastor</th>
                             <th>Líder de Proyecto</th>
                             <th>Cajas</th>
+                            <th class="text-center">Concentrado</th>
                             <th>Maestros Asignados</th>
                             <th>Guerreritos (Niño / Papá / Tel)</th>
                             <th>Guerreros (Adultos)</th>
@@ -274,10 +305,12 @@
                                     textoEstado = item.observacion_semaforo || 'Completo';
                                 }
 
+                                const concHecho = Boolean(item.concentrado_realizado);
+
                                 let textoIglesia = `Iglesia ${item.nombre_iglesia}. Dirección: ${item.direccion}.`;
                                 let textoPastor = `Pastor ${item.nombre_pastor}. Teléfono: ${item.telefono_pastor || 'No registrado'}. Correo: ${item.correo_pastor || 'No registrado'}.`;
                                 let textoLider = `Líder de proyecto ${item.nombre_lider}. Teléfono: ${item.telefono_lider || 'No registrado'}. Correo: ${item.correo_lider || 'No registrado'}.`;
-                                let textoCajas = `Cajitas solicitadas: ${item.num_cajas}.`;
+                                let textoCajas = `Cajitas solicitadas: ${item.num_cajas}. Concentrado: ${concHecho ? 'Realizado' : 'No realizado'}.`;
 
                                 let textoMaestros = "Maestros asignados: ";
                                 if (item.maestros && item.maestros.length > 0) {
@@ -301,6 +334,7 @@
                                     data-direccion="<%= (item.direccion || '').toLowerCase() %>"
                                     data-cajas="<%= item.num_cajas || 0 %>"
                                     data-semaforo="<%= item.estado_semaforo || 'verde' %>"
+                                    data-concentrado="<%= concHecho ? 'true' : 'false' %>"
                                     data-nombre-iglesia-raw="<%= item.nombre_iglesia %>"
                                     data-nombre-pastor-raw="<%= item.nombre_pastor %>"
                                     data-tel-pastor-raw="<%= item.telefono_pastor || '' %>"
@@ -338,6 +372,12 @@
                                         <% } %>
                                     </td>
                                     <td><span class="badge bg-success"><%= item.num_cajas %></span></td>
+                                    <td class="text-center">
+                                        <span id="badgeConcentrado_<%= item.id %>" class="badge-concentrado <%= concHecho ? 'conc-si' : 'conc-no' %>">
+                                            <i class="fas <%= concHecho ? 'fa-check-circle' : 'fa-times-circle' %>"></i>
+                                            <%= concHecho ? 'Realizado' : 'No realizado' %>
+                                        </span>
+                                    </td>
                                     <td>
                                         <% if (item.maestros && item.maestros.length > 0) { %>
                                             <% item.maestros.forEach((m, mIdx) => { %>
@@ -400,6 +440,11 @@
                                                 <i class="fas fa-circle"></i> <%= textoEstado %>
                                             </span>
 
+                                            <button type="button" class="btn-concentrado-toggle <%= concHecho ? 'btn-concentrado-si' : 'btn-concentrado-no' %>" id="btnConcentrado_<%= item.id %>" onclick="alternarConcentrado('<%= item.id %>')" title="Marcar si ya realizó el concentrado de la app externa">
+                                                <i class="fas <%= concHecho ? 'fa-check-circle' : 'fa-times-circle' %>"></i>
+                                                <span><%= concHecho ? 'Realizado' : 'No realizado' %></span>
+                                            </button>
+
                                             <button type="button" class="btn-audio-dictado" id="btnAudio_<%= item.id %>" onclick="abrirModalDictado('<%= item.id %>')">
                                                 <i class="fas fa-volume-up"></i> Dictar
                                             </button>
@@ -408,7 +453,7 @@
                                 </tr>
                             <% }) %>
                         <% } else { %>
-                            <tr><td colspan="9" class="text-center text-muted py-4">No hay registros guardados.</td></tr>
+                            <tr><td colspan="10" class="text-center text-muted py-4">No hay registros guardados.</td></tr>
                         <% } %>
                     </tbody>
                 </table>
@@ -604,6 +649,46 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let gruposWhatsAppList = <%- JSON.stringify(locals.gruposWhatsApp || []) %>;
+
+        async function alternarConcentrado(id) {
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            const btn = document.getElementById(`btnConcentrado_${id}`);
+            const badge = document.getElementById(`badgeConcentrado_${id}`);
+            if (!row || !btn) return;
+
+            const estadoActual = row.getAttribute('data-concentrado') === 'true';
+            const nuevoEstado = !estadoActual;
+
+            btn.disabled = true;
+            try {
+                const resp = await fetch(`/actualizar-concentrado/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ realizado: nuevoEstado })
+                });
+                const data = await resp.json();
+                if (!resp.ok || !data.success) {
+                    alert('No se pudo actualizar el estado del concentrado.');
+                    return;
+                }
+
+                row.setAttribute('data-concentrado', nuevoEstado ? 'true' : 'false');
+
+                btn.classList.remove('btn-concentrado-si', 'btn-concentrado-no');
+                btn.classList.add(nuevoEstado ? 'btn-concentrado-si' : 'btn-concentrado-no');
+                btn.innerHTML = `<i class="fas ${nuevoEstado ? 'fa-check-circle' : 'fa-times-circle'}"></i><span>${nuevoEstado ? 'Realizado' : 'No realizado'}</span>`;
+
+                if (badge) {
+                    badge.classList.remove('conc-si', 'conc-no');
+                    badge.classList.add(nuevoEstado ? 'conc-si' : 'conc-no');
+                    badge.innerHTML = `<i class="fas ${nuevoEstado ? 'fa-check-circle' : 'fa-times-circle'}"></i>${nuevoEstado ? 'Realizado' : 'No realizado'}`;
+                }
+            } catch (err) {
+                alert('Error de conexión al guardar el estado del concentrado.');
+            } finally {
+                btn.disabled = false;
+            }
+        }
 
         function renderizarOpcionesGrupos(seleccionarId = null) {
             const selectGrupo = document.getElementById('selectGrupoPlantilla');
