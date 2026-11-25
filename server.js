@@ -94,8 +94,9 @@ app.use((req, res, next) => {
         '/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login',
         '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad',
         '/guardar-registro', '/iglesia/qr', '/descargar-qr', '/buscar-mi-qr',
-        '/evento/checkin-dashboard', '/evento/confirmar-llegada',
-        '/evento/marcar-asistencia', '/public', '/images', '/css'
+        '/api/marcar-qr-descargado', '/evento/checkin-dashboard',
+        '/evento/confirmar-llegada', '/evento/marcar-asistencia',
+        '/public', '/images', '/css'
     ];
     if (rutasLibres.some(r => req.path.startsWith(r))) {
         return next();
@@ -438,6 +439,22 @@ app.post('/actualizar-concentrado/:id', async (req, res) => {
     } catch (err) {
         console.error('Error al actualizar estado de concentrado:', err);
         return res.status(500).json({ success: false, message: 'Error interno al actualizar el concentrado.' });
+    }
+});
+
+// ==========================================
+// MARCAR QR DESCARGADO AUTOMÁTICAMENTE EN BD
+// ==========================================
+app.post('/api/marcar-qr-descargado/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (!id) return res.status(400).json({ success: false });
+
+        const saved = await marcarQrDescargadoEnBD(id);
+        return res.json({ success: true, ...saved });
+    } catch (err) {
+        console.error('Error en /api/marcar-qr-descargado:', err);
+        return res.status(500).json({ success: false });
     }
 });
 
