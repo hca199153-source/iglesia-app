@@ -64,6 +64,21 @@ async function obtenerGruposWhatsApp() {
     return GRUPOS_DEFAULT;
 }
 
+async function marcarQrDescargadoEnBD(iglesiaId, extraUpdates = {}) {
+    try {
+        const updates = {
+            ...extraUpdates,
+            qr_descargado: true,
+            fecha_descarga_qr: new Date().toISOString()
+        };
+        await supabase.from('iglesias').update(updates).eq('id', iglesiaId);
+        return updates;
+    } catch (err) {
+        console.error('Error al marcar QR descargado en BD:', err);
+        return extraUpdates;
+    }
+}
+
 function normalizarTexto(texto) {
     return (texto || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
 }
@@ -437,10 +452,14 @@ app.get('/iglesia/qr/:id', async (req, res) => {
         if (!iglesia) return res.status(404).send('Iglesia no encontrada.');
 
         let token = iglesia.token_qr;
+        const extraUpdates = {};
         if (!token) {
             token = 'iglesia_' + id + '_' + Math.random().toString(36).substring(2, 9);
-            await supabase.from('iglesias').update({ token_qr: token }).eq('id', id);
+            extraUpdates.token_qr = token;
         }
+
+        const savedUpdates = await marcarQrDescargadoEnBD(id, extraUpdates);
+        const iglesiaActualizada = { ...iglesia, ...savedUpdates };
 
         const hostUrl = req.protocol + '://' + req.get('host');
         const urlCheckIn = `${hostUrl}/evento/confirmar-llegada?token=${token}`;
@@ -450,7 +469,7 @@ app.get('/iglesia/qr/:id', async (req, res) => {
                 console.error("Error al generar QR:", err);
                 return res.status(500).send("Error al generar el código QR.");
             }
-            res.render('qr_iglesia', { iglesia, qrImageSrc, urlCheckIn });
+            res.render('qr_iglesia', { iglesia: iglesiaActualizada, qrImageSrc, urlCheckIn });
         });
     } catch (err) {
         console.error(err);
@@ -491,10 +510,14 @@ app.post('/buscar-mi-qr', async (req, res) => {
         }
 
         let token = iglesiaEncontrada.token_qr;
+        const extraUpdates = {};
         if (!token) {
             token = 'iglesia_' + iglesiaEncontrada.id + '_' + Math.random().toString(36).substring(2, 9);
-            await supabase.from('iglesias').update({ token_qr: token }).eq('id', iglesiaEncontrada.id);
+            extraUpdates.token_qr = token;
         }
+
+        const savedUpdates = await marcarQrDescargadoEnBD(iglesiaEncontrada.id, extraUpdates);
+        const iglesiaActualizada = { ...iglesiaEncontrada, ...savedUpdates };
 
         const hostUrl = req.protocol + '://' + req.get('host');
         const urlCheckIn = `${hostUrl}/evento/confirmar-llegada?token=${token}`;
@@ -503,7 +526,7 @@ app.post('/buscar-mi-qr', async (req, res) => {
             if (err) {
                 return res.render('descargar_qr_publico', { iglesia: null, qrImageSrc: null, errorMensaje: 'Error interno al generar la imagen QR.' });
             }
-            res.render('descargar_qr_publico', { iglesia: iglesiaEncontrada, qrImageSrc, errorMensaje: null });
+            res.render('descargar_qr_publico', { iglesia: iglesiaActualizada, qrImageSrc, errorMensaje: null });
         });
     } catch (err) {
         console.error(err);
@@ -526,6 +549,7 @@ app.get('/evento/checkin-dashboard', async (req, res) => {
         const totalEsperadas = listaIglesias.length;
         const totalLlegadas = listaIglesias.filter(i => i.asistencia_confirmada).length;
         const totalFaltantes = totalEsperadas - totalLlegadas;
+        const totalQrDescargados = listaIglesias.filter(i => i.qr_descargado).length;
         const totalCajitasEntregadas = listaIglesias
             .filter(i => i.asistencia_confirmada)
             .reduce((acc, curr) => acc + (parseInt(curr.num_cajas) || 0), 0);
@@ -536,6 +560,7 @@ app.get('/evento/checkin-dashboard', async (req, res) => {
             totalEsperadas,
             totalLlegadas,
             totalFaltantes,
+            totalQrDescargados,
             totalCajitasEntregadas
         });
     } catch (err) {
@@ -567,7 +592,8 @@ app.get('/evento/confirmar-llegada', async (req, res) => {
                 ...iglesia,
                 asistencia_confirmada: true,
                 fecha_llegada: fechaLlegada,
-                concentrado_realizado: Boolean(iglesia.concentrado_realizado)
+                concentrado_realizado: Boolean(iglesia.concentrado_realizado),
+                qr_descargado: Boolean(iglesia.qr_descargado)
             }
         });
     } catch (err) {
@@ -671,7 +697,9 @@ app.post('/guardar-registro', async (req, res) => {
                 estado_semaforo: 'verde',
                 observacion_semaforo: 'Completo',
                 notificado_whatsapp: false,
-                concentrado_realizado: false
+                concentrado_realizado: false,
+                qr_descargado: false,
+                fecha_descarga_qr: null
             }])
             .select().single();
 
@@ -815,11 +843,12 @@ app.get('/exportar-excel', async (req, res) => {
         const nombreZonaVisible = NOMBRES_ZONAS[zonaActual] || zonaActual;
         const { data: registros } = await supabase.from('iglesias').select(`*, maestros(*), guerreritos_oracion(*), guerreros_oracion(*)`).eq('zona', zonaActual);
 
-        let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${nombreZonaVisible}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th><th>Concentrado</th></tr>`;
+        let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${nombreZonaVisible}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th><th>Concentrado</th><th>QR Descargado</th></tr>`;
 
         (registros || []).forEach((reg, index) => {
             const concTexto = reg.concentrado_realizado ? 'REALIZADO' : 'NO REALIZADO';
-            htmlTabla += `<tr><td>${index + 1}</td><td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td><td>${reg.observacion_semaforo || 'Completo'}</td><td>${reg.nombre_iglesia}</td><td>${reg.direccion}</td><td>${reg.nombre_pastor}</td><td>${reg.telefono_pastor}</td><td>${reg.nombre_lider}</td><td>${reg.telefono_lider}</td><td>${reg.num_cajas}</td><td>${concTexto}</td></tr>`;
+            const qrTexto = reg.qr_descargado ? 'DESCARGADO' : 'PENDIENTE';
+            htmlTabla += `<tr><td>${index + 1}</td><td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td><td>${reg.observacion_semaforo || 'Completo'}</td><td>${reg.nombre_iglesia}</td><td>${reg.direccion}</td><td>${reg.nombre_pastor}</td><td>${reg.telefono_pastor}</td><td>${reg.nombre_lider}</td><td>${reg.telefono_lider}</td><td>${reg.num_cajas}</td><td>${concTexto}</td><td>${qrTexto}</td></tr>`;
         });
 
         htmlTabla += `</table></body></html>`;
