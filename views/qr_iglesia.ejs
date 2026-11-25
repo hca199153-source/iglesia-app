@@ -3,33 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Código QR Institucional | Samaritan's Purse</title>
+    <title>Código QR - <%= iglesia.nombre_iglesia %> | Samaritan's Purse</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0b221a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .qr-card {
+            background: #ffffff;
+            border-radius: 16px;
+            max-width: 460px;
+            width: 100%;
+            padding: 28px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.45);
+            border-top: 6px solid #009639;
+        }
+        .qr-box {
+            background: #f8f9fa;
+            border: 2px dashed #009639;
+            border-radius: 14px;
+            padding: 18px;
+            display: inline-block;
+        }
+        @media print {
+            body { background: #ffffff !important; padding: 0 !important; }
+            .qr-card { box-shadow: none !important; border: 1px solid #dee2e6 !important; }
+            .no-print { display: none !important; }
+        }
+    </style>
 </head>
-<body class="bg-light d-flex align-items-center justify-content-center vh-100">
-    <div class="card shadow-lg p-4 text-center" style="max-width: 400px; border-top: 6px solid #009639;">
-        <img src="/images/logo.png" alt="Logo" style="height: 50px; object-fit: contain;" class="mb-3">
+<body>
+    <%
+        const zonaVisible = (locals.nombresZonas && nombresZonas[iglesia.zona]) ? nombresZonas[iglesia.zona] : (iglesia.zona || '');
+        const nombreArchivo = 'QR_' + (iglesia.nombre_iglesia || 'Iglesia').replace(/[^a-zA-Z0-9]/g, '_') + '.png';
+    %>
+    <div class="qr-card text-center">
+        <img src="/images/logo.png" alt="Logo Samaritan's Purse" style="height: 55px;" class="mb-2">
         <h5 class="fw-bold text-success mb-1">Pase de Acceso al Evento</h5>
         <p class="small text-muted mb-3">Operación Niño de la Navidad</p>
 
-        <div class="bg-white p-3 border rounded mb-3 shadow-sm">
-            <h6 class="fw-bold text-dark mb-1"><%= iglesia.nombre_iglesia %></h6>
-            <p class="small text-secondary mb-2">Pastor: <%= iglesia.nombre_pastor %></p>
-            <div class="d-flex justify-content-center my-2">
-                <img src="<%= qrImageSrc %>" alt="Código QR de la Iglesia" class="img-fluid border p-2 rounded bg-white" style="max-width: 220px;">
-            </div>
-            <span class="badge bg-success mt-1">Cajitas Solicitadas: <%= iglesia.num_cajas %></span>
+        <div class="bg-light border rounded p-3 text-start small mb-3">
+            <div class="mb-1"><strong>Iglesia:</strong> <%= iglesia.nombre_iglesia %></div>
+            <div class="mb-1"><strong>Pastor:</strong> <%= iglesia.nombre_pastor %></div>
+            <div class="mb-1"><strong>Zona:</strong> <%= zonaVisible %></div>
+            <div><strong>Cajitas asignadas:</strong> <span class="badge bg-success"><%= iglesia.num_cajas || 0 %></span></div>
         </div>
 
-        <p class="text-muted" style="font-size: 0.75rem;">Presente este código QR en la entrada del evento el día asignado para realizar su check-in rápido.</p>
+        <div class="qr-box mb-3">
+            <img src="<%= qrImageSrc %>" alt="QR <%= iglesia.nombre_iglesia %>" style="width: 250px; height: 250px;">
+            <div class="small text-muted mt-2 fw-bold">Escanear en recepción para Check-in</div>
+        </div>
 
-        <div class="d-grid gap-2">
-            <a href="<%= qrImageSrc %>" download="QR_Iglesia_<%= iglesia.nombre_iglesia.replace(/\s+/g, '_') %>.png" class="btn btn-success fw-bold btn-sm">
+        <div class="d-grid gap-2 no-print">
+            <a href="<%= qrImageSrc %>"
+               download="<%= nombreArchivo %>"
+               onclick="registrarDescargaQr('<%= iglesia.id %>')"
+               class="btn btn-success fw-bold py-2">
                 <i class="fas fa-download me-1"></i> Descargar Imagen QR
             </a>
-            <a href="/" class="btn btn-outline-secondary btn-sm">Regresar al Inicio</a>
+            <button type="button"
+                    onclick="registrarDescargaQr('<%= iglesia.id %>'); window.print();"
+                    class="btn btn-outline-dark btn-sm fw-bold">
+                <i class="fas fa-print me-1"></i> Imprimir Pase
+            </button>
+            <a href="/admin" class="btn btn-outline-secondary btn-sm">Volver al Panel</a>
         </div>
     </div>
+
+    <script>
+        function registrarDescargaQr(iglesiaId) {
+            if (!iglesiaId) return;
+            fetch('/api/marcar-qr-descargado/' + iglesiaId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                keepalive: true
+            }).catch(() => {});
+        }
+    </script>
 </body>
 </html>
