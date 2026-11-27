@@ -94,7 +94,7 @@ app.use((req, res, next) => {
         '/admin', '/admin-comunidad', '/dev-admin', '/dev-admin/login',
         '/login', '/logout', '/unirse-comunidad', '/procesar-unirse-comunidad',
         '/guardar-registro', '/iglesia/qr', '/descargar-qr', '/buscar-mi-qr',
-        '/api/marcar-qr-descargado', '/evento/checkin-dashboard',
+        '/api/marcar-qr-descargado', '/api/qr-data', '/evento/checkin-dashboard',
         '/evento/confirmar-llegada', '/evento/marcar-asistencia',
         '/public', '/images', '/css'
     ];
@@ -455,6 +455,45 @@ app.post('/api/marcar-qr-descargado/:id', async (req, res) => {
     } catch (err) {
         console.error('Error en /api/marcar-qr-descargado:', err);
         return res.status(500).json({ success: false });
+    }
+});
+
+// ==========================================
+// OBTENER QR EN DATA URL Y MARCAR DESCARGADO
+// ==========================================
+app.get('/api/qr-data/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (!id) return res.status(400).json({ success: false, message: 'ID inválido.' });
+
+        const { data: iglesia } = await supabase.from('iglesias').select('*').eq('id', id).maybeSingle();
+        if (!iglesia) return res.status(404).json({ success: false, message: 'Iglesia no encontrada.' });
+
+        let token = iglesia.token_qr;
+        const extraUpdates = {};
+        if (!token) {
+            token = 'iglesia_' + id + '_' + Math.random().toString(36).substring(2, 9);
+            extraUpdates.token_qr = token;
+        }
+
+        const savedUpdates = await marcarQrDescargadoEnBD(id, extraUpdates);
+        const hostUrl = req.protocol + '://' + req.get('host');
+        const urlCheckIn = `${hostUrl}/evento/confirmar-llegada?token=${token}`;
+
+        QRCode.toDataURL(urlCheckIn, { width: 320, margin: 2, color: { dark: '#007a2e', light: '#ffffff' } }, (err, qrImageSrc) => {
+            if (err) {
+                return res.status(500).json({ success: false, message: 'No se pudo generar el QR.' });
+            }
+            return res.json({
+                success: true,
+                qrImageSrc,
+                urlCheckIn,
+                ...savedUpdates
+            });
+        });
+    } catch (err) {
+        console.error('Error en /api/qr-data/:id:', err);
+        return res.status(500).json({ success: false, message: 'Error interno al obtener el QR.' });
     }
 });
 
