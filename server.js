@@ -503,7 +503,11 @@ app.get('/api/qr-data/:id', async (req, res) => {
 app.get('/iglesia/qr/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
-        const { data: iglesia } = await supabase.from('iglesias').select('*').eq('id', id).maybeSingle();
+        const { data: iglesia } = await supabase
+            .from('iglesias')
+            .select('*, maestros (id)')
+            .eq('id', id)
+            .maybeSingle();
 
         if (!iglesia) return res.status(404).send('Iglesia no encontrada.');
 
@@ -514,8 +518,12 @@ app.get('/iglesia/qr/:id', async (req, res) => {
             extraUpdates.token_qr = token;
         }
 
+        const totalMaestros = Array.isArray(iglesia.maestros)
+            ? iglesia.maestros.length
+            : (parseInt(iglesia.num_maestros, 10) || 0);
+
         const savedUpdates = await marcarQrDescargadoEnBD(id, extraUpdates);
-        const iglesiaActualizada = { ...iglesia, ...savedUpdates };
+        const iglesiaActualizada = { ...iglesia, ...savedUpdates, total_maestros: totalMaestros };
 
         const hostUrl = req.protocol + '://' + req.get('host');
         const urlCheckIn = `${hostUrl}/evento/confirmar-llegada?token=${token}`;
@@ -549,7 +557,7 @@ app.post('/buscar-mi-qr', async (req, res) => {
         }
 
         const ultimos10 = telLimpio.slice(-10);
-        const { data: iglesias } = await supabase.from('iglesias').select('*');
+        const { data: iglesias } = await supabase.from('iglesias').select('*, maestros (id)');
 
         const iglesiaEncontrada = (iglesias || []).find(i => {
             const telP = (i.telefono_pastor || '').replace(/\D/g, '');
@@ -572,8 +580,12 @@ app.post('/buscar-mi-qr', async (req, res) => {
             extraUpdates.token_qr = token;
         }
 
+        const totalMaestros = Array.isArray(iglesiaEncontrada.maestros)
+            ? iglesiaEncontrada.maestros.length
+            : (parseInt(iglesiaEncontrada.num_maestros, 10) || 0);
+
         const savedUpdates = await marcarQrDescargadoEnBD(iglesiaEncontrada.id, extraUpdates);
-        const iglesiaActualizada = { ...iglesiaEncontrada, ...savedUpdates };
+        const iglesiaActualizada = { ...iglesiaEncontrada, ...savedUpdates, total_maestros: totalMaestros };
 
         const hostUrl = req.protocol + '://' + req.get('host');
         const urlCheckIn = `${hostUrl}/evento/confirmar-llegada?token=${token}`;
@@ -630,11 +642,19 @@ app.get('/evento/confirmar-llegada', async (req, res) => {
         const { token } = req.query;
         if (!token) return res.status(400).send('Token QR no válido o faltante.');
 
-        const { data: iglesia } = await supabase.from('iglesias').select('*').eq('token_qr', token).maybeSingle();
+        const { data: iglesia } = await supabase
+            .from('iglesias')
+            .select('*, maestros (id)')
+            .eq('token_qr', token)
+            .maybeSingle();
 
         if (!iglesia) {
             return res.render('resultado_checkin', { exito: false, mensaje: '❌ Código QR no reconocido en la base de datos.' });
         }
+
+        const totalMaestros = Array.isArray(iglesia.maestros)
+            ? iglesia.maestros.length
+            : (parseInt(iglesia.num_maestros, 10) || 0);
 
         const fechaLlegada = new Date().toISOString();
         await supabase.from('iglesias').update({
@@ -646,6 +666,7 @@ app.get('/evento/confirmar-llegada', async (req, res) => {
             exito: true,
             iglesia: {
                 ...iglesia,
+                total_maestros: totalMaestros,
                 asistencia_confirmada: true,
                 fecha_llegada: fechaLlegada,
                 concentrado_realizado: Boolean(iglesia.concentrado_realizado),
@@ -835,6 +856,7 @@ app.post('/actualizar-registro/:id', async (req, res) => {
         await supabase.from('guerreritos_oracion').delete().eq('iglesia_id', id);
         await supabase.from('guerreros_oracion').delete().eq('iglesia_id', id);
 
+        let cantidadMaestros = 0;
         if (maestros) {
             const arr = Object.values(maestros).filter(m => m.nombre && m.nombre.trim() !== '').map(m => ({
                 iglesia_id: id,
@@ -842,8 +864,11 @@ app.post('/actualizar-registro/:id', async (req, res) => {
                 telefono: (m.telefono && m.telefono.trim() !== '') ? m.telefono.trim() : 'Sin teléfono',
                 correo: (m.correo && m.correo.trim() !== '') ? m.correo.trim() : 'Sin correo registrado'
             }));
+            cantidadMaestros = arr.length;
             if (arr.length > 0) await supabase.from('maestros').insert(arr);
         }
+
+        await supabase.from('iglesias').update({ num_maestros: cantidadMaestros }).eq('id', id);
 
         if (guerreritos) {
             const lista = Array.isArray(guerreritos) ? guerreritos : Object.values(guerreritos);
@@ -899,12 +924,13 @@ app.get('/exportar-excel', async (req, res) => {
         const nombreZonaVisible = NOMBRES_ZONAS[zonaActual] || zonaActual;
         const { data: registros } = await supabase.from('iglesias').select(`*, maestros(*), guerreritos_oracion(*), guerreros_oracion(*)`).eq('zona', zonaActual);
 
-        let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${nombreZonaVisible}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th><th>Concentrado</th><th>QR Descargado</th></tr>`;
+        let htmlTabla = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><h3>Reporte de Zona: ${nombreZonaVisible}</h3><table border="1"><tr style="background-color: #009639; color: #ffffff; font-weight: bold;"><th>#</th><th>Estado Semáforo</th><th>Observación</th><th>Iglesia</th><th>Dirección</th><th>Pastor</th><th>Tel. Pastor</th><th>Líder</th><th>Tel. Líder</th><th>Cajitas</th><th>Maestros</th><th>Concentrado</th><th>QR Descargado</th></tr>`;
 
         (registros || []).forEach((reg, index) => {
             const concTexto = reg.concentrado_realizado ? 'REALIZADO' : 'NO REALIZADO';
             const qrTexto = reg.qr_descargado ? 'DESCARGADO' : 'PENDIENTE';
-            htmlTabla += `<tr><td>${index + 1}</td><td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td><td>${reg.observacion_semaforo || 'Completo'}</td><td>${reg.nombre_iglesia}</td><td>${reg.direccion}</td><td>${reg.nombre_pastor}</td><td>${reg.telefono_pastor}</td><td>${reg.nombre_lider}</td><td>${reg.telefono_lider}</td><td>${reg.num_cajas}</td><td>${concTexto}</td><td>${qrTexto}</td></tr>`;
+            const cantMaestros = Array.isArray(reg.maestros) ? reg.maestros.length : (parseInt(reg.num_maestros, 10) || 0);
+            htmlTabla += `<tr><td>${index + 1}</td><td>${(reg.estado_semaforo || 'verde').toUpperCase()}</td><td>${reg.observacion_semaforo || 'Completo'}</td><td>${reg.nombre_iglesia}</td><td>${reg.direccion}</td><td>${reg.nombre_pastor}</td><td>${reg.telefono_pastor}</td><td>${reg.nombre_lider}</td><td>${reg.telefono_lider}</td><td>${reg.num_cajas}</td><td>${cantMaestros}</td><td>${concTexto}</td><td>${qrTexto}</td></tr>`;
         });
 
         htmlTabla += `</table></body></html>`;
