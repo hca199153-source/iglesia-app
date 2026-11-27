@@ -228,7 +228,7 @@
                 <h6 class="fw-bold text-success mb-0"><i class="fas fa-list me-2"></i> Registros de la Zona</h6>
                 <div class="input-group input-group-sm w-50">
                     <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar por iglesia, pastor, líder o correo..." onkeyup="aplicarFiltrosYOrden()">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar por iglesia, pastor, líder o correo (sin importar acentos)..." onkeyup="aplicarFiltrosYOrden()">
                 </div>
             </div>
 
@@ -254,7 +254,7 @@
                     </div>
                     <div class="col-md-3 col-6">
                         <label class="form-label small fw-bold mb-1 text-secondary">Dirección / Localidad:</label>
-                        <input type="text" id="filterLocalidad" class="form-control form-control-sm" placeholder="Filtrar dirección..." onkeyup="aplicarFiltrosYOrden()">
+                        <input type="text" id="filterLocalidad" class="form-control form-control-sm" placeholder="Filtrar dirección (sin acentos)..." onkeyup="aplicarFiltrosYOrden()">
                     </div>
                     <div class="col-md-3 col-6">
                         <label class="form-label small fw-bold mb-1 text-secondary">Ordenar Por:</label>
@@ -650,6 +650,15 @@
     <script>
         let gruposWhatsAppList = <%- JSON.stringify(locals.gruposWhatsApp || []) %>;
 
+        function normalizarSinAcentos(texto) {
+            return (texto || '')
+                .toString()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+        }
+
         async function alternarConcentrado(id) {
             const row = document.querySelector(`tr[data-id="${id}"]`);
             const btn = document.getElementById(`btnConcentrado_${id}`);
@@ -778,20 +787,20 @@
         }
 
         function aplicarFiltrosYOrden() {
-            const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchInput = normalizarSinAcentos(document.getElementById('searchInput').value);
             const filterSemaforo = document.getElementById('filterSemaforo').value;
             const filterCajas = document.getElementById('filterCajas').value;
-            const filterLocalidad = document.getElementById('filterLocalidad').value.toLowerCase().trim();
+            const filterLocalidad = normalizarSinAcentos(document.getElementById('filterLocalidad').value);
             const sortOption = document.getElementById('sortOption').value;
 
             const tbody = document.querySelector('#tablaRegistros tbody');
             const filas = Array.from(tbody.querySelectorAll('tr[data-id]'));
 
             filas.forEach(fila => {
-                const textoCompleto = fila.innerText.toLowerCase();
+                const textoCompleto = normalizarSinAcentos(fila.innerText);
                 const semaforoVal = fila.getAttribute('data-semaforo');
                 const cajasVal = fila.getAttribute('data-cajas');
-                const direccionVal = fila.getAttribute('data-direccion');
+                const direccionVal = normalizarSinAcentos(fila.getAttribute('data-direccion'));
 
                 const cumpleSearch = !searchInput || textoCompleto.includes(searchInput);
                 const cumpleSemaforo = !filterSemaforo || semaforoVal === filterSemaforo;
@@ -804,10 +813,10 @@
             filas.sort((a, b) => {
                 const numA = parseInt(a.getAttribute('data-num')) || 0;
                 const numB = parseInt(b.getAttribute('data-num')) || 0;
-                const iglesiaA = a.getAttribute('data-iglesia');
-                const iglesiaB = b.getAttribute('data-iglesia');
-                const pastorA = a.getAttribute('data-pastor');
-                const pastorB = b.getAttribute('data-pastor');
+                const iglesiaA = normalizarSinAcentos(a.getAttribute('data-iglesia'));
+                const iglesiaB = normalizarSinAcentos(b.getAttribute('data-iglesia'));
+                const pastorA = normalizarSinAcentos(a.getAttribute('data-pastor'));
+                const pastorB = normalizarSinAcentos(b.getAttribute('data-pastor'));
                 const cajasA = parseInt(a.getAttribute('data-cajas')) || 0;
                 const cajasB = parseInt(b.getAttribute('data-cajas')) || 0;
 
