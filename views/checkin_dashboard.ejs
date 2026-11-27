@@ -21,6 +21,16 @@
         .table-section { background: #ffffff; border-radius: 12px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
         .table-custom th { background-color: #d1e7dd !important; color: #0f5132 !important; font-size: 0.78rem; text-transform: uppercase; }
         .table-custom td { font-size: 0.78rem; vertical-align: middle; }
+
+        .btn-wa-qr {
+            background-color: #25D366;
+            color: #ffffff;
+            border: none;
+        }
+        .btn-wa-qr:hover {
+            background-color: #1eb857;
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -119,6 +129,8 @@
                                 const asistio = Boolean(item.asistencia_confirmada);
                                 const concHecho = Boolean(item.concentrado_realizado);
                                 const qrDescargado = Boolean(item.qr_descargado);
+                                const telLimpio = (item.telefono_pastor || '').replace(/\D/g, '');
+                                const tel10 = telLimpio.length >= 10 ? telLimpio.slice(-10) : telLimpio;
 
                                 let horaTexto = '--:--';
                                 if (asistio && item.fecha_llegada) {
@@ -183,6 +195,12 @@
                                             <a href="/iglesia/qr/<%= item.id %>" target="_blank" class="btn btn-outline-secondary btn-sm" title="Ver QR">
                                                 <i class="fas fa-qrcode"></i>
                                             </a>
+                                            <button type="button"
+                                                    class="btn btn-wa-qr btn-sm fw-bold"
+                                                    title="Enviar QR por WhatsApp al pastor"
+                                                    onclick="enviarQrWhatsAppPastor('<%= item.id %>', '<%= encodeURIComponent(item.nombre_pastor || '') %>', '<%= tel10 %>', '<%= encodeURIComponent(item.nombre_iglesia || '') %>', '<%= item.num_cajas || 0 %>')">
+                                                <i class="fab fa-whatsapp"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -209,6 +227,49 @@
                 const pasaQr = !qrFiltro || estadoQr === qrFiltro;
                 tr.style.display = (pasaTexto && pasaQr) ? '' : 'none';
             });
+        }
+
+        async function enviarQrWhatsAppPastor(id, nombrePastorEnc, tel10, nombreIglesiaEnc, cajas) {
+            const nombrePastor = decodeURIComponent(nombrePastorEnc || 'Pastor');
+            const nombreIglesia = decodeURIComponent(nombreIglesiaEnc || 'su iglesia');
+
+            if (!tel10 || tel10.length < 10) {
+                alert('Esta iglesia no tiene un teléfono válido de 10 dígitos registrado para el pastor.');
+                return;
+            }
+
+            const urlQrVista = `${window.location.origin}/iglesia/qr/${id}`;
+
+            // 1. Marcar QR como descargado en BD y generar/descargar imagen PNG automáticamente
+            try {
+                await fetch(`/api/marcar-qr-descargado/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    keepalive: true
+                });
+
+                const respQr = await fetch(urlQrVista);
+                const htmlQr = await respQr.text();
+                const matchImg = htmlQr.match(/src="(data:image\/png;base64,[^"]+)"/);
+                if (matchImg && matchImg[1]) {
+                    const linkDescarga = document.createElement('a');
+                    linkDescarga.href = matchImg[1];
+                    linkDescarga.download = `QR_${nombreIglesia.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+                    document.body.appendChild(linkDescarga);
+                    linkDescarga.click();
+                    document.body.removeChild(linkDescarga);
+                }
+            } catch (_) {
+                // Si el navegador bloquea la descarga automática, igual abrimos la vista del QR y WhatsApp
+            }
+
+            // 2. Abrir vista del QR para tener la imagen a la mano y abrir WhatsApp del pastor
+            window.open(urlQrVista, '_blank');
+
+            const mensaje = `¡Dios le bendiga Pastor *${nombrePastor}*!\nLe compartimos el código QR de acceso para su iglesia *${nombreIglesia}* (${cajas} cajitas).\n\nPuede ver o descargar su pase aquí:\n${urlQrVista}\n\n*(Le hemos descargado la imagen del QR en su dispositivo para adjuntarla fácilmente en este chat).*`;
+
+            const urlWa = `https://wa.me/52${tel10}?text=${encodeURIComponent(mensaje)}`;
+            window.open(urlWa, '_blank');
         }
     </script>
 </body>
