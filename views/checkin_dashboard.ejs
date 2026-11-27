@@ -104,7 +104,7 @@
                         <option value="descargado">QR Descargado</option>
                         <option value="pendiente">QR Sin descargar</option>
                     </select>
-                    <input type="text" id="buscarCheckin" class="form-control form-control-sm" style="min-width: 240px;" placeholder="Buscar iglesia o pastor en la lista..." onkeyup="filtrarTablaCheckin()">
+                    <input type="text" id="buscarCheckin" class="form-control form-control-sm" style="min-width: 240px;" placeholder="Buscar iglesia o pastor (sin acentos)..." onkeyup="filtrarTablaCheckin()">
                 </div>
             </div>
 
@@ -216,13 +216,22 @@
     </div>
 
     <script>
+        function normalizarSinAcentos(texto) {
+            return (texto || '')
+                .toString()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+        }
+
         function filtrarTablaCheckin() {
-            const q = document.getElementById('buscarCheckin').value.toLowerCase().trim();
+            const q = normalizarSinAcentos(document.getElementById('buscarCheckin').value);
             const qrFiltro = document.getElementById('filtroQr').value;
             const filas = document.querySelectorAll('#tablaCheckin tbody tr[data-qr-estado]');
 
             filas.forEach(tr => {
-                const txt = tr.innerText.toLowerCase();
+                const txt = normalizarSinAcentos(tr.innerText);
                 const estadoQr = tr.getAttribute('data-qr-estado');
                 const pasaTexto = !q || txt.includes(q);
                 const pasaQr = !qrFiltro || estadoQr === qrFiltro;
