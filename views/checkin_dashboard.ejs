@@ -26,6 +26,7 @@
             background-color: #25D366;
             color: #ffffff;
             border: none;
+            font-weight: bold;
         }
         .btn-wa-qr:hover {
             background-color: #1eb857;
@@ -184,7 +185,7 @@
                                     </td>
                                     <td class="text-center fw-bold text-secondary"><%= horaTexto %></td>
                                     <td class="text-center">
-                                        <div class="d-inline-flex align-items-center gap-1">
+                                        <div class="d-inline-flex align-items-center gap-1 flex-wrap justify-content-center">
                                             <form action="/evento/marcar-asistencia/<%= item.id %>" method="POST" style="display:inline;">
                                                 <input type="hidden" name="estado" value="<%= asistio ? 'false' : 'true' %>">
                                                 <button type="submit" class="btn btn-sm fw-bold <%= asistio ? 'btn-danger' : 'btn-success' %>">
@@ -196,10 +197,10 @@
                                                 <i class="fas fa-qrcode"></i>
                                             </a>
                                             <button type="button"
-                                                    class="btn btn-wa-qr btn-sm fw-bold"
-                                                    title="Enviar QR por WhatsApp al pastor"
-                                                    onclick="enviarQrWhatsAppPastor('<%= item.id %>', '<%= encodeURIComponent(item.nombre_pastor || '') %>', '<%= tel10 %>', '<%= encodeURIComponent(item.nombre_iglesia || '') %>', '<%= item.num_cajas || 0 %>')">
-                                                <i class="fab fa-whatsapp"></i>
+                                                    class="btn btn-wa-qr btn-sm"
+                                                    onclick="enviarQrWhatsAppPastor(this, '<%= item.id %>', '<%= tel10 %>', `<%= (item.nombre_pastor || '').replace(/`/g, '') %>`, `<%= (item.nombre_iglesia || '').replace(/`/g, '') %>`)"
+                                                    title="Copiar imagen QR y abrir WhatsApp del pastor">
+                                                <i class="fab fa-whatsapp"></i> QR
                                             </button>
                                         </div>
                                     </td>
@@ -229,47 +230,65 @@
             });
         }
 
-        async function enviarQrWhatsAppPastor(id, nombrePastorEnc, tel10, nombreIglesiaEnc, cajas) {
-            const nombrePastor = decodeURIComponent(nombrePastorEnc || 'Pastor');
-            const nombreIglesia = decodeURIComponent(nombreIglesiaEnc || 'su iglesia');
-
-            if (!tel10 || tel10.length < 10) {
-                alert('Esta iglesia no tiene un teléfono válido de 10 dígitos registrado para el pastor.');
+        async function enviarQrWhatsAppPastor(btn, iglesiaId, tel10, nombrePastor, nombreIglesia) {
+            const telLimpio = (tel10 || '').replace(/\D/g, '');
+            if (!telLimpio || telLimpio.length < 10) {
+                alert('Este pastor no tiene un teléfono válido de 10 dígitos registrado.');
                 return;
             }
 
-            const urlQrVista = `${window.location.origin}/iglesia/qr/${id}`;
+            const htmlOriginal = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
 
-            // 1. Marcar QR como descargado en BD y generar/descargar imagen PNG automáticamente
             try {
-                await fetch(`/api/marcar-qr-descargado/${id}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    keepalive: true
-                });
+                const resp = await fetch(`/api/qr-data/${iglesiaId}`);
+                const data = await resp.json();
+                if (!resp.ok || !data.success || !data.qrImageSrc) {
+                    alert('No se pudo generar la imagen QR de esta iglesia.');
+                    return;
+                }
 
-                const respQr = await fetch(urlQrVista);
-                const htmlQr = await respQr.text();
-                const matchImg = htmlQr.match(/src="(data:image\/png;base64,[^"]+)"/);
-                if (matchImg && matchImg[1]) {
+                let imagenCopiada = false;
+                if (navigator.clipboard && window.ClipboardItem) {
+                    try {
+                        const imgResp = await fetch(data.qrImageSrc);
+                        const imgBlob = await imgResp.blob();
+                        await navigator.clipboard.write([
+                            new ClipboardItem({ 'image/png': imgBlob })
+                        ]);
+                        imagenCopiada = true;
+                    } catch (_) {
+                        imagenCopiada = false;
+                    }
+                }
+
+                const textoMensaje = `¡Dios le bendiga pastor *${nombrePastor}*! Le compartimos el código QR de acceso para la iglesia *${nombreIglesia}*. Preséntelo al llegar al evento.`;
+                const numeroWa = telLimpio.startsWith('52') ? telLimpio : `52${telLimpio}`;
+                const waUrl = `https://wa.me/${numeroWa}?text=${encodeURIComponent(textoMensaje)}`;
+
+                if (!imagenCopiada) {
                     const linkDescarga = document.createElement('a');
-                    linkDescarga.href = matchImg[1];
-                    linkDescarga.download = `QR_${nombreIglesia.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+                    linkDescarga.href = data.qrImageSrc;
+                    linkDescarga.download = `QR_${(nombreIglesia || 'Iglesia').replace(/[^a-zA-Z0-9]/g, '_')}.png`;
                     document.body.appendChild(linkDescarga);
                     linkDescarga.click();
                     document.body.removeChild(linkDescarga);
                 }
-            } catch (_) {
-                // Si el navegador bloquea la descarga automática, igual abrimos la vista del QR y WhatsApp
+
+                window.open(waUrl, '_blank');
+
+                if (imagenCopiada) {
+                    alert('Imagen QR copiada al portapapeles. En WhatsApp solo presiona Ctrl + V (o Pegar) para enviar la imagen junto con el mensaje.');
+                } else {
+                    alert('Se descargó la imagen QR para que puedas adjuntarla fácilmente en el chat de WhatsApp que se acaba de abrir.');
+                }
+            } catch (err) {
+                alert('Error al preparar el QR para WhatsApp.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = htmlOriginal;
             }
-
-            // 2. Abrir vista del QR para tener la imagen a la mano y abrir WhatsApp del pastor
-            window.open(urlQrVista, '_blank');
-
-            const mensaje = `¡Dios le bendiga Pastor *${nombrePastor}*!\nLe compartimos el código QR de acceso para su iglesia *${nombreIglesia}* (${cajas} cajitas).\n\nPuede ver o descargar su pase aquí:\n${urlQrVista}\n\n*(Le hemos descargado la imagen del QR en su dispositivo para adjuntarla fácilmente en este chat).*`;
-
-            const urlWa = `https://wa.me/52${tel10}?text=${encodeURIComponent(mensaje)}`;
-            window.open(urlWa, '_blank');
         }
     </script>
 </body>
