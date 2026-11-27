@@ -79,8 +79,17 @@ async function marcarQrDescargadoEnBD(iglesiaId, extraUpdates = {}) {
     }
 }
 
+function quitarAcentos(texto) {
+    return (texto || '')
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
 function normalizarTexto(texto) {
-    return (texto || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+    return quitarAcentos(texto).replace(/\s+/g, ' ');
 }
 
 function ultimos10Digitos(telefono) {
