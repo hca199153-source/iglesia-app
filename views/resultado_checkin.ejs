@@ -20,6 +20,9 @@
             const zonaVisible = (locals.nombresZonas && nombresZonas[iglesia.zona]) ? nombresZonas[iglesia.zona] : (iglesia.zona || '');
             const concHecho = Boolean(iglesia.concentrado_realizado);
             const qrDescargado = Boolean(iglesia.qr_descargado);
+            const totalMaestros = (typeof iglesia.total_maestros === 'number')
+                ? iglesia.total_maestros
+                : (Array.isArray(iglesia.maestros) ? iglesia.maestros.length : (parseInt(iglesia.num_maestros, 10) || 0));
 
             let fechaQrTexto = '';
             if (qrDescargado && iglesia.fecha_descarga_qr) {
@@ -36,6 +39,7 @@
                 <div class="mb-1"><strong>Pastor:</strong> <%= iglesia.nombre_pastor %></div>
                 <div class="mb-1"><strong>Zona:</strong> <%= zonaVisible %></div>
                 <div class="mb-1"><strong>Cajitas:</strong> <span class="badge bg-success"><%= iglesia.num_cajas || 0 %></span></div>
+                <div class="mb-1"><strong>Maestros destinados al proyecto:</strong> <span class="badge bg-primary"><%= totalMaestros %></span></div>
                 <div class="d-flex justify-content-between align-items-center pt-2 mt-2 border-top">
                     <strong>Estado de QR previo:</strong>
                     <% if (qrDescargado) { %>
